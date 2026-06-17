@@ -2,248 +2,473 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Interactif SST - Console</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bgDark: '#1B2128',
-                        bgPanel: '#2A3441',
-                        safetyYellow: '#F4B400',
-                        alertRed: '#D64545',
-                        validGreen: '#3F9B5C',
-                        textLight: '#EDEEEE',
-                    },
-                    fontFamily: {
-                        sans: ['ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
-                        display: ['Impact', 'Arial Black', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>N.C.R Solutions - Quiz SST</title>
     <style>
-        body { background-color: #1B2128; color: #EDEEEE; overflow-x: hidden; margin: 0; padding: 0; }
-        .stencil-text { text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Impact', 'Arial Black', sans-serif; }
-        .stripes { background: repeating-linear-gradient(45deg, #F4B400, #F4B400 10px, #1B2128 10px, #1B2128 20px); }
+        /* Design System - Apple Dark & N.C.R Solutions */
+        :root {
+            --bg-color: #000000;
+            --surface-color: #1c1c1e;
+            --text-primary: #f5f5f7;
+            --text-secondary: #86868b;
+            --accent-color: #0a84ff;
+            --timer-color: #ff9f0a;
+            
+            /* Kahoot-style button colors (muted for dark mode) */
+            --btn-red: #ff453a;
+            --btn-blue: #0a84ff;
+            --btn-yellow: #ffd60a;
+            --btn-green: #32d74b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Conteneur principal */
+        #app-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header / Logo */
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* Screen 1: Start */
+        #qr-container {
+            background: #fff;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+
+        /* Screen 2: Quiz */
+        .header-quiz {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 10px 0;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .timer-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--surface-color);
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        #timer-bar {
+            height: 100%;
+            width: 100%;
+            background-color: var(--timer-color);
+            transition: width 1s linear;
+        }
+
+        #question-text {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 40px;
+            line-height: 1.3;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            flex-grow: 1;
+            max-height: 400px;
+        }
+
+        .answer-btn {
+            border: none;
+            border-radius: 16px;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .answer-btn:active {
+            transform: scale(0.95);
+        }
+
+        .answer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Couleurs des boutons style Kahoot */
+        .color-0 { background-color: var(--btn-red); }
+        .color-1 { background-color: var(--btn-blue); }
+        .color-2 { background-color: var(--btn-yellow); color: black; }
+        .color-3 { background-color: var(--btn-green); }
+
+        /* Screen 3: Results */
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+            border: 4px solid var(--accent-color);
+        }
+
+        .score-number {
+            font-size: 48px;
+            font-weight: 800;
+        }
+
+        .feedback-text {
+            font-size: 20px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
-    <div id="root">
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; text-align: center; padding: 20px;">
-            <h2 style="font-size: 2rem; margin-bottom: 1rem; color: #F4B400; font-weight: bold;">Initialisation du système SST...</h2>
-            <p style="color: #EDEEEE; font-size: 1.2rem;">Connexion au réseau de synchronisation en cours.</p>
+
+    <div id="app-container">
+        
+        <!-- ÉCRAN 1 : ACCUEIL -->
+        <div id="start-screen" class="screen active">
+            <h1>N.C.R Solutions</h1>
+            <p class="subtitle">Formation SST - Test de connaissances</p>
+            
+            <div id="qr-container">
+                <!-- L'API génère un QR code pointant vers l'URL actuelle -->
+                <img id="qr-code" src="" alt="QR Code d'accès" width="200" height="200">
+            </div>
+            
+            <p style="margin-bottom: 20px; color: var(--text-secondary); text-align: center; font-size: 14px;">
+                Scannez le QR Code pour rejoindre depuis votre mobile, ou appuyez sur Commencer.
+            </p>
+            
+            <button class="btn-primary" onclick="startQuiz()">Commencer le Quiz</button>
         </div>
+
+        <!-- ÉCRAN 2 : LE QUIZ -->
+        <div id="quiz-screen" class="screen">
+            <div class="header-quiz">
+                <span id="question-counter">Question 1/5</span>
+                <span id="score-live">Score : 0</span>
+            </div>
+            
+            <div class="timer-bar-container">
+                <div id="timer-bar"></div>
+            </div>
+
+            <h2 id="question-text">Chargement de la question...</h2>
+
+            <div class="answers-grid" id="answers-grid">
+                <!-- Les boutons seront générés en JS -->
+            </div>
+        </div>
+
+        <!-- ÉCRAN 3 : RÉSULTATS -->
+        <div id="result-screen" class="screen">
+            <h1>Résultats</h1>
+            <p class="subtitle">Bilan de votre formation SST</p>
+
+            <div class="score-circle">
+                <span class="score-number" id="final-score">0</span>
+                <span style="color: var(--text-secondary)">points</span>
+            </div>
+
+            <p id="feedback-text" class="feedback-text">Excellent travail !</p>
+
+            <button class="btn-primary" onclick="resetQuiz()">Recommencer</button>
+        </div>
+
     </div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        const QUESTIONS = [
-            { question: "Que signifie l'acronyme SST ?", options: ["Sécurité et Santé au Travail", "Sauveteur Secouriste du Travail", "Syndicat de Sécurité au Travail", "Les deux premières réponses"], correct: 1 },
-            { question: "Quel est le tout premier des 9 principes généraux de prévention ?", options: ["Évaluer les risques", "Éviter les risques", "Former les salariés", "Remplacer ce qui est dangereux"], correct: 1 },
-            { question: "Qui est le principal responsable de la santé et sécurité dans l'entreprise ?", options: ["Le salarié lui-même", "Le médecin du travail", "L'employeur", "L'inspection du travail"], correct: 2 },
-            { question: "Qu'est-ce que le DUERP ?", options: ["Document Unique d'Évaluation des Risques Professionnels", "Dossier Universel des Équipements et Risques Physiques", "Déclaration Unique des Employés à Risque Particulier", "Directive de l'Union Européenne sur les Risques Professionnels"], correct: 0 },
-            { question: "À quelle fréquence minimale le DUERP doit-il être mis à jour ?", options: ["Tous les mois", "Tous les ans", "Tous les 3 ans", "Uniquement après un accident"], correct: 1 },
-            { question: "Quel équipement protège collectivement contre les chutes de hauteur ?", options: ["Le harnais de sécurité", "Les chaussures de sécurité", "Le garde-corps", "Le casque"], correct: 2 },
-            { question: "Que signifie EPI ?", options: ["Équipement de Prévention Interne", "Équipement de Protection Individuelle", "Évaluation Professionnelle des Incidents", "Entreprise de Prévention et d'Intervention"], correct: 1 },
-            { question: "En cas d'accident du travail, quel est le premier réflexe absolu ?", options: ["Alerter les secours", "Protéger (sécuriser la zone)", "Secourir la victime", "Prévenir le patron"], correct: 1 },
-            { question: "Quel est le rôle du CSE en matière de SST ?", options: ["Sanctionner les comportements dangereux", "Contribuer à la protection de la santé et sécurité", "Rédiger seul le DUERP", "Remplacer l'employeur au tribunal"], correct: 1 },
-            { question: "Une maladie est reconnue 'professionnelle' si...", options: ["Elle survient pendant les horaires de bureau", "Elle est la conséquence directe de l'exposition à un risque au poste de travail", "Elle est contagieuse", "Le salarié a plus de 50 ans"], correct: 1 },
-            { question: "Le port des EPI est-il prioritaire sur la mise en place d'EPC (Protection Collective) ?", options: ["Oui, c'est plus économique", "Oui, c'est plus efficace", "Non, la protection collective prime toujours", "Cela dépend de l'humeur du chef d'équipe"], correct: 2 },
-            { question: "Quelle est l'utilité du registre de sécurité ?", options: ["Noter les retards des employés", "Consigner les vérifications et contrôles réglementaires du matériel", "Lister le matériel de bureau", "Noter les idées d'amélioration"], correct: 1 },
-            { question: "Quel est le numéro d'appel des secours d'urgence européen ?", options: ["15", "18", "112", "911"], correct: 2 },
-            { question: "La prévention des RPS (Risques Psychosociaux) fait-elle partie de la SST ?", options: ["Non, cela relève de la vie privée", "Oui, c'est une obligation légale de l'employeur", "Seulement dans les grandes entreprises", "Seulement si le médecin le demande"], correct: 1 },
-            { question: "Le droit de retrait permet à un salarié de...", options: ["Refuser de faire des heures supplémentaires", "Quitter son poste s'il a un motif raisonnable de penser qu'il présente un danger grave et imminent", "Prendre sa pause plus tôt", "Choisir ses missions"], correct: 1 }
+    <script>
+        // --- BASE DE DONNÉES DES QUESTIONS SST ---
+        const questions = [
+            {
+                question: "Que signifie l'acronyme SST ?",
+                answers: [
+                    "Service de Sécurité au Travail",
+                    "Sauveteur Secouriste du Travail",
+                    "Soins et Sécurité pour Tous",
+                    "Système de Secours Technique"
+                ],
+                correct: 1
+            },
+            {
+                question: "Quelle est la première action à réaliser face à une situation d'accident ?",
+                answers: [
+                    "Secourir la victime",
+                    "Alerter les secours (15, 18, 112)",
+                    "Protéger la zone de l'accident",
+                    "Examiner la victime"
+                ],
+                correct: 2
+            },
+            {
+                question: "Face à un saignement abondant, que devez-vous faire en priorité ?",
+                answers: [
+                    "Faire un garrot immédiatement",
+                    "Laver la plaie à l'eau",
+                    "Comprimer directement l'endroit qui saigne",
+                    "Donner à boire à la victime"
+                ],
+                correct: 2
+            },
+            {
+                question: "Une victime est inconsciente mais respire normalement. Quelle est la bonne position ?",
+                answers: [
+                    "Sur le dos, jambes surélevées",
+                    "Assise",
+                    "Position Latérale de Sécurité (PLS)",
+                    "Sur le ventre"
+                ],
+                correct: 2
+            },
+            {
+                question: "Combien de compressions thoraciques alternent avec les insufflations lors d'une RCP chez l'adulte ?",
+                answers: [
+                    "15 compressions / 2 insufflations",
+                    "30 compressions / 2 insufflations",
+                    "5 compressions / 1 insufflation",
+                    "20 compressions / 2 insufflations"
+                ],
+                correct: 1
+            }
         ];
 
-        const optionColors = ['bg-blue-600', 'bg-safetyYellow text-bgDark', 'bg-orange-500', 'bg-purple-600'];
+        // --- VARIABLES D'ÉTAT ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 15; // Temps en secondes par question
+        let timerInterval;
+        const totalQuestions = questions.length;
 
-        const App = () => {
-            const [role, setRole] = useState(null); 
-            const [roomCode, setRoomCode] = useState('');
-            const [playerName, setPlayerName] = useState('');
-            const [isConnected, setIsConnected] = useState(false);
+        // --- INITIALISATION ---
+        window.onload = () => {
+            // Générer le QR code basé sur l'URL actuelle (pratique quand hébergé sur GitHub Pages)
+            const currentUrl = encodeURIComponent(window.location.href);
+            document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${currentUrl}`;
+        };
+
+        // --- NAVIGATION ENTRE LES ÉCRANS ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // --- LOGIQUE DU QUIZ ---
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('score-live').innerText = `Score : ${score}`;
+            showScreen('quiz-screen');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            clearInterval(timerInterval);
+            const q = questions[currentQuestionIndex];
             
-            // État Animateur
-            const [players, setPlayers] = useState([]);
-            const [currentScreen, setCurrentScreen] = useState('lobby');
-            const [currentQIndex, setCurrentQIndex] = useState(0);
-            const [answersThisRound, setAnswersThisRound] = useState({});
+            document.getElementById('question-counter').innerText = `Question ${currentQuestionIndex + 1}/${totalQuestions}`;
+            document.getElementById('question-text').innerText = q.question;
             
-            // État Joueur
-            const [syncState, setSyncState] = useState(null);
-            const [hasAnswered, setHasAnswered] = useState(false);
+            const grid = document.getElementById('answers-grid');
+            grid.innerHTML = ''; // Nettoyer les anciennes réponses
 
-            const mqttClientRef = useRef(null);
-            const stateRef = useRef({ currentScreen, currentQIndex, answersThisRound, players });
+            q.answers.forEach((answerText, index) => {
+                const btn = document.createElement('button');
+                btn.className = `answer-btn color-${index}`;
+                btn.innerText = answerText;
+                btn.onclick = () => selectAnswer(index);
+                grid.appendChild(btn);
+            });
 
-            // Synchronisation perpétuelle des références pour éviter les fermetures d'état obsolètes (closures)
-            useEffect(() => {
-                stateRef.current = { currentScreen, currentQIndex, answersThisRound, players };
-            }, [currentScreen, currentQIndex, answersThisRound, players]);
+            startTimer();
+        }
 
-            // Connexion au serveur de synchronisation en temps réel
-            const connectToNetwork = (selectedRole, code) => {
-                const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
-                    clientId: 'ncr_sst_' + Math.random().toString(16).substr(2, 8),
-                    clean: true
-                });
+        function startTimer() {
+            timeLeft = 15; // Reset du temps
+            const timerBar = document.getElementById('timer-bar');
+            
+            // Forcer le reflow pour relancer l'animation CSS
+            timerBar.style.transition = 'none';
+            timerBar.style.width = '100%';
+            timerBar.style.backgroundColor = 'var(--timer-color)';
+            setTimeout(() => {
+                timerBar.style.transition = 'width 15s linear, background-color 15s linear';
+                timerBar.style.width = '0%';
+                timerBar.style.backgroundColor = '#ff453a'; // Devient rouge à la fin
+            }, 50);
 
-                mqttClientRef.current = client;
-
-                client.on('connect', () => {
-                    setIsConnected(true);
-                    if (selectedRole === 'host') {
-                        client.subscribe(`ncr/sst/${code}/to_host`);
-                    } else {
-                        client.subscribe(`ncr/sst/${code}/to_players`);
-                        // Signaler l'arrivée au formateur
-                        client.publish(`ncr/sst/${code}/to_host`, JSON.stringify({
-                            type: 'JOIN',
-                            payload: { name: playerName }
-                        }));
-                    }
-                });
-
-                client.on('message', (topic, message) => {
-                    try {
-                        const packet = JSON.parse(message.toString());
-                        
-                        if (selectedRole === 'host') {
-                            if (packet.type === 'JOIN') {
-                                setPlayers(prev => {
-                                    if (prev.find(p => p.name === packet.payload.name)) return prev;
-                                    return [...prev, { name: packet.payload.name, score: 0 }];
-                                });
-                            }
-                            if (packet.type === 'ANSWER' && stateRef.current.currentScreen === 'question') {
-                                setAnswersThisRound(prev => ({
-                                    ...prev,
-                                    [packet.payload.name]: packet.payload.answer
-                                }));
-                            }
-                        }
-
-                        if (selectedRole === 'player') {
-                            if (packet.type === 'SYNC') {
-                                setSyncState(prev => {
-                                    if (packet.payload.screen === 'question' && prev?.qIndex !== packet.payload.qIndex) {
-                                        setHasAnswered(false);
-                                    }
-                                    return packet.payload;
-                                });
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Erreur décodage paquet", e);
-                    }
-                });
-            };
-
-            // Émission automatique de la console vers tous les téléphones connectés
-            useEffect(() => {
-                if (role === 'host' && isConnected && mqttClientRef.current) {
-                    mqttClientRef.current.publish(`ncr/sst/${roomCode}/to_players`, JSON.stringify({
-                        type: 'SYNC',
-                        payload: {
-                            screen: currentScreen,
-                            qIndex: currentQIndex,
-                            question: QUESTIONS[currentQIndex],
-                            answers: answersThisRound,
-                            leaderboard: players
-                        }
-                    }));
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
                 }
-            }, [role, isConnected, currentScreen, currentQIndex, players, answersThisRound, roomCode]);
+            }, 1000);
+        }
 
-            // --- DEBUT DE SESSION (FORMATEUR) ---
-            const initHost = () => {
-                // Génération d'un code unique à 4 lettres pour la salle de formation
-                const generatedCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-                setRoomCode(generatedCode);
-                setRole('host');
-                connectToNetwork('host', generatedCode);
-            };
+        function selectAnswer(selectedIndex) {
+            clearInterval(timerInterval);
+            const q = questions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.answer-btn');
+            
+            // Désactiver tous les boutons
+            buttons.forEach(btn => btn.disabled = true);
 
-            const startGame = () => {
-                setAnswersThisRound({});
-                setCurrentQIndex(0);
-                setCurrentScreen('question');
-            };
+            // Appliquer les styles visuels pour valider/invalider
+            if (selectedIndex === q.correct) {
+                // Bonne réponse
+                buttons[selectedIndex].style.boxShadow = '0 0 20px #32d74b';
+                buttons[selectedIndex].style.transform = 'scale(1.05)';
+                score += 100 + (timeLeft * 10); // Bonus de rapidité
+                document.getElementById('score-live').innerText = `Score : ${score}`;
+            } else {
+                // Mauvaise réponse
+                buttons[selectedIndex].style.opacity = '0.3';
+                // Mettre en évidence la bonne réponse
+                buttons[q.correct].style.boxShadow = '0 0 20px #32d74b';
+                buttons[q.correct].style.transform = 'scale(1.05)';
+            }
 
-            const revealAnswers = () => {
-                setCurrentScreen('reveal');
-                setPlayers(prev => prev.map(p => {
-                    const ans = answersThisRound[p.name];
-                    const isCorrect = ans === QUESTIONS[currentQIndex].correct;
-                    return { ...p, score: isCorrect ? p.score + 1 : p.score };
-                }));
-            };
+            setTimeout(nextQuestion, 2000);
+        }
 
-            const nextQuestion = () => {
-                if (currentQIndex + 1 < QUESTIONS.length) {
-                    setAnswersThisRound({});
-                    setCurrentQIndex(prev => prev + 1);
-                    setCurrentScreen('question');
-                } else {
-                    setCurrentScreen('podium');
-                }
-            };
+        function handleTimeOut() {
+            const q = questions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.answer-btn');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            // Mettre en évidence la bonne réponse
+            buttons[q.correct].style.boxShadow = '0 0 20px #32d74b';
+            buttons[q.correct].style.transform = 'scale(1.05)';
 
-            // --- DEBUT DE SESSION (APPRENANT) ---
-            const handlePlayerJoin = (e) => {
-                e.preventDefault();
-                if (!playerName.trim() || !roomCode.trim()) return;
-                const cleanCode = roomCode.trim().toUpperCase();
-                setRoomCode(cleanCode);
-                setRole('player');
-                connectToNetwork('player', cleanCode);
-            };
+            setTimeout(nextQuestion, 2000);
+        }
 
-            const submitAnswer = (idx) => {
-                if (hasAnswered) return;
-                setHasAnswered(true);
-                mqttClientRef.current.publish(`ncr/sst/${roomCode}/to_host`, JSON.stringify({
-                    type: 'ANSWER',
-                    payload: { name: playerName, answer: idx }
-                }));
-            };
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < totalQuestions) {
+                loadQuestion();
+            } else {
+                endQuiz();
+            }
+        }
 
-            // --- RENDER DES INTERFACES ---
-            if (!role) {
-                return (
-                    <div className="min-h-screen flex flex-col items-center justify-center p-6">
-                        <div className="w-full max-w-md bg-bgPanel border border-gray-700 rounded-lg shadow-2xl overflow-hidden">
-                            <div className="bg-safetyYellow stripes h-4 w-full"></div>
-                            <div className="p-8">
-                                <h1 className="text-4xl text-center stencil-text text-safetyYellow mb-8">SST QUIZ LIVE</h1>
-                                
-                                <button onClick={initHost} className="w-full mb-6 bg-transparent border-2 border-safetyYellow text-safetyYellow hover:bg-safetyYellow hover:text-bgDark font-bold py-4 px-6 rounded transition duration-200 stencil-text text-xl">
-                                    [ ANIMER UNE SESSION ]
-                                </button>
-                                
-                                <div className="border-t border-gray-600 my-6"></div>
-                                
-                                <form onSubmit={handlePlayerJoin} className="space-y-4">
-                                    <input 
-                                        type="text" 
-                                        placeholder="CODE DE LA SALLE (4 LETTRES)" 
-                                        className="w-full bg-bgDark border border-gray-600 rounded p-4 text-center text-lg text-white font-bold tracking-widest focus:border-safetyYellow focus:outline-none"
-                                        value={roomCode}
-                                        onChange={(e) => setRoomCode(e.target.value)}
-                                        required
-                                    />
-                                    <input 
-                                        type="text" 
-                                        placeholder="VOTRE PRÉNOM" 
-                                        className="w-full bg-bgDark border border-gray-600
+        function endQuiz() {
+            showScreen('result-screen');
+            document.getElementById('final-score').innerText = score;
+            
+            const feedback = document.getElementById('feedback-text');
+            const maxScorePossible = totalQuestions * 250; // Approximatif
+            
+            if (score > (maxScorePossible * 0.8)) {
+                feedback.innerText = "Excellent ! Vous maîtrisez parfaitement les gestes qui sauvent.";
+                feedback.style.color = "var(--btn-green)";
+            } else if (score > (maxScorePossible * 0.5)) {
+                feedback.innerText = "Bon travail, mais quelques révisions SST sont nécessaires.";
+                feedback.style.color = "var(--btn-yellow)";
+            } else {
+                feedback.innerText = "Attention, vos connaissances SST doivent être consolidées.";
+                feedback.style.color = "var(--btn-red)";
+            }
+        }
+
+        function resetQuiz() {
+            startQuiz();
+        }
+    </script>
+</body>
+</html>
