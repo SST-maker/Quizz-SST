@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interactif SST - Console</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgDark: '#1B2128',
+                        bgPanel: '#2A3441',
+                        safetyYellow: '#F4B400',
+                        alertRed: '#D64545',
+                        validGreen: '#3F9B5C',
+                        textLight: '#EDEEEE',
+                    },
+                    fontFamily: {
+                        sans: ['ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+                        display: ['Impact', 'Arial Black', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #1B2128; color: #EDEEEE; overflow-x: hidden; margin: 0; padding: 0; }
+        .stencil-text { text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Impact', 'Arial Black', sans-serif; }
+        .stripes { background: repeating-linear-gradient(45deg, #F4B400, #F4B400 10px, #1B2128 10px, #1B2128 20px); }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; text-align: center; padding: 20px;">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem; color: #F4B400; font-weight: bold;">Initialisation du système SST...</h2>
+            <p style="color: #EDEEEE; font-size: 1.2rem;">Connexion au réseau de synchronisation en cours.</p>
+        </div>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const QUESTIONS = [
+            { question: "Que signifie l'acronyme SST ?", options: ["Sécurité et Santé au Travail", "Sauveteur Secouriste du Travail", "Syndicat de Sécurité au Travail", "Les deux premières réponses"], correct: 1 },
+            { question: "Quel est le tout premier des 9 principes généraux de prévention ?", options: ["Évaluer les risques", "Éviter les risques", "Former les salariés", "Remplacer ce qui est dangereux"], correct: 1 },
+            { question: "Qui est le principal responsable de la santé et sécurité dans l'entreprise ?", options: ["Le salarié lui-même", "Le médecin du travail", "L'employeur", "L'inspection du travail"], correct: 2 },
+            { question: "Qu'est-ce que le DUERP ?", options: ["Document Unique d'Évaluation des Risques Professionnels", "Dossier Universel des Équipements et Risques Physiques", "Déclaration Unique des Employés à Risque Particulier", "Directive de l'Union Européenne sur les Risques Professionnels"], correct: 0 },
+            { question: "À quelle fréquence minimale le DUERP doit-il être mis à jour ?", options: ["Tous les mois", "Tous les ans", "Tous les 3 ans", "Uniquement après un accident"], correct: 1 },
+            { question: "Quel équipement protège collectivement contre les chutes de hauteur ?", options: ["Le harnais de sécurité", "Les chaussures de sécurité", "Le garde-corps", "Le casque"], correct: 2 },
+            { question: "Que signifie EPI ?", options: ["Équipement de Prévention Interne", "Équipement de Protection Individuelle", "Évaluation Professionnelle des Incidents", "Entreprise de Prévention et d'Intervention"], correct: 1 },
+            { question: "En cas d'accident du travail, quel est le premier réflexe absolu ?", options: ["Alerter les secours", "Protéger (sécuriser la zone)", "Secourir la victime", "Prévenir le patron"], correct: 1 },
+            { question: "Quel est le rôle du CSE en matière de SST ?", options: ["Sanctionner les comportements dangereux", "Contribuer à la protection de la santé et sécurité", "Rédiger seul le DUERP", "Remplacer l'employeur au tribunal"], correct: 1 },
+            { question: "Une maladie est reconnue 'professionnelle' si...", options: ["Elle survient pendant les horaires de bureau", "Elle est la conséquence directe de l'exposition à un risque au poste de travail", "Elle est contagieuse", "Le salarié a plus de 50 ans"], correct: 1 },
+            { question: "Le port des EPI est-il prioritaire sur la mise en place d'EPC (Protection Collective) ?", options: ["Oui, c'est plus économique", "Oui, c'est plus efficace", "Non, la protection collective prime toujours", "Cela dépend de l'humeur du chef d'équipe"], correct: 2 },
+            { question: "Quelle est l'utilité du registre de sécurité ?", options: ["Noter les retards des employés", "Consigner les vérifications et contrôles réglementaires du matériel", "Lister le matériel de bureau", "Noter les idées d'amélioration"], correct: 1 },
+            { question: "Quel est le numéro d'appel des secours d'urgence européen ?", options: ["15", "18", "112", "911"], correct: 2 },
+            { question: "La prévention des RPS (Risques Psychosociaux) fait-elle partie de la SST ?", options: ["Non, cela relève de la vie privée", "Oui, c'est une obligation légale de l'employeur", "Seulement dans les grandes entreprises", "Seulement si le médecin le demande"], correct: 1 },
+            { question: "Le droit de retrait permet à un salarié de...", options: ["Refuser de faire des heures supplémentaires", "Quitter son poste s'il a un motif raisonnable de penser qu'il présente un danger grave et imminent", "Prendre sa pause plus tôt", "Choisir ses missions"], correct: 1 }
+        ];
+
+        const optionColors = ['bg-blue-600', 'bg-safetyYellow text-bgDark', 'bg-orange-500', 'bg-purple-600'];
+
+        const App = () => {
+            const [role, setRole] = useState(null); 
+            const [roomCode, setRoomCode] = useState('');
+            const [playerName, setPlayerName] = useState('');
+            const [isConnected, setIsConnected] = useState(false);
+            
+            // État Animateur
+            const [players, setPlayers] = useState([]);
+            const [currentScreen, setCurrentScreen] = useState('lobby');
+            const [currentQIndex, setCurrentQIndex] = useState(0);
+            const [answersThisRound, setAnswersThisRound] = useState({});
+            
+            // État Joueur
+            const [syncState, setSyncState] = useState(null);
+            const [hasAnswered, setHasAnswered] = useState(false);
+
+            const mqttClientRef = useRef(null);
+            const stateRef = useRef({ currentScreen, currentQIndex, answersThisRound, players });
+
+            // Synchronisation perpétuelle des références pour éviter les fermetures d'état obsolètes (closures)
+            useEffect(() => {
+                stateRef.current = { currentScreen, currentQIndex, answersThisRound, players };
+            }, [currentScreen, currentQIndex, answersThisRound, players]);
+
+            // Connexion au serveur de synchronisation en temps réel
+            const connectToNetwork = (selectedRole, code) => {
+                const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+                    clientId: 'ncr_sst_' + Math.random().toString(16).substr(2, 8),
+                    clean: true
+                });
+
+                mqttClientRef.current = client;
+
+                client.on('connect', () => {
+                    setIsConnected(true);
+                    if (selectedRole === 'host') {
+                        client.subscribe(`ncr/sst/${code}/to_host`);
+                    } else {
+                        client.subscribe(`ncr/sst/${code}/to_players`);
+                        // Signaler l'arrivée au formateur
+                        client.publish(`ncr/sst/${code}/to_host`, JSON.stringify({
+                            type: 'JOIN',
+                            payload: { name: playerName }
+                        }));
+                    }
+                });
+
+                client.on('message', (topic, message) => {
+                    try {
+                        const packet = JSON.parse(message.toString());
+                        
+                        if (selectedRole === 'host') {
+                            if (packet.type === 'JOIN') {
+                                setPlayers(prev => {
+                                    if (prev.find(p => p.name === packet.payload.name)) return prev;
+                                    return [...prev, { name: packet.payload.name, score: 0 }];
+                                });
+                            }
+                            if (packet.type === 'ANSWER' && stateRef.current.currentScreen === 'question') {
+                                setAnswersThisRound(prev => ({
+                                    ...prev,
+                                    [packet.payload.name]: packet.payload.answer
+                                }));
+                            }
+                        }
+
+                        if (selectedRole === 'player') {
+                            if (packet.type === 'SYNC') {
+                                setSyncState(prev => {
+                                    if (packet.payload.screen === 'question' && prev?.qIndex !== packet.payload.qIndex) {
+                                        setHasAnswered(false);
+                                    }
+                                    return packet.payload;
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Erreur décodage paquet", e);
+                    }
+                });
+            };
+
+            // Émission automatique de la console vers tous les téléphones connectés
+            useEffect(() => {
+                if (role === 'host' && isConnected && mqttClientRef.current) {
+                    mqttClientRef.current.publish(`ncr/sst/${roomCode}/to_players`, JSON.stringify({
+                        type: 'SYNC',
+                        payload: {
+                            screen: currentScreen,
+                            qIndex: currentQIndex,
+                            question: QUESTIONS[currentQIndex],
+                            answers: answersThisRound,
+                            leaderboard: players
+                        }
+                    }));
+                }
+            }, [role, isConnected, currentScreen, currentQIndex, players, answersThisRound, roomCode]);
+
+            // --- DEBUT DE SESSION (FORMATEUR) ---
+            const initHost = () => {
+                // Génération d'un code unique à 4 lettres pour la salle de formation
+                const generatedCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+                setRoomCode(generatedCode);
+                setRole('host');
+                connectToNetwork('host', generatedCode);
+            };
+
+            const startGame = () => {
+                setAnswersThisRound({});
+                setCurrentQIndex(0);
+                setCurrentScreen('question');
+            };
+
+            const revealAnswers = () => {
+                setCurrentScreen('reveal');
+                setPlayers(prev => prev.map(p => {
+                    const ans = answersThisRound[p.name];
+                    const isCorrect = ans === QUESTIONS[currentQIndex].correct;
+                    return { ...p, score: isCorrect ? p.score + 1 : p.score };
+                }));
+            };
+
+            const nextQuestion = () => {
+                if (currentQIndex + 1 < QUESTIONS.length) {
+                    setAnswersThisRound({});
+                    setCurrentQIndex(prev => prev + 1);
+                    setCurrentScreen('question');
+                } else {
+                    setCurrentScreen('podium');
+                }
+            };
+
+            // --- DEBUT DE SESSION (APPRENANT) ---
+            const handlePlayerJoin = (e) => {
+                e.preventDefault();
+                if (!playerName.trim() || !roomCode.trim()) return;
+                const cleanCode = roomCode.trim().toUpperCase();
+                setRoomCode(cleanCode);
+                setRole('player');
+                connectToNetwork('player', cleanCode);
+            };
+
+            const submitAnswer = (idx) => {
+                if (hasAnswered) return;
+                setHasAnswered(true);
+                mqttClientRef.current.publish(`ncr/sst/${roomCode}/to_host`, JSON.stringify({
+                    type: 'ANSWER',
+                    payload: { name: playerName, answer: idx }
+                }));
+            };
+
+            // --- RENDER DES INTERFACES ---
+            if (!role) {
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+                        <div className="w-full max-w-md bg-bgPanel border border-gray-700 rounded-lg shadow-2xl overflow-hidden">
+                            <div className="bg-safetyYellow stripes h-4 w-full"></div>
+                            <div className="p-8">
+                                <h1 className="text-4xl text-center stencil-text text-safetyYellow mb-8">SST QUIZ LIVE</h1>
+                                
+                                <button onClick={initHost} className="w-full mb-6 bg-transparent border-2 border-safetyYellow text-safetyYellow hover:bg-safetyYellow hover:text-bgDark font-bold py-4 px-6 rounded transition duration-200 stencil-text text-xl">
+                                    [ ANIMER UNE SESSION ]
+                                </button>
+                                
+                                <div className="border-t border-gray-600 my-6"></div>
+                                
+                                <form onSubmit={handlePlayerJoin} className="space-y-4">
+                                    <input 
+                                        type="text" 
+                                        placeholder="CODE DE LA SALLE (4 LETTRES)" 
+                                        className="w-full bg-bgDark border border-gray-600 rounded p-4 text-center text-lg text-white font-bold tracking-widest focus:border-safetyYellow focus:outline-none"
+                                        value={roomCode}
+                                        onChange={(e) => setRoomCode(e.target.value)}
+                                        required
+                                    />
+                                    <input 
+                                        type="text" 
+                                        placeholder="VOTRE PRÉNOM" 
+                                        className="w-full bg-bgDark border border-gray-600
