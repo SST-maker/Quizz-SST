@@ -135,6 +135,34 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        // --- MISE À JOUR DE LA LOGIQUE DE CLASSEMENT (Dans ton script) ---
+
+function listenToScores() {
+    onValue(ref(db, 'scores'), (snapshot) => {
+        const data = snapshot.val() || {};
+        const list = document.getElementById('live-leaderboard');
+        list.innerHTML = '';
+        
+        // Trier les scores
+        const sorted = Object.values(data).sort((a, b) => b.score - a.score);
+        
+        sorted.forEach((student, index) => {
+            const row = document.createElement('div');
+            row.className = 'score-row';
+            
+            // Ajout du numéro de place et de la couronne pour le 1er
+            const crown = index === 0 ? "👑 " : "";
+            row.innerHTML = `
+                <span>${index + 1}. ${crown}${student.name}</span>
+                <span style="color:var(--apple-blue)">${student.score} pts</span>
+            `;
+            
+            if(index === 0) row.style.border = "2px solid var(--apple-green)"; // Mise en avant du 1er
+            list.appendChild(row);
+        });
+    });
+}
+
 
         // ASTUCE SECURITE : Clé découpée pour GitHub
         const firebaseConfig = {
@@ -513,15 +541,20 @@
         //         LOGIQUE ÉLÈVE (SOLO)
         // ==========================================
         window.nextSoloQuestion = function() {
-            currentIndex++;
-            if(currentIndex >= sessionQuestions.length) {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.getElementById('result-screen').classList.add('active');
-                document.getElementById('final-score').innerText = localScore;
-                return;
-            }
-            renderQuestionStudent(sessionQuestions[currentIndex], 'solo');
-        };
+    currentIndex++;
+    
+    // Si c'est la fin du module, on bloque tout
+    if(currentIndex >= sessionQuestions.length) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('result-screen').classList.add('active');
+        
+        // Afficher un message de félicitation personnalisé
+        document.getElementById('final-score').innerText = localScore;
+        return; // On arrête la fonction ici
+    }
+    
+    renderQuestionStudent(sessionQuestions[currentIndex], 'solo');
+};
 
 
         // ==========================================
