@@ -3,562 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>N.C.R Solutions - Quiz SST</title>
-    <style>
-        /* Design System - Apple Dark & N.C.R Solutions */
-        :root {
-            --bg-color: #000000;
-            --surface-color: #1c1c1e;
-            --text-primary: #f5f5f7;
-            --text-secondary: #86868b;
-            --accent-color: #0a84ff;
-            --timer-color: #ff9f0a;
+    <title>NCR Solutions - Quiz Live SST</title>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        // --- À REMPLIR AVEC TES CLÉS FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNQc4WX0KaHKdC2kGekEBrs2x6s9AZELw",
+            authDomain: "quizz-sst.firebaseapp.com",
+            databaseURL: "https://quizz-sst-default-rtdb.firebaseio.com",
+            projectId: "quizz-sst",
+            storageBucket: "quizz-sst.firebasestorage.app",
+            messagingSenderId: "432317114371",
+            appId: "1:432317114371:web:083f3534632418ef3c0636"
+        };
+
+        // Initialisation
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- LOGIQUE COMMUNE ---
+        const allQuestions = [
+            { q: "Quelle est la validité du certificat SST ?", a: ["12 mois", "24 mois", "36 mois", "Indéterminée"], c: 1 },
+            { q: "La première action est de :", a: ["Protéger", "Alerter", "Secourir", "Examiner"], c: 0 },
+            { q: "RCP adulte : rythme ?", a: ["30/2", "15/2", "20/2", "100/2"], c: 0 }
+            // Ajoute ici tes autres questions...
+        ];
+
+        let isHost = false;
+        let studentName = "";
+        let studentId = "";
+        let currentQIndex = -1;
+        let localScore = 0;
+
+        window.selectRole = function(role) {
+            document.getElementById('role-screen').classList.remove('active');
+            if(role === 'host') {
+                isHost = true;
+                document.getElementById('host-screen').classList.add('active');
+                // Réinitialiser la session côté serveur
+                set(ref(db, 'session'), { status: 'waiting', questionIndex: -1 });
+                set(ref(db, 'scores'), {});
+                listenToScores();
+            } else {
+                document.getElementById('student-login-screen').classList.add('active');
+            }
+        };
+
+        window.joinQuiz = function() {
+            studentName = document.getElementById('student-name').value;
+            if(!studentName) return alert("Prénom obligatoire");
             
-            /* Kahoot-style button colors (muted for dark mode) */
-            --btn-red: #ff453a;
-            --btn-blue: #0a84ff;
-            --btn-yellow: #ffd60a;
-            --btn-green: #32d74b;
+            studentId = 'student_' + Math.random().toString(36).substr(2, 9);
+            document.getElementById('student-login-screen').classList.remove('active');
+            document.getElementById('waiting-screen').classList.add('active');
+            
+            // Inscrire l'élève dans la base de données
+            set(ref(db, 'scores/' + studentId), { name: studentName, score: 0 });
+            
+            // Écouter les changements d'état du quiz
+            listenToQuizState();
+        };
+
+        // --- LOGIQUE FORMATEUR (HOST) ---
+        window.nextQuestionHost = function() {
+            currentQIndex++;
+            if(currentQIndex >= allQuestions.length) {
+                update(ref(db, 'session'), { status: 'finished' });
+                document.getElementById('host-question-text').innerText = "Quiz terminé ! Regardez le classement.";
+                return;
+            }
+            // Envoie l'ordre à tous les téléphones d'afficher la question
+            update(ref(db, 'session'), { status: 'playing', questionIndex: currentQIndex });
+            
+            document.getElementById('host-question-text').innerText = allQuestions[currentQIndex].q;
+        };
+
+        function listenToScores() {
+            onValue(ref(db, 'scores'), (snapshot) => {
+                const data = snapshot.val() || {};
+                const list = document.getElementById('live-leaderboard');
+                list.innerHTML = '';
+                
+                // Trier les scores du plus grand au plus petit
+                const sortedScores = Object.values(data).sort((a, b) => b.score - a.score);
+                
+                sortedScores.forEach(student => {
+                    list.innerHTML += `<div class="score-row"><span>${student.name}</span><span>${student.score} pts</span></div>`;
+                });
+            });
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
+        // --- LOGIQUE ÉLÈVE (STUDENT) ---
+        function listenToQuizState() {
+            onValue(ref(db, 'session'), (snapshot) => {
+                const state = snapshot.val();
+                if(!state) return;
+
+                if(state.status === 'playing' && state.questionIndex !== currentQIndex) {
+                    currentQIndex = state.questionIndex;
+                    showQuestionToStudent(currentQIndex);
+                } else if (state.status === 'finished') {
+                    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                    document.getElementById('result-screen').classList.add('active');
+                    document.getElementById('final-score').innerText = localScore;
+                }
+            });
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
+        function showQuestionToStudent(index) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('student-quiz-screen').classList.add('active');
+            
+            const qData = allQuestions[index];
+            document.getElementById('student-q-text').innerText = qData.q;
+            
+            const grid = document.getElementById('student-ans-grid');
+            grid.innerHTML = '';
+            qData.a.forEach((ans, i) => {
+                const btn = document.createElement('button');
+                btn.className = `answer-card color-${i}`;
+                btn.innerText = ans;
+                btn.onclick = () => submitAnswer(i, qData.c);
+                grid.appendChild(btn);
+            });
         }
 
-        /* Conteneur principal */
-        #app-container {
-            width: 100%;
-            max-width: 600px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+        function submitAnswer(selectedIndex, correctIndex) {
+            const btns = document.querySelectorAll('.answer-card');
+            btns.forEach(b => b.disabled = true);
+            
+            if(selectedIndex === correctIndex) {
+                localScore += 100;
+                // Envoyer le nouveau score au serveur en temps réel
+                update(ref(db, 'scores/' + studentId), { score: localScore });
+                btns[selectedIndex].style.border = "4px solid var(--apple-green)";
+            } else {
+                btns[selectedIndex].style.opacity = "0.3";
+                btns[correctIndex].style.border = "4px solid var(--apple-green)";
+            }
+
+            setTimeout(() => {
+                document.getElementById('student-quiz-screen').classList.remove('active');
+                document.getElementById('waiting-screen').classList.add('active');
+                document.getElementById('waiting-text').innerText = "En attente de la prochaine question...";
+            }, 2000);
         }
+    </script>
 
-        .screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            width: 100%;
-            animation: fadeIn 0.4s ease-out;
+    <style>
+        /* Design Apple Dark & NCR Solutions */
+        :root {
+            --bg-black: #000000; --card-dark: #1C1C1E; --apple-blue: #0A84FF;
+            --apple-green: #32D74B; --text-main: #FFFFFF; --text-sec: #8E8E93;
+            --glass: rgba(255, 255, 255, 0.1);
         }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'SF Pro Display', sans-serif; }
+        body { background: var(--bg-black); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; justify-content: center; }
+        
+        .screen { display: none; width: 100%; max-width: 600px; padding: 24px; flex-direction: column; height: 100%; }
+        .screen.active { display: flex; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .screen.active {
-            display: flex;
-        }
+        .btn-ncr { background: var(--apple-blue); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 18px; font-weight: 600; cursor: pointer; margin-bottom: 15px; width: 100%; transition: 0.2s; }
+        .btn-ncr:active { transform: scale(0.95); }
+        .input-ncr { background: var(--card-dark); border: 1px solid var(--glass); color: white; padding: 18px; border-radius: 16px; font-size: 18px; width: 100%; margin-bottom: 20px; outline: none; }
+        
+        /* Grille des réponses */
+        .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .answer-card { aspect-ratio: 1/1; border-radius: 20px; border: none; color: white; font-size: 18px; font-weight: 600; cursor: pointer; }
+        .color-0 { background: #E91E63; } .color-1 { background: #2196F3; } .color-2 { background: #FFC107; color: black; } .color-3 { background: #4CAF50; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Header / Logo */
-        h1 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 16px;
-            margin-bottom: 40px;
-            text-align: center;
-        }
-
-        /* Screen 1: Start */
-        #qr-container {
-            background: #fff;
-            padding: 15px;
-            border-radius: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-primary {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 14px;
-            padding: 18px 40px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .btn-primary:active {
-            transform: scale(0.96);
-        }
-
-        /* Screen 2: Quiz */
-        .header-quiz {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 20px;
-            padding: 10px 0;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .timer-bar-container {
-            width: 100%;
-            height: 6px;
-            background-color: var(--surface-color);
-            border-radius: 3px;
-            margin-bottom: 30px;
-            overflow: hidden;
-        }
-
-        #timer-bar {
-            height: 100%;
-            width: 100%;
-            background-color: var(--timer-color);
-            transition: width 1s linear;
-        }
-
-        #question-text {
-            font-size: 24px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 40px;
-            line-height: 1.3;
-        }
-
-        .answers-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            width: 100%;
-            flex-grow: 1;
-            max-height: 400px;
-        }
-
-        .answer-btn {
-            border: none;
-            border-radius: 16px;
-            padding: 20px;
-            font-size: 18px;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .answer-btn:active {
-            transform: scale(0.95);
-        }
-
-        .answer-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Couleurs des boutons style Kahoot */
-        .color-0 { background-color: var(--btn-red); }
-        .color-1 { background-color: var(--btn-blue); }
-        .color-2 { background-color: var(--btn-yellow); color: black; }
-        .color-3 { background-color: var(--btn-green); }
-
-        /* Screen 3: Results */
-        .score-circle {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: var(--surface-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 30px 0;
-            border: 4px solid var(--accent-color);
-        }
-
-        .score-number {
-            font-size: 48px;
-            font-weight: 800;
-        }
-
-        .feedback-text {
-            font-size: 20px;
-            margin-bottom: 40px;
-            text-align: center;
-        }
-
+        /* Classement en direct */
+        .score-row { background: var(--card-dark); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <div id="app-container">
-        
-        <!-- ÉCRAN 1 : ACCUEIL -->
-        <div id="start-screen" class="screen active">
-            <h1>N.C.R Solutions</h1>
-            <p class="subtitle">Formation SST - Test de connaissances</p>
-            
-            <div id="qr-container">
-                <!-- L'API génère un QR code pointant vers l'URL actuelle -->
-                <img id="qr-code" src="" alt="QR Code d'accès" width="200" height="200">
-            </div>
-            
-            <p style="margin-bottom: 20px; color: var(--text-secondary); text-align: center; font-size: 14px;">
-                Scannez le QR Code pour rejoindre depuis votre mobile, ou appuyez sur Commencer.
-            </p>
-            
-            <button class="btn-primary" onclick="startQuiz()">Commencer le Quiz</button>
-        </div>
-
-        <!-- ÉCRAN 2 : LE QUIZ -->
-        <div id="quiz-screen" class="screen">
-            <div class="header-quiz">
-                <span id="question-counter">Question 1/5</span>
-                <span id="score-live">Score : 0</span>
-            </div>
-            
-            <div class="timer-bar-container">
-                <div id="timer-bar"></div>
-            </div>
-
-            <h2 id="question-text">Chargement de la question...</h2>
-
-            <div class="answers-grid" id="answers-grid">
-                <!-- Les boutons seront générés en JS -->
-            </div>
-        </div>
-
-        <!-- ÉCRAN 3 : RÉSULTATS -->
-        <div id="result-screen" class="screen">
-            <h1>Résultats</h1>
-            <p class="subtitle">Bilan de votre formation SST</p>
-
-            <div class="score-circle">
-                <span class="score-number" id="final-score">0</span>
-                <span style="color: var(--text-secondary)">points</span>
-            </div>
-
-            <p id="feedback-text" class="feedback-text">Excellent travail !</p>
-
-            <button class="btn-primary" onclick="resetQuiz()">Recommencer</button>
-        </div>
-
+    <div id="role-screen" class="screen active" style="justify-content: center;">
+        <h1 style="text-align: center; margin-bottom: 40px;">NCR Solutions<br><span style="color:var(--apple-blue); font-size:20px;">Live Quiz</span></h1>
+        <button class="btn-ncr" onclick="selectRole('student')">Je suis Élève</button>
+        <button class="btn-ncr" style="background: var(--card-dark); color: var(--apple-blue);" onclick="selectRole('host')">Je suis le Formateur</button>
     </div>
 
-    <script>
-        // --- BASE DE DONNÉES DES QUESTIONS SST ---
-        const questions = [
-    {
-        question: "Dans le cadre du SST, quelle est la priorité absolue ?",
-        answers: ["Soigner la victime", "Protéger", "Alerter", "Réanimer"],
-        correct: 1
-    },
-    {
-        question: "Que signifie l'acronyme DAE ?",
-        answers: ["Défibrillateur Automatisé Externe", "Dispositif d'Aide à l'Examen", "Dossier d'Assistance Électrique", "Défibrillateur d'Aide à l'Urgence"],
-        correct: 0
-    },
-    {
-        question: "Lors de l'examen de la victime, que recherche-t-on en priorité ?",
-        answers: ["Une fracture", "Une déformation", "Une détresse vitale", "Une brûlure"],
-        correct: 2
-    },
-    {
-        question: "Quelle est la fréquence recommandée pour les compressions thoraciques lors d'une RCP ?",
-        answers: ["60 à 80 par minute", "80 à 100 par minute", "100 à 120 par minute", "120 à 150 par minute"],
-        correct: 2
-    },
-    {
-        question: "Comment vérifie-t-on la respiration d'une victime ?",
-        answers: ["En écoutant son cœur", "En regardant le soulèvement du thorax", "En prenant son pouls", "En lui parlant"],
-        correct: 1
-    },
-    {
-        question: "Quelle est la position d'attente pour une victime qui présente une plaie grave sans détresse vitale ?",
-        answers: ["Position assise", "Position allongée (position la plus confortable)", "Position latérale de sécurité", "Position debout"],
-        correct: 1
-    },
-    {
-        question: "Si une victime s'étouffe et ne peut plus parler, que devez-vous faire ?",
-        answers: ["Lui donner à boire", "Lui faire des claques dans le dos", "Attendre que cela passe", "Appeler les secours"],
-        correct: 1
-    },
-    {
-        question: "Dans quel cas doit-on réaliser la manœuvre de Heimlich ?",
-        answers: ["Arrêt cardiaque", "Obstruction totale des voies aériennes", "Inconscience", "Hémorragie"],
-        correct: 1
-    },
-    {
-        question: "Que faire face à une brûlure thermique simple ?",
-        answers: ["Appliquer de la glace", "Arroser à l'eau tempérée", "Appliquer du beurre", "Percer la cloque"],
-        correct: 1
-    },
-    {
-        question: "Quelle est la durée minimale d'arrosage pour une brûlure thermique ?",
-        answers: ["1 minute", "5 minutes", "10 minutes", "30 secondes"],
-        correct: 2
-    },
-    {
-        question: "Comment identifier une hémorragie externe grave ?",
-        answers: ["Sang qui coule en nappe", "Sang rouge vif qui jaillit par saccades", "Petit saignement diffus", "Aucune des réponses"],
-        correct: 1
-    },
-    {
-        question: "Quel est le numéro d'appel des secours d'urgence européen ?",
-        answers: ["15", "17", "18", "112"],
-        correct: 3
-    },
-    {
-        question: "Une victime inconsciente et qui ne respire pas est en :",
-        answers: ["Coma", "Arrêt cardiaque", "Syncope", "Crise d'épilepsie"],
-        correct: 1
-    },
-    {
-        question: "Que signifie l'acronyme PLS ?",
-        answers: ["Position Latérale de Secours", "Position de Libération de Sommeil", "Position Longitudinale de Sécurité", "Position Latérale de Sécurité"],
-        correct: 3
-    },
-    {
-        question: "En cas de suspicion d'atteinte du rachis (dos/cou), que faut-il éviter ?",
-        answers: ["Maintenir la tête", "Appeler les secours", "Déplacer la victime inutilement", "Rassurer la victime"],
-        correct: 2
-    },
-    {
-        question: "Pour une brûlure chimique sur la peau, quelle est la priorité ?",
-        answers: ["Neutraliser avec un produit", "Arroser abondamment à l'eau", "Appliquer un pansement", "Ne rien faire"],
-        correct: 1
-    },
-    {
-        question: "Lors de la RCP, où placer les mains sur le thorax ?",
-        answers: ["Sur le côté gauche", "Sur la partie inférieure du sternum", "Au centre de la poitrine", "Sur le haut du sternum"],
-        correct: 1
-    },
-    {
-        question: "Quelle est la première chose à faire après avoir allumé le DAE ?",
-        answers: ["Poser les électrodes", "Attendre l'arrivée des secours", "Délivrer un choc", "Suivre les consignes vocales"],
-        correct: 3
-    },
-    {
-        question: "Le malaise est une sensation pénible indiquant :",
-        answers: ["Une maladie grave", "Un trouble soudain du fonctionnement de l'organisme", "Une fatigue passagère", "Une plaie"],
-        correct: 1
-    },
-    {
-        question: "Quelle est la durée recommandée de la formation initiale SST ?",
-        answers: ["7 heures", "10 heures", "14 heures", "20 heures"],
-        correct: 2
-    },
-            {
-                question: "Quelle est la première action à réaliser face à une situation d'accident ?",
-                answers: [
-                    "Secourir la victime",
-                    "Alerter les secours (15, 18, 112)",
-                    "Protéger la zone de l'accident",
-                    "Examiner la victime"
-                ],
-                correct: 2
-            },
-            {
-                question: "Face à un saignement abondant, que devez-vous faire en priorité ?",
-                answers: [
-                    "Faire un garrot immédiatement",
-                    "Laver la plaie à l'eau",
-                    "Comprimer directement l'endroit qui saigne",
-                    "Donner à boire à la victime"
-                ],
-                correct: 2
-            },
-            {
-                question: "Une victime est inconsciente mais respire normalement. Quelle est la bonne position ?",
-                answers: [
-                    "Sur le dos, jambes surélevées",
-                    "Assise",
-                    "Position Latérale de Sécurité (PLS)",
-                    "Sur le ventre"
-                ],
-                correct: 2
-            },
-            {
-                question: "Combien de compressions thoraciques alternent avec les insufflations lors d'une RCP chez l'adulte ?",
-                answers: [
-                    "15 compressions / 2 insufflations",
-                    "30 compressions / 2 insufflations",
-                    "5 compressions / 1 insufflation",
-                    "20 compressions / 2 insufflations"
-                ],
-                correct: 1
-            }
-        ];
+    <div id="student-login-screen" class="screen" style="justify-content: center;">
+        <h2>Rejoindre la session</h2>
+        <p style="color:var(--text-sec); margin-bottom: 20px;">Entrez votre prénom pour le classement</p>
+        <input type="text" id="student-name" class="input-ncr" placeholder="Votre prénom...">
+        <button class="btn-ncr" onclick="joinQuiz()">Rejoindre</button>
+    </div>
 
-        // --- VARIABLES D'ÉTAT ---
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let timeLeft = 15; // Temps en secondes par question
-        let timerInterval;
-        const totalQuestions = questions.length;
+    <div id="waiting-screen" class="screen" style="justify-content: center; align-items: center; text-align: center;">
+        <h2 id="waiting-text">Connecté ! Regardez l'écran du formateur.</h2>
+        <p style="color:var(--text-sec); margin-top: 10px;">Le quiz va bientôt commencer.</p>
+    </div>
 
-        // --- INITIALISATION ---
-        window.onload = () => {
-            // Générer le QR code basé sur l'URL actuelle (pratique quand hébergé sur GitHub Pages)
-            const currentUrl = encodeURIComponent(window.location.href);
-            document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${currentUrl}`;
-        };
+    <div id="student-quiz-screen" class="screen">
+        <h2 id="student-q-text" style="text-align: center; margin: 40px 0;">Question ?</h2>
+        <div class="answers-grid" id="student-ans-grid"></div>
+    </div>
 
-        // --- NAVIGATION ENTRE LES ÉCRANS ---
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
+    <div id="result-screen" class="screen" style="justify-content: center; text-align: center;">
+        <h2>Terminé !</h2>
+        <p style="color:var(--text-sec);">Votre score final :</p>
+        <div style="font-size: 72px; font-weight: 800; color: var(--apple-green);" id="final-score">0</div>
+    </div>
 
-        // --- LOGIQUE DU QUIZ ---
-        function startQuiz() {
-            currentQuestionIndex = 0;
-            score = 0;
-            document.getElementById('score-live').innerText = `Score : ${score}`;
-            showScreen('quiz-screen');
-            loadQuestion();
-        }
+    <div id="host-screen" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Tableau de bord</h2>
+            <button class="btn-ncr" style="width: auto; padding: 10px 20px;" onclick="nextQuestionHost()">Question Suivante ➡️</button>
+        </div>
+        <h3 id="host-question-text" style="color:var(--apple-blue); margin-bottom: 30px;">En attente de lancement...</h3>
+        
+        <h3 style="margin-bottom: 15px; color:var(--text-sec);">Classement en direct 🏆</h3>
+        <div id="live-leaderboard" style="flex-grow: 1; overflow-y: auto;">
+            <p style="color:var(--text-sec); text-align:center;">En attente de joueurs...</p>
+        </div>
+    </div>
 
-        function loadQuestion() {
-            clearInterval(timerInterval);
-            const q = questions[currentQuestionIndex];
-            
-            document.getElementById('question-counter').innerText = `Question ${currentQuestionIndex + 1}/${totalQuestions}`;
-            document.getElementById('question-text').innerText = q.question;
-            
-            const grid = document.getElementById('answers-grid');
-            grid.innerHTML = ''; // Nettoyer les anciennes réponses
-
-            q.answers.forEach((answerText, index) => {
-                const btn = document.createElement('button');
-                btn.className = `answer-btn color-${index}`;
-                btn.innerText = answerText;
-                btn.onclick = () => selectAnswer(index);
-                grid.appendChild(btn);
-            });
-
-            startTimer();
-        }
-
-        function startTimer() {
-            timeLeft = 15; // Reset du temps
-            const timerBar = document.getElementById('timer-bar');
-            
-            // Forcer le reflow pour relancer l'animation CSS
-            timerBar.style.transition = 'none';
-            timerBar.style.width = '100%';
-            timerBar.style.backgroundColor = 'var(--timer-color)';
-            setTimeout(() => {
-                timerBar.style.transition = 'width 15s linear, background-color 15s linear';
-                timerBar.style.width = '0%';
-                timerBar.style.backgroundColor = '#ff453a'; // Devient rouge à la fin
-            }, 50);
-
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    handleTimeOut();
-                }
-            }, 1000);
-        }
-
-        function selectAnswer(selectedIndex) {
-            clearInterval(timerInterval);
-            const q = questions[currentQuestionIndex];
-            const buttons = document.querySelectorAll('.answer-btn');
-            
-            // Désactiver tous les boutons
-            buttons.forEach(btn => btn.disabled = true);
-
-            // Appliquer les styles visuels pour valider/invalider
-            if (selectedIndex === q.correct) {
-                // Bonne réponse
-                buttons[selectedIndex].style.boxShadow = '0 0 20px #32d74b';
-                buttons[selectedIndex].style.transform = 'scale(1.05)';
-                score += 100 + (timeLeft * 10); // Bonus de rapidité
-                document.getElementById('score-live').innerText = `Score : ${score}`;
-            } else {
-                // Mauvaise réponse
-                buttons[selectedIndex].style.opacity = '0.3';
-                // Mettre en évidence la bonne réponse
-                buttons[q.correct].style.boxShadow = '0 0 20px #32d74b';
-                buttons[q.correct].style.transform = 'scale(1.05)';
-            }
-
-            setTimeout(nextQuestion, 2000);
-        }
-
-        function handleTimeOut() {
-            const q = questions[currentQuestionIndex];
-            const buttons = document.querySelectorAll('.answer-btn');
-            buttons.forEach(btn => btn.disabled = true);
-            
-            // Mettre en évidence la bonne réponse
-            buttons[q.correct].style.boxShadow = '0 0 20px #32d74b';
-            buttons[q.correct].style.transform = 'scale(1.05)';
-
-            setTimeout(nextQuestion, 2000);
-        }
-
-        function nextQuestion() {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < totalQuestions) {
-                loadQuestion();
-            } else {
-                endQuiz();
-            }
-        }
-
-        function endQuiz() {
-            showScreen('result-screen');
-            document.getElementById('final-score').innerText = score;
-            
-            const feedback = document.getElementById('feedback-text');
-            const maxScorePossible = totalQuestions * 250; // Approximatif
-            
-            if (score > (maxScorePossible * 0.8)) {
-                feedback.innerText = "Excellent ! Vous maîtrisez parfaitement les gestes qui sauvent.";
-                feedback.style.color = "var(--btn-green)";
-            } else if (score > (maxScorePossible * 0.5)) {
-                feedback.innerText = "Bon travail, mais quelques révisions SST sont nécessaires.";
-                feedback.style.color = "var(--btn-yellow)";
-            } else {
-                feedback.innerText = "Attention, vos connaissances SST doivent être consolidées.";
-                feedback.style.color = "var(--btn-red)";
-            }
-        }
-
-        function resetQuiz() {
-            startQuiz();
-        }
-    </script>
 </body>
 </html>
