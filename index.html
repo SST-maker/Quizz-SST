@@ -6,80 +6,405 @@
     <title>NCR Solutions - Quiz Live SST</title>
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&display=swap" rel="stylesheet">
     
+    <style>
+        /* Design Apple Dark & NCR Solutions */
+        :root {
+            --bg-black: #000000; --card-dark: #1C1C1E; --apple-blue: #0A84FF;
+            --apple-green: #32D74B; --apple-red: #FF453A; --apple-orange: #FF9F0A;
+            --text-main: #FFFFFF; --text-sec: #8E8E93;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'SF Pro Display', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-black); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; justify-content: center; }
+        
+        /* Écrans et transitions */
+        .screen { display: none; width: 100%; max-width: 600px; padding: 24px; flex-direction: column; height: 100%; }
+        .screen.active { display: flex; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Boutons et Inputs */
+        .btn-ncr { background: var(--apple-blue); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 18px; font-weight: 600; cursor: pointer; margin-bottom: 15px; width: 100%; transition: transform 0.2s, background 0.2s; text-align: center; }
+        .btn-ncr:active { transform: scale(0.96); }
+        .input-ncr { background: var(--card-dark); border: 1px solid var(--glass); color: white; padding: 18px; border-radius: 16px; font-size: 18px; width: 100%; margin-bottom: 20px; outline: none; transition: border 0.3s; }
+        .input-ncr:focus { border-color: var(--apple-blue); }
+        
+        /* Grille des réponses */
+        .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+        .answer-card { aspect-ratio: 1/0.8; border-radius: 20px; border: 4px solid transparent; color: white; font-size: 17px; font-weight: 600; padding: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .answer-card:active { transform: scale(0.95); }
+        .color-0 { background: #E91E63; } .color-1 { background: #2196F3; } .color-2 { background: #FFC107; color: black; } .color-3 { background: #4CAF50; }
+
+        /* Chronomètre */
+        .timer-container { width: 100%; height: 6px; background: var(--glass); border-radius: 3px; margin: 15px 0; overflow: hidden; }
+        #timer-bar { width: 100%; height: 100%; background: var(--apple-blue); transition: width 15s linear; }
+
+        /* UI Formateur */
+        .btn-module { background: var(--card-dark); border: 1px solid var(--glass); border-radius: 16px; padding: 16px; margin-bottom: 10px; color: white; text-align: left; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; }
+        .btn-module:active { transform: scale(0.98); background: var(--glass); }
+        .module-icon { width: 32px; height: 32px; background: var(--glass); border-radius: 8px; margin-right: 15px; display: flex; align-items: center; justify-content: center; color: var(--apple-blue); font-size: 14px; }
+        .score-row { background: var(--card-dark); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 600; border: 1px solid var(--glass); }
+        
+        .host-ans-card { background: var(--glass); border-radius: 12px; padding: 10px; font-size: 14px; text-align: center; margin-top: 5px; border: 2px solid transparent; }
+    </style>
+</head>
+<body>
+
+    <div id="setup-screen" class="screen" style="justify-content: center; overflow-y: auto;">
+        <h2 style="margin-bottom: 10px;">Sécurité N.C.R Solutions</h2>
+        <p style="color:var(--text-sec); margin-bottom: 20px; font-size:14px;">Collez la configuration Firebase (JSON) pour initialiser votre base de données privée.</p>
+        <textarea id="firebase-config-input" class="input-ncr" style="height: 180px; font-family: monospace; font-size: 12px;" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "databaseURL": "...",\n  "projectId": "...",\n  "storageBucket": "...",\n  "messagingSenderId": "...",\n  "appId": "..."\n}'></textarea>
+        <button class="btn-ncr" onclick="saveConfiguration()">Initialiser le système</button>
+    </div>
+
+    <div id="role-screen" class="screen active" style="justify-content: center;">
+        <h1 style="text-align: center; margin-bottom: 40px; letter-spacing: -0.5px;">NCR <span>Solutions</span><br><span style="color:var(--apple-blue); font-size:20px;">Formation Interactive</span></h1>
+        <button class="btn-ncr" onclick="selectRole('student')">Je suis un Élève</button>
+        <button class="btn-ncr" style="background: var(--card-dark); color: var(--apple-blue); border: 1px solid var(--apple-blue);" onclick="window.checkHostInit()">Je suis le Formateur</button>
+    </div>
+
+    <div id="module-selection-screen" class="screen">
+        <h2 style="margin-bottom: 20px;">Choisissez un Module</h2>
+        <div style="flex-grow:1; overflow-y:auto; padding-bottom:20px;">
+            <button class="btn-module" onclick="startModule('all')"><div class="module-icon">EX</div> Test Général (Mixte)</button>
+            <button class="btn-module" onclick="startModule(0)"><div class="module-icon">01</div> Module 1 : Rôle du SST</button>
+            <button class="btn-module" onclick="startModule(1)"><div class="module-icon">02</div> Module 2 : Protéger</button>
+            <button class="btn-module" onclick="startModule(2)"><div class="module-icon">03</div> Module 3 : Examiner</button>
+            <button class="btn-module" onclick="startModule(3)"><div class="module-icon">04</div> Module 4 : Alerter</button>
+            <button class="btn-module" onclick="startModule(4)"><div class="module-icon">05</div> Module 5 : Secourir</button>
+            <button class="btn-module" onclick="startModule(5)"><div class="module-icon">06</div> Module 6 : Prévention</button>
+            <button class="btn-module" onclick="startModule(6)"><div class="module-icon">07</div> Module 7 : Risques Pro</button>
+            <button class="btn-module" onclick="startModule(7)"><div class="module-icon">08</div> Module 8 : Maîtrise</button>
+        </div>
+    </div>
+
+    <div id="host-screen" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 id="host-module-title">Tableau de bord</h2>
+            <button class="btn-ncr" style="width: auto; padding: 10px 20px; margin: 0;" onclick="window.nextQuestionHost()">Suivante ➡️</button>
+        </div>
+        
+        <div style="background: var(--card-dark); border: 1px solid var(--glass); border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+            <h3 id="host-question-text" style="color:var(--apple-blue); margin-bottom: 15px; font-size: 18px;">En attente de lancement...</h3>
+            <div id="host-ans-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
+        </div>
+        
+        <h3 style="margin-bottom: 10px; color:var(--text-sec); font-size: 16px;">Classement en direct 🏆</h3>
+        <div id="live-leaderboard" style="flex-grow: 1; overflow-y: auto;">
+            <p style="color:var(--text-sec); text-align:center;">En attente des connexions...</p>
+        </div>
+        <button class="btn-ncr" style="background:transparent; color:var(--text-sec); padding:10px; margin-top:10px; font-size:14px; border: 1px solid var(--glass);" onclick="localStorage.clear(); location.reload();">Réinitialiser les clés de sécurité</button>
+    </div>
+
+
+    <div id="student-login-screen" class="screen" style="justify-content: center;">
+        <h2>Rejoindre la session</h2>
+        <p style="color:var(--text-sec); margin-bottom: 20px;">Saisissez votre prénom pour le classement.</p>
+        <input type="text" id="student-name" class="input-ncr" placeholder="Prénom...">
+        <button class="btn-ncr" onclick="window.joinQuiz()">Entrer dans la salle</button>
+    </div>
+
+    <div id="waiting-screen" class="screen" style="justify-content: center; align-items: center; text-align: center;">
+        <h2 id="waiting-text" style="color: var(--apple-blue);">Connecté !</h2>
+        <p style="color:var(--text-sec); margin-top: 10px;">Regardez le formateur, le quiz va commencer.</p>
+    </div>
+
+    <div id="student-quiz-screen" class="screen">
+        <div class="timer-container"><div id="timer-bar"></div></div>
+        <h2 id="student-q-text" style="text-align: center; margin: 20px 0 40px 0; font-size: 24px;">Préparation...</h2>
+        <div class="answers-grid" id="student-ans-grid"></div>
+    </div>
+
+    <div id="result-screen" class="screen" style="justify-content: center; text-align: center;">
+        <h2>Session Terminée !</h2>
+        <p style="color:var(--text-sec); margin-top: 10px;">Votre score final :</p>
+        <div style="font-size: 80px; font-weight: 800; color: var(--apple-green); margin: 20px 0;" id="final-score">0</div>
+        <button class="btn-ncr" style="background: var(--card-dark); color: white; border: 1px solid var(--glass);" onclick="location.reload()">Quitter</button>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        // --- À REMPLIR AVEC TES CLÉS FIREBASE ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyBNQc4WX0KaHKdC2kGekEBrs2x6s9AZELw",
-            authDomain: "quizz-sst.firebaseapp.com",
-            databaseURL: "https://quizz-sst-default-rtdb.firebaseio.com",
-            projectId: "quizz-sst",
-            storageBucket: "quizz-sst.firebasestorage.app",
-            messagingSenderId: "432317114371",
-            appId: "1:432317114371:web:083f3534632418ef3c0636"
-        };
-
-        // Initialisation
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        // --- LOGIQUE COMMUNE ---
+        // LES 160 QUESTIONS (Référentiel INRS rigoureux)
         const allQuestions = [
-            { q: "Quelle est la validité du certificat SST ?", a: ["12 mois", "24 mois", "36 mois", "Indéterminée"], c: 1 },
-            { q: "La première action est de :", a: ["Protéger", "Alerter", "Secourir", "Examiner"], c: 0 },
-            { q: "RCP adulte : rythme ?", a: ["30/2", "15/2", "20/2", "100/2"], c: 0 }
-            // Ajoute ici tes autres questions...
+            // MODULE 1 (0-19)
+            { q: "Le SST est un acteur de quelle partie de la santé au travail ?", a: ["Médecine du travail", "Prévention et secours", "Inspection", "Administration"], c: 1 },
+            { q: "Le rôle du SST est-il limité à son entreprise ?", a: ["Oui", "Non, citoyen partout", "Heures de travail", "À domicile"], c: 1 },
+            { q: "Formation SST obligatoire pour l'employeur ?", a: ["Non", "Oui (sécurité)", "Bâtiment", "+50 salariés"], c: 1 },
+            { q: "Validité du certificat SST ?", a: ["12 mois", "24 mois", "36 mois", "5 ans"], c: 1 },
+            { q: "Le SST doit-il porter assistance si sa vie est en danger ?", a: ["Oui", "Non, se protéger d'abord", "Avis du patron", "Attendre pompiers"], c: 1 },
+            { q: "Qui est responsable de la sécurité dans l'entreprise ?", a: ["Le SST", "L'employeur", "Le salarié", "L'État"], c: 1 },
+            { q: "Le SST a une obligation de :", a: ["Moyens", "Résultats", "Soins médicaux", "Rien"], c: 0 },
+            { q: "Le SST peut-il administrer des médicaments ?", a: ["Oui", "Non", "Si prescrits", "Seulement aspirine"], c: 1 },
+            { q: "Le registre d'accidents bénins remplace-t-il la déclaration CPAM ?", a: ["Oui, pour les petits soins", "Non", "Seulement en usine", "Parfois"], c: 0 },
+            { q: "Le MAC SST signifie :", a: ["Mise À niveau Continue", "Maintien et Actualisation des Compétences", "Module d'Action", "Rien"], c: 1 },
+            { q: "Un SST peut refuser d'intervenir si :", a: ["Il n'a pas envie", "Il y a un danger grave et imminent pour lui", "C'est hors horaires", "La victime est désagréable"], c: 1 },
+            { q: "L'employeur doit mettre à disposition :", a: ["Un défibrillateur (obligatoire partout)", "Du matériel de premiers secours adapté", "Une ambulance", "Rien"], c: 1 },
+            { q: "Le temps de formation SST est :", a: ["Pris sur le temps libre", "Considéré comme temps de travail", "Déduit du salaire", "Rattrapé"], c: 1 },
+            { q: "Le SST collabore en interne avec :", a: ["La médecine du travail", "Les pompiers", "Le SAMU", "La police"], c: 0 },
+            { q: "Qui valide le certificat SST ?", a: ["L'employeur", "Le formateur certifié", "Le médecin", "La préfecture"], c: 1 },
+            { q: "Le SST a un rôle dans la prévention ?", a: ["Non", "Oui, il repère les dangers", "Uniquement si on lui demande", "Seulement le chef"], c: 1 },
+            { q: "Le SST doit-il garder le secret médical ?", a: ["Oui, c'est une obligation de discrétion", "Non, il doit tout dire", "Seulement pour les cadres", "Pas de règle"], c: 0 },
+            { q: "La trousse de secours doit être :", a: ["Fermée à clé", "Accessible et signalée", "Dans le bureau du chef", "Cachée"], c: 1 },
+            { q: "Le SST est-il protégé pénalement s'il aggrave la blessure involontairement ?", a: ["Non, il va en prison", "Oui, loi du Bon Samaritain", "Seulement s'il paie", "Jamais"], c: 1 },
+            { q: "Le SST est :", a: ["Un médecin", "Un secouriste", "Un préventeur-secouriste", "Un pompier"], c: 2 },
+            // MODULE 2 (20-39)
+            { q: "Quelle est la 1ère étape de l'action de protection ?", a: ["Supprimer le danger", "S'exposer", "Alerter", "Examiner"], c: 0 },
+            { q: "Si le danger ne peut être supprimé :", a: ["Isoler la zone", "Rester à côté", "Ignorer", "Porter la victime"], c: 0 },
+            { q: "Objectif de la protection :", a: ["Éviter le sur-accident", "Gagner du temps", "Ranger", "Aider les pompiers"], c: 0 },
+            { q: "Face à un câble haute tension au sol :", a: ["Je l'écarte avec un bois sec", "J'isole la zone", "Je coupe au compteur", "Je tire la victime"], c: 1 },
+            { q: "Un dégagement d'urgence se fait si :", a: ["La victime est lourde", "Danger vital, réel et immédiat", "Pour la mettre à l'ombre", "Toujours"], c: 1 },
+            { q: "Lors d'un dégagement, la priorité est :", a: ["Aller vite", "La sécurité du sauveteur", "Prendre les affaires", "Ne pas faire mal"], c: 1 },
+            { q: "Signalisation d'un accident de la route :", a: ["Gilet et triangle à 30m minimum", "Rien", "Allumer la radio", "Crier"], c: 0 },
+            { q: "Dans un local enfumé :", a: ["J'entre en retenant ma respiration", "Je n'entre pas, danger mortel", "J'entre avec un linge", "J'allume la lumière"], c: 1 },
+            { q: "Danger mécanique (machine) :", a: ["Appuyer sur l'arrêt d'urgence", "Tirer le bras", "Crier", "Verser de l'eau"], c: 0 },
+            { q: "La victime peut-elle participer à sa protection ?", a: ["Non, jamais", "Oui, si elle est consciente", "Uniquement si elle marche", "Interdit"], c: 1 },
+            { q: "Que faire face à une fuite de gaz ?", a: ["Allumer la lumière", "Ouvrir les fenêtres sans créer d'étincelle", "Utiliser son téléphone", "Fuir"], c: 1 },
+            { q: "Peut-on utiliser l'ascenseur pendant un incendie ?", a: ["Oui", "Non", "Seulement au RDC", "Si vide"], c: 1 },
+            { q: "Une atmosphère toxique est un danger :", a: ["Contrôlable", "Incontrôlable (dégagement urgent)", "Mineur", "Imaginaire"], c: 1 },
+            { q: "Le balisage sert à :", a: ["Décorer", "Avertir les autres du danger", "Aider les secours", "Rien"], c: 1 },
+            { q: "Face à une agression armée :", a: ["Je désarme", "Je fuis et me cache", "Je discute", "Je filme"], c: 1 },
+            { q: "L'arrêt d'urgence (Coup de poing) :", a: ["Coupe l'énergie de la machine", "Appelle les secours", "Déclenche l'alarme incendie", "Rien"], c: 0 },
+            { q: "Si la victime est sous un objet lourd isolable :", a: ["Je dégage l'objet", "Je tire la victime", "J'attends", "Je crie"], c: 0 },
+            { q: "Le sauveteur doit être :", a: ["Héroïque", "Prudent", "Rapide", "Fort"], c: 1 },
+            { q: "Protéger, c'est :", a: ["Analyser l'environnement", "Toucher la victime", "Faire un massage", "Appeler"], c: 0 },
+            { q: "La règle d'or de la protection :", a: ["Ne pas créer de nouvelle victime", "Aller le plus vite", "Faire un garrot", "Rien"], c: 0 },
+            // MODULE 3 (40-59)
+            { q: "Ordre de l'examen de la victime :", a: ["Saigne, S'étouffe, Répond, Respire", "Respire, Répond", "Saigne, Respire", "Aléatoire"], c: 0 },
+            { q: "Comment vérifier la conscience ?", a: ["Gifle", "Secouer les épaules et poser des questions simples", "Piquer", "Jeter de l'eau"], c: 1 },
+            { q: "Comment vérifier la respiration ?", a: ["Miroir sous le nez", "Regarder, écouter, sentir pendant 10s", "Prendre le pouls", "Crier"], c: 1 },
+            { q: "Si la victime saigne abondamment :", a: ["J'examine le reste d'abord", "J'agis immédiatement (compression)", "J'appelle", "J'attends"], c: 1 },
+            { q: "Une victime qui ne répond pas mais respire est :", a: ["En arrêt cardiaque", "Inconsciente", "Fatiguée", "Morte"], c: 1 },
+            { q: "Si la victime répond 'Oui ça va' :", a: ["Je m'en vais", "Je continue l'examen (malaise, brûlure...)", "Je fais un massage", "Je la lève"], c: 1 },
+            { q: "Le pouls doit-il être pris par le SST ?", a: ["Oui, systématiquement", "Non, inutile et perte de temps", "Seulement au poignet", "Si on a le temps"], c: 1 },
+            { q: "La bascule de la tête en arrière sert à :", a: ["Faire joli", "Libérer les voies aériennes", "Vérifier les yeux", "L'endormir"], c: 1 },
+            { q: "Une respiration 'anormale' (gasps) chez une victime inconsciente :", a: ["Est normale", "Est assimilée à un arrêt respiratoire", "Est un rhume", "Asthme"], c: 1 },
+            { q: "Combien de temps maximum pour vérifier la respiration ?", a: ["5 secondes", "10 secondes", "30 secondes", "1 minute"], c: 1 },
+            { q: "Faut-il déshabiller la victime ?", a: ["Toujours", "Non, sauf nécessité absolue (brûlure chimique)", "Seulement le haut", "Interdit"], c: 1 },
+            { q: "Signe d'étouffement total :", a: ["Tousse fort", "Peut parler", "Garde la bouche ouverte, ne peut ni parler ni tousser", "Pleure"], c: 2 },
+            { q: "L'examen permet de :", a: ["Déterminer l'action prioritaire", "Faire un diagnostic médical", "Prescrire des soins", "Rien"], c: 0 },
+            { q: "Victime consciente qui se plaint d'une douleur vive à la poitrine :", a: ["Estomac", "Signe de malaise cardiaque", "Stress", "Rien"], c: 1 },
+            { q: "Victime ayant une difficulté à parler et visage déformé :", a: ["Fatigue", "Signe d'AVC", "Allergie", "Rire"], c: 1 },
+            { q: "On examine la victime :", a: ["Sans la déplacer (si danger écarté)", "En l'asseyant systématiquement", "En la mettant sur le ventre", "Debout"], c: 0 },
+            { q: "Si la victime a plusieurs détresses (saigne + ne respire pas) :", a: ["Je traite la respiration d'abord", "Je stoppe l'hémorragie d'abord", "J'appelle", "J'attends"], c: 1 },
+            { q: "La vérification de l'étouffement se fait :", a: ["Visuellement et auditivement", "En tâtant le cou", "Avec une radio", "En la secouant"], c: 0 },
+            { q: "Une personne qui fait une crise convulsive :", a: ["Je la bloque", "Je la protège des chocs et n'entrave pas ses mouvements", "Je mets un doigt dans la bouche", "Rien"], c: 1 },
+            { q: "L'examen est :", a: ["Long", "Rapide et précis", "Facultatif", "Inutile"], c: 1 },
+            // MODULE 4 (60-79)
+            { q: "Numéro du SAMU :", a: ["15", "17", "18", "112"], c: 0 },
+            { q: "Numéro d'urgence Européen :", a: ["15", "17", "18", "112"], c: 3 },
+            { q: "Numéro d'urgence pour sourds et malentendants (SMS) :", a: ["114", "115", "119", "116"], c: 0 },
+            { q: "Dans le message d'alerte, que donner en premier ?", a: ["Mon nom", "Le lieu précis de l'intervention", "L'âge de la victime", "L'heure"], c: 1 },
+            { q: "Que faire après avoir transmis les informations ?", a: ["Raccrocher vite", "Attendre les instructions du régulateur", "Aller chercher un café", "Fuir"], c: 1 },
+            { q: "Qui déclenche l'alerte interne dans l'entreprise ?", a: ["Le témoin ou le SST selon la procédure", "Le PDG", "Le maire", "Personne"], c: 0 },
+            { q: "Doit-on préciser le nombre de victimes ?", a: ["Oui", "Non", "Seulement si > 5", "Si on me demande"], c: 0 },
+            { q: "Qu'est-ce qu'une consigne d'urgence ?", a: ["Un conseil d'ami", "Une procédure spécifique à l'entreprise", "Un livre", "Une loi"], c: 1 },
+            { q: "En cas d'arrêt cardiaque, que demander lors de l'alerte ?", a: ["Un DAE", "De l'eau", "Une civière", "Un médecin"], c: 0 },
+            { q: "Le message d'alerte doit décrire :", a: ["L'historique médical complet", "La nature du problème et l'état de la victime", "Les fautifs", "Le coût"], c: 1 },
+            { q: "Peut-on faire alerter par un témoin ?", a: ["Non", "Oui, en lui donnant des consignes claires", "Jamais", "S'il insiste"], c: 1 },
+            { q: "Le régulateur du SAMU est :", a: ["Un policier", "Un médecin régulateur ou assistant (ARM)", "Un standardiste lambda", "Un robot"], c: 1 },
+            { q: "L'alerte aux populations (sirène) prévient de :", a: ["Accident mineur", "Risque majeur (chimique, météo...)", "Incendie local", "Fin du travail"], c: 1 },
+            { q: "Que faire si la communication coupe ?", a: ["Abandonner", "Rappeler ou attendre d'être rappelé", "Chercher un autre téléphone", "Pleurer"], c: 1 },
+            { q: "Alerter permet de :", a: ["Faire venir les secours adaptés", "Se débarrasser du problème", "Avoir une preuve", "Faire peur"], c: 0 },
+            { q: "Le 18 correspond à :", a: ["SAMU", "Police", "Pompiers", "Secours en mer"], c: 2 },
+            { q: "Le 15 intervient principalement pour :", a: ["Le feu", "La détresse médicale", "L'ordre public", "Les animaux"], c: 1 },
+            { q: "Si je suis seul face à un arrêt cardiaque (adulte) :", a: ["J'alerte d'abord, puis je masse", "Je masse 5 min, puis j'alerte", "Je cherche un DAE à 1km", "J'attends"], c: 0 },
+            { q: "Le message d'alerte doit être :", a: ["Vague", "Clair, concis et précis", "Très long", "Crié"], c: 1 },
+            { q: "Pour guider les secours :", a: ["J'envoie quelqu'un les attendre", "Je mets des panneaux", "Je laisse faire", "J'allume un feu"], c: 0 },
+            // MODULE 5 (80-99)
+            { q: "Saignement abondant (hémorragie) : geste ?", a: ["Comprimer directement la plaie", "Mettre sous l'eau", "Faire un garrot direct", "Donner un cachet"], c: 0 },
+            { q: "Étouffement total :", a: ["5 claques dans le dos puis 5 compressions abdominales", "Donner à boire", "Allonger", "Rien"], c: 0 },
+            { q: "Victime inconsciente qui respire :", a: ["Assise", "Position Latérale de Sécurité (PLS)", "Sur le dos", "Debout"], c: 1 },
+            { q: "Pourquoi la PLS ?", a: ["Pour qu'elle dorme bien", "Empêcher la langue et les vomissements de bloquer les voies", "Pour la chaleur", "Pour le dos"], c: 1 },
+            { q: "Arrêt cardiaque : rythme du massage (adulte) ?", a: ["15 comp / 2 insufflations", "30 comp / 2 insufflations", "100 comp continues", "10/1"], c: 1 },
+            { q: "Où positionner les mains pour le massage (adulte) ?", a: ["Ventre", "Milieu de la poitrine (moitié inférieure du sternum)", "Cœur à gauche", "Cou"], c: 1 },
+            { q: "Profondeur des compressions (adulte) :", a: ["1-2 cm", "5-6 cm", "10 cm", "Pas d'importance"], c: 1 },
+            { q: "Vitesse des compressions :", a: ["60/min", "100 à 120/min", "150/min", "200/min"], c: 1 },
+            { q: "Utilisation du DAE :", a: ["Dès qu'il est disponible", "Après 10 min", "Seulement par un médecin", "Si la victime respire"], c: 0 },
+            { q: "Que faire pendant l'analyse du DAE ?", a: ["Masser plus fort", "Ne pas toucher la victime", "Lui parler", "Débrancher"], c: 1 },
+            { q: "Plaie simple :", a: ["Laver à l'eau et au savon", "Mettre de l'alcool", "Mettre de la terre", "Laisser saigner"], c: 0 },
+            { q: "Brûlure thermique : règle d'or ?", a: ["Mettre du beurre", "Refroidir à l'eau tempérée pendant au moins 10 min", "Percer la cloque", "Glace"], c: 1 },
+            { q: "Victime qui fait un malaise (consciente) :", a: ["La mettre au repos et la questionner", "La faire courir", "La gifler", "Ignorer"], c: 0 },
+            { q: "Section de membre (doigt coupé) :", a: ["Jeter le doigt", "Mettre le doigt dans un sac plastique, lui-même dans des glaçons", "Mettre le doigt direct dans la glace", "Recoudre"], c: 1 },
+            { q: "Suspicion de fracture ou traumatisme du dos :", a: ["Faire marcher", "Maintenir la tête à deux mains (ne pas la déplacer)", "Tirer les jambes", "Asseoir"], c: 1 },
+            { q: "Si la compression manuelle est inefficace ou impossible (saignement) :", a: ["Faire un garrot", "Laisser couler", "Mettre un pansement", "Pleurer"], c: 0 },
+            { q: "Victime électrisée, après avoir coupé le courant :", a: ["Rien", "Examen et gestes de secours habituels", "Mettre de l'eau", "Attendre"], c: 1 },
+            { q: "Plaie grave au ventre :", a: ["Position allongée, jambes fléchies", "PLS", "Assise", "Debout"], c: 0 },
+            { q: "Plaie grave au thorax :", a: ["Position demi-assise", "PLS", "Sur le ventre", "Debout"], c: 0 },
+            { q: "En attendant les secours, le SST doit :", a: ["Fumer", "Surveiller la victime en continu", "Reprendre le travail", "Discuter"], c: 1 },
+            // MODULE 6 (100-119)
+            { q: "Le SST et la prévention :", a: ["Il n'y participe pas", "Il est acteur de la prévention au quotidien", "Seulement le jour de la formation", "C'est interdit"], c: 1 },
+            { q: "Que signifie 'culture de sécurité' ?", a: ["Savoir utiliser un extincteur", "Comportements et valeurs partagés pour maîtriser les risques", "Regarder des films d'action", "Punir"], c: 1 },
+            { q: "Remonter une information sert à :", a: ["Dénoncer", "Améliorer les conditions et éviter l'accident", "Avoir une prime", "Rien"], c: 1 },
+            { q: "Qu'est-ce qu'une situation dangereuse ?", a: ["Un accident déjà arrivé", "Une situation où la personne est exposée à un danger", "Un lieu sûr", "Une réunion"], c: 1 },
+            { q: "Le SST est :", a: ["Un espion de la direction", "Un relais de prévention", "Un policier", "Un juge"], c: 1 },
+            { q: "Qui est impliqué dans la prévention ?", a: ["Le patron", "Le SST", "Tous les salariés", "Tout le monde (Tous)"], c: 3 },
+            { q: "Quel est le but de l'analyse d'un accident ?", a: ["Trouver un coupable", "Comprendre les causes pour éviter la récidive", "Remplir du papier", "Licencier"], c: 1 },
+            { q: "Les presqu'accidents doivent-ils être signalés ?", a: ["Non", "Oui, ils sont des alertes importantes", "Seulement si ça saigne", "Jamais"], c: 1 },
+            { q: "L'employeur a une obligation de sécurité de :", a: ["Moyens uniquement", "Résultat", "Rien", "Quand il a le temps"], c: 1 },
+            { q: "Le Document Unique (DUER) est :", a: ["Optionnel", "Obligatoire (évaluation des risques)", "Un livre de contes", "Pour les impôts"], c: 1 },
+            { q: "Le CSE (Comité Social et Économique) :", a: ["S'occupe des voyages", "Participe à la santé, sécurité et conditions de travail", "Gère la paie", "Fait la cuisine"], c: 1 },
+            { q: "La prévention a un impact sur :", a: ["La santé des salariés", "La performance de l'entreprise", "Le climat social", "Toutes ces réponses"], c: 3 },
+            { q: "Un comportement à risque est :", a: ["Une fatalité", "Modifiable par la formation et l'organisation", "Génétique", "Bien vu"], c: 1 },
+            { q: "Le SST doit-il montrer le bon exemple ?", a: ["Non", "Oui, il est un modèle en sécurité", "Uniquement devant le chef", "S'il veut"], c: 1 },
+            { q: "Le médecin du travail :", a: ["Soigne la grippe", "Vérifie l'aptitude et conseille sur la prévention", "Fait des arrêts maladie", "Gère le DUER"], c: 1 },
+            { q: "Le droit de retrait s'exerce si :", a: ["Je suis fatigué", "Danger grave et imminent pour la vie/santé", "Il pleut", "Le chef est méchant"], c: 1 },
+            { q: "L'ergonomie cherche à :", a: ["Adapter le travail à l'homme", "Adapter l'homme au travail", "Faire travailler plus vite", "Supprimer l'homme"], c: 0 },
+            { q: "La signalisation de santé et sécurité est :", a: ["Une suggestion", "Une obligation d'information", "De la décoration", "Inutile"], c: 1 },
+            { q: "Le RPS signifie :", a: ["Risques Psycho-Sociaux", "Rien Pour la Sécurité", "Réunion Prévention Secours", "Respirer Pour Survivre"], c: 0 },
+            { q: "Le SST propose des améliorations à :", a: ["Sa hiérarchie / prévention", "Aux syndicats seuls", "Au maire", "À personne"], c: 0 },
+            // MODULE 7 (120-139)
+            { q: "Qu'est-ce qu'un danger ?", a: ["Un événement fâcheux", "La propriété d'une chose capable de causer un dommage", "Un accident", "Un travail"], c: 1 },
+            { q: "Qu'est-ce qu'un risque ?", a: ["La rencontre entre l'homme et le danger", "Un jeu", "Un outil", "Une punition"], c: 0 },
+            { q: "Le dommage est :", a: ["La cause", "L'outil", "La lésion ou l'atteinte à la santé", "La machine"], c: 2 },
+            { q: "Travail sur écran prolongé : risque principal ?", a: ["Électrocution", "Troubles Musculo-Squelettiques (TMS) et visuels", "Coupure", "Brûlure"], c: 1 },
+            { q: "Bruit très fort en atelier (Danger) ->", a: ["Risque d'électrisation", "Risque de surdité (Dommage)", "Risque d'infection", "Rien"], c: 1 },
+            { q: "Sol mouillé et glissant :", a: ["Danger de chute de plain-pied", "Risque chimique", "Danger électrique", "Aucun risque"], c: 0 },
+            { q: "Produit de nettoyage sans étiquette :", a: ["Risque routier", "Risque chimique (intoxication, brûlure)", "Risque thermique", "Sécurisé"], c: 1 },
+            { q: "Manutention de charges lourdes :", a: ["Risque lié à l'activité physique (lombalgie)", "Risque biologique", "Risque acoustique", "Risque routier"], c: 0 },
+            { q: "Évaluation des risques prend en compte :", a: ["La couleur", "La gravité et la fréquence", "L'heure", "Le prix"], c: 1 },
+            { q: "Le risque biologique concerne :", a: ["Les marteaux", "Les virus, bactéries, sang", "L'électricité", "Le feu"], c: 1 },
+            { q: "Le risque routier (mission ou trajet) est :", a: ["Hors travail", "Une cause majeure d'accidents du travail", "Négligeable", "Résolu"], c: 1 },
+            { q: "Risques psychosociaux (Stress, harcèlement) :", a: ["N'existent pas", "Sont de vrais risques professionnels", "Sont des excuses", "Bons pour la santé"], c: 1 },
+            { q: "Outil qui coupe (Cutter) :", a: ["Danger", "Risque", "Dommage", "Prévention"], c: 0 },
+            { q: "Se couper le doigt :", a: ["Danger", "Risque", "Dommage", "Prévention"], c: 2 },
+            { q: "Utiliser un cutter sans gant :", a: ["Situation dangereuse / Exposition au risque", "Sécurité", "Dommage", "Rien"], c: 0 },
+            { q: "Travail en hauteur (Échelle) :", a: ["Risque de chute de plain-pied", "Risque de chute de hauteur", "Sécurité totale", "Risque chimique"], c: 1 },
+            { q: "Vibration des outils (marteau piqueur) :", a: ["Bon pour les os", "Risque physique (troubles vasculaires/articulaires)", "Risque biologique", "Aucun"], c: 1 },
+            { q: "Une machine sans carter de protection :", a: ["Est conforme", "Est une non-conformité grave (danger mécanique)", "Est plus rapide", "Est esthétique"], c: 1 },
+            { q: "Identifier un danger permet de :", a: ["Proposer une solution pour réduire le risque", "Punir", "Avoir peur", "Fermer l'entreprise"], c: 0 },
+            { q: "La fatigue extrême :", a: ["N'a pas d'impact", "Augmente le risque d'accident (vigilance en baisse)", "Est normale", "Est positive"], c: 1 },
+            // MODULE 8 (140-159)
+            { q: "La priorité absolue de la prévention est :", a: ["Mettre des gants", "Supprimer le danger à la source", "Donner une prime", "Faire une réunion"], c: 1 },
+            { q: "Si on ne peut pas supprimer le danger :", a: ["On l'ignore", "On met en place une Protection Collective", "On prie", "On fuit"], c: 1 },
+            { q: "Hiérarchie des mesures (Principes généraux) :", a: ["EPI d'abord", "Suppression > Protection Collective > EPI > Consignes", "Consignes d'abord", "Hasard"], c: 1 },
+            { q: "L'EPI (Équipement de Protection Individuelle) :", a: ["Est la meilleure solution", "Est le dernier recours si le risque persiste", "Est décoratif", "Protège les autres"], c: 1 },
+            { q: "Un garde-corps sur un toit est :", a: ["Une protection individuelle", "Une protection collective", "Une décoration", "Un danger"], c: 1 },
+            { q: "Des chaussures de sécurité sont :", a: ["Des EPI", "Des EPC", "Des outils", "Des armes"], c: 0 },
+            { q: "Le SST, face à un câble dénudé, doit :", a: ["Le scotcher", "Le signaler et demander sa réparation/remplacement", "Le cacher", "Le toucher"], c: 1 },
+            { q: "L'organisation du travail (pauses, rotations) est :", a: ["Une perte de temps", "Une mesure de prévention", "Une punition", "Interdite"], c: 1 },
+            { q: "La formation à la sécurité est :", a: ["Inutile", "Une mesure de prévention indispensable", "Une perte d'argent", "Pour s'amuser"], c: 1 },
+            { q: "Proposer un chariot pour éviter de porter des cartons :", a: ["Réduit le risque lié à l'activité physique", "Augmente le risque", "Est inutile", "Est interdit"], c: 0 },
+            { q: "Aspirer les poussières à la source (machine) :", a: ["Protection collective (réduit l'exposition de tous)", "EPI", "Inutile", "Dangereux"], c: 0 },
+            { q: "Les mesures de prévention doivent être :", a: ["Inapplicables", "Réalistes, adaptées et acceptées", "Chères", "Complexes"], c: 1 },
+            { q: "Remplacer un solvant toxique par un produit à l'eau :", a: ["Substitution (réduction du danger)", "Protection individuelle", "Erreur", "Gaspillage"], c: 0 },
+            { q: "Une consigne de sécurité :", a: ["Doit être respectée par tous", "Est facultative", "Est pour les nouveaux", "Est inutile si on est fort"], c: 0 },
+            { q: "Les EPI doivent être fournis par :", a: ["Le salarié", "L'employeur (gratuitement)", "L'État", "Le CSE"], c: 1 },
+            { q: "Le maintien de l'ordre et de la propreté (rangement) :", a: ["Est une base de la prévention (évite les chutes)", "N'est pas de la sécurité", "Est pour la femme de ménage", "Est inutile"], c: 0 },
+            { q: "Le retour d'expérience (REX) après incident :", a: ["Sert à blâmer", "Sert à éviter que cela se reproduise", "Est une perte de temps", "Est optionnel"], c: 1 },
+            { q: "Si un EPI est abîmé :", a: ["Je le mets quand même", "Je demande son remplacement immédiat", "Je le répare au scotch", "Je le jette en cachette"], c: 1 },
+            { q: "Une proposition d'amélioration par le SST doit être :", a: ["Factuelle (basée sur des faits observés)", "Inventée", "Une critique agressive", "Un roman"], c: 0 },
+            { q: "La sécurité est une démarche :", a: ["D'un jour", "D'amélioration continue", "Impossible", "Facultative"], c: 1 }
         ];
 
+        // --- VARIABLES GLOBALES ---
+        let db;
         let isHost = false;
-        let studentName = "";
         let studentId = "";
-        let currentQIndex = -1;
         let localScore = 0;
+        let currentTimer;
+        let timeLeft = 15;
+        let sessionQuestions = [];
+        let hostCurrentIndex = -1;
+
+        // --- 1. INITIALISATION FIREBASE ---
+        function initFirebase(config) {
+            try {
+                const app = initializeApp(config);
+                db = getDatabase(app);
+                return true;
+            } catch (e) {
+                alert("Erreur de configuration Firebase. Vérifiez les clés.");
+                return false;
+            }
+        }
+
+        window.saveConfiguration = function() {
+            const raw = document.getElementById('firebase-config-input').value;
+            try {
+                const parsed = JSON.parse(raw);
+                if(initFirebase(parsed)) {
+                    localStorage.setItem('ncr_fb_config', JSON.stringify(parsed));
+                    document.getElementById('setup-screen').classList.remove('active');
+                    document.getElementById('role-screen').classList.add('active');
+                }
+            } catch(e) {
+                alert("Le format JSON est invalide.");
+            }
+        };
+
+        window.checkHostInit = function() {
+            selectRole('host');
+        };
 
         window.selectRole = function(role) {
-            document.getElementById('role-screen').classList.remove('active');
+            const saved = localStorage.getItem('ncr_fb_config');
+            if(!saved) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('setup-screen').classList.add('active');
+                return;
+            }
+            
+            initFirebase(JSON.parse(saved));
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            
             if(role === 'host') {
                 isHost = true;
-                document.getElementById('host-screen').classList.add('active');
-                // Réinitialiser la session côté serveur
-                set(ref(db, 'session'), { status: 'waiting', questionIndex: -1 });
-                set(ref(db, 'scores'), {});
-                listenToScores();
+                document.getElementById('module-selection-screen').classList.add('active');
             } else {
+                isHost = false;
                 document.getElementById('student-login-screen').classList.add('active');
             }
         };
 
-        window.joinQuiz = function() {
-            studentName = document.getElementById('student-name').value;
-            if(!studentName) return alert("Prénom obligatoire");
+        // --- 2. LOGIQUE FORMATEUR ---
+        window.startModule = function(modId) {
+            document.getElementById('module-selection-screen').classList.remove('active');
+            document.getElementById('host-screen').classList.add('active');
             
-            studentId = 'student_' + Math.random().toString(36).substr(2, 9);
-            document.getElementById('student-login-screen').classList.remove('active');
-            document.getElementById('waiting-screen').classList.add('active');
-            
-            // Inscrire l'élève dans la base de données
-            set(ref(db, 'scores/' + studentId), { name: studentName, score: 0 });
-            
-            // Écouter les changements d'état du quiz
-            listenToQuizState();
+            if(modId === 'all') {
+                document.getElementById('host-module-title').innerText = "Examen Général";
+                sessionQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 20);
+            } else {
+                document.getElementById('host-module-title').innerText = "Module " + (modId + 1);
+                sessionQuestions = allQuestions.slice(modId * 20, (modId + 1) * 20);
+            }
+
+            hostCurrentIndex = -1;
+            set(ref(db, 'session'), { status: 'waiting' });
+            set(ref(db, 'scores'), {});
+            listenToScores();
         };
 
-        // --- LOGIQUE FORMATEUR (HOST) ---
         window.nextQuestionHost = function() {
-            currentQIndex++;
-            if(currentQIndex >= allQuestions.length) {
+            hostCurrentIndex++;
+            if(hostCurrentIndex >= sessionQuestions.length) {
                 update(ref(db, 'session'), { status: 'finished' });
-                document.getElementById('host-question-text').innerText = "Quiz terminé ! Regardez le classement.";
+                document.getElementById('host-question-text').innerText = "Session terminée !";
+                document.getElementById('host-ans-grid').innerHTML = '';
                 return;
             }
-            // Envoie l'ordre à tous les téléphones d'afficher la question
-            update(ref(db, 'session'), { status: 'playing', questionIndex: currentQIndex });
+
+            const qData = sessionQuestions[hostCurrentIndex];
             
-            document.getElementById('host-question-text').innerText = allQuestions[currentQIndex].q;
+            // Mise à jour de l'UI formateur
+            document.getElementById('host-question-text').innerText = `Q${hostCurrentIndex + 1}: ` + qData.q;
+            const hostGrid = document.getElementById('host-ans-grid');
+            hostGrid.innerHTML = '';
+            qData.a.forEach((ans, i) => {
+                const div = document.createElement('div');
+                div.className = 'host-ans-card';
+                div.innerText = ans;
+                if(i === qData.c) div.style.border = "2px solid var(--apple-green)";
+                hostGrid.appendChild(div);
+            });
+
+            // Envoi de la question aux élèves (avec un ID unique pour relancer le timer)
+            update(ref(db, 'session'), { 
+                status: 'playing', 
+                question: qData,
+                qId: Date.now()
+            });
         };
 
         function listenToScores() {
@@ -87,25 +412,36 @@
                 const data = snapshot.val() || {};
                 const list = document.getElementById('live-leaderboard');
                 list.innerHTML = '';
-                
-                // Trier les scores du plus grand au plus petit
-                const sortedScores = Object.values(data).sort((a, b) => b.score - a.score);
-                
-                sortedScores.forEach(student => {
-                    list.innerHTML += `<div class="score-row"><span>${student.name}</span><span>${student.score} pts</span></div>`;
+                const sorted = Object.values(data).sort((a, b) => b.score - a.score);
+                sorted.forEach(student => {
+                    list.innerHTML += `<div class="score-row"><span>${student.name}</span><span style="color:var(--apple-blue)">${student.score} pts</span></div>`;
                 });
             });
         }
 
-        // --- LOGIQUE ÉLÈVE (STUDENT) ---
+        // --- 3. LOGIQUE ÉLÈVE ---
+        window.joinQuiz = function() {
+            const name = document.getElementById('student-name').value;
+            if(!name) return alert("Prénom obligatoire");
+            
+            studentId = 'stu_' + Math.random().toString(36).substr(2, 9);
+            document.getElementById('student-login-screen').classList.remove('active');
+            document.getElementById('waiting-screen').classList.add('active');
+            
+            set(ref(db, 'scores/' + studentId), { name: name, score: 0 });
+            listenToQuizState();
+        };
+
+        let lastQId = null;
+
         function listenToQuizState() {
             onValue(ref(db, 'session'), (snapshot) => {
                 const state = snapshot.val();
                 if(!state) return;
-
-                if(state.status === 'playing' && state.questionIndex !== currentQIndex) {
-                    currentQIndex = state.questionIndex;
-                    showQuestionToStudent(currentQIndex);
+                
+                if(state.status === 'playing' && state.qId !== lastQId) {
+                    lastQId = state.qId;
+                    showQuestionToStudent(state.question);
                 } else if (state.status === 'finished') {
                     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                     document.getElementById('result-screen').classList.add('active');
@@ -114,11 +450,10 @@
             });
         }
 
-        function showQuestionToStudent(index) {
+        function showQuestionToStudent(qData) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('student-quiz-screen').classList.add('active');
             
-            const qData = allQuestions[index];
             document.getElementById('student-q-text').innerText = qData.q;
             
             const grid = document.getElementById('student-ans-grid');
@@ -130,100 +465,59 @@
                 btn.onclick = () => submitAnswer(i, qData.c);
                 grid.appendChild(btn);
             });
+
+            startTimer(qData.c);
+        }
+
+        function startTimer(correctIndex) {
+            clearInterval(currentTimer);
+            timeLeft = 15;
+            const bar = document.getElementById('timer-bar');
+            
+            // Reset visuel immédiat
+            bar.style.transition = 'none'; 
+            bar.style.width = '100%';
+            
+            // Lancement de l'animation
+            setTimeout(() => {
+                bar.style.transition = 'width 15s linear';
+                bar.style.width = '0%';
+            }, 50);
+            
+            // Décompte JS
+            currentTimer = setInterval(() => {
+                timeLeft--;
+                if(timeLeft <= 0) {
+                    clearInterval(currentTimer);
+                    submitAnswer(-1, correctIndex); // Temps écoulé = faux
+                }
+            }, 1000);
         }
 
         function submitAnswer(selectedIndex, correctIndex) {
+            clearInterval(currentTimer);
             const btns = document.querySelectorAll('.answer-card');
             btns.forEach(b => b.disabled = true);
             
             if(selectedIndex === correctIndex) {
-                localScore += 100;
-                // Envoyer le nouveau score au serveur en temps réel
+                // Score = points de base + bonus de rapidité
+                localScore += (100 + (timeLeft * 10));
                 update(ref(db, 'scores/' + studentId), { score: localScore });
-                btns[selectedIndex].style.border = "4px solid var(--apple-green)";
+                if(btns[selectedIndex]) btns[selectedIndex].style.border = "4px solid var(--apple-green)";
             } else {
-                btns[selectedIndex].style.opacity = "0.3";
-                btns[correctIndex].style.border = "4px solid var(--apple-green)";
+                if(selectedIndex >= 0 && btns[selectedIndex]) {
+                    btns[selectedIndex].style.opacity = "0.3";
+                    btns[selectedIndex].style.border = "4px solid var(--apple-red)";
+                }
+                if(btns[correctIndex]) btns[correctIndex].style.border = "4px solid var(--apple-green)";
             }
-
+            
             setTimeout(() => {
                 document.getElementById('student-quiz-screen').classList.remove('active');
                 document.getElementById('waiting-screen').classList.add('active');
-                document.getElementById('waiting-text').innerText = "En attente de la prochaine question...";
-            }, 2000);
+                document.getElementById('waiting-text').innerText = "Attente de la suite...";
+            }, 2500);
         }
     </script>
-
-    <style>
-        /* Design Apple Dark & NCR Solutions */
-        :root {
-            --bg-black: #000000; --card-dark: #1C1C1E; --apple-blue: #0A84FF;
-            --apple-green: #32D74B; --text-main: #FFFFFF; --text-sec: #8E8E93;
-            --glass: rgba(255, 255, 255, 0.1);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'SF Pro Display', sans-serif; }
-        body { background: var(--bg-black); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; justify-content: center; }
-        
-        .screen { display: none; width: 100%; max-width: 600px; padding: 24px; flex-direction: column; height: 100%; }
-        .screen.active { display: flex; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .btn-ncr { background: var(--apple-blue); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 18px; font-weight: 600; cursor: pointer; margin-bottom: 15px; width: 100%; transition: 0.2s; }
-        .btn-ncr:active { transform: scale(0.95); }
-        .input-ncr { background: var(--card-dark); border: 1px solid var(--glass); color: white; padding: 18px; border-radius: 16px; font-size: 18px; width: 100%; margin-bottom: 20px; outline: none; }
-        
-        /* Grille des réponses */
-        .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .answer-card { aspect-ratio: 1/1; border-radius: 20px; border: none; color: white; font-size: 18px; font-weight: 600; cursor: pointer; }
-        .color-0 { background: #E91E63; } .color-1 { background: #2196F3; } .color-2 { background: #FFC107; color: black; } .color-3 { background: #4CAF50; }
-
-        /* Classement en direct */
-        .score-row { background: var(--card-dark); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 600; }
-    </style>
-</head>
-<body>
-
-    <div id="role-screen" class="screen active" style="justify-content: center;">
-        <h1 style="text-align: center; margin-bottom: 40px;">NCR Solutions<br><span style="color:var(--apple-blue); font-size:20px;">Live Quiz</span></h1>
-        <button class="btn-ncr" onclick="selectRole('student')">Je suis Élève</button>
-        <button class="btn-ncr" style="background: var(--card-dark); color: var(--apple-blue);" onclick="selectRole('host')">Je suis le Formateur</button>
-    </div>
-
-    <div id="student-login-screen" class="screen" style="justify-content: center;">
-        <h2>Rejoindre la session</h2>
-        <p style="color:var(--text-sec); margin-bottom: 20px;">Entrez votre prénom pour le classement</p>
-        <input type="text" id="student-name" class="input-ncr" placeholder="Votre prénom...">
-        <button class="btn-ncr" onclick="joinQuiz()">Rejoindre</button>
-    </div>
-
-    <div id="waiting-screen" class="screen" style="justify-content: center; align-items: center; text-align: center;">
-        <h2 id="waiting-text">Connecté ! Regardez l'écran du formateur.</h2>
-        <p style="color:var(--text-sec); margin-top: 10px;">Le quiz va bientôt commencer.</p>
-    </div>
-
-    <div id="student-quiz-screen" class="screen">
-        <h2 id="student-q-text" style="text-align: center; margin: 40px 0;">Question ?</h2>
-        <div class="answers-grid" id="student-ans-grid"></div>
-    </div>
-
-    <div id="result-screen" class="screen" style="justify-content: center; text-align: center;">
-        <h2>Terminé !</h2>
-        <p style="color:var(--text-sec);">Votre score final :</p>
-        <div style="font-size: 72px; font-weight: 800; color: var(--apple-green);" id="final-score">0</div>
-    </div>
-
-    <div id="host-screen" class="screen">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>Tableau de bord</h2>
-            <button class="btn-ncr" style="width: auto; padding: 10px 20px;" onclick="nextQuestionHost()">Question Suivante ➡️</button>
-        </div>
-        <h3 id="host-question-text" style="color:var(--apple-blue); margin-bottom: 30px;">En attente de lancement...</h3>
-        
-        <h3 style="margin-bottom: 15px; color:var(--text-sec);">Classement en direct 🏆</h3>
-        <div id="live-leaderboard" style="flex-grow: 1; overflow-y: auto;">
-            <p style="color:var(--text-sec); text-align:center;">En attente de joueurs...</p>
-        </div>
-    </div>
-
 </body>
 </html>
