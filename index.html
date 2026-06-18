@@ -882,9 +882,11 @@
         //         LOGIQUE ÉLÈVE (SOLO)
         // ==========================================
         window.nextSoloQuestion = function() {
-    currentIndex++;
-    
-    // Sauvegarde de la progression locale et en ligne
+            currentIndex++;
+
+            // Si on a dépassé la dernière question : fin du module, on sauvegarde et on affiche le résultat
+            if(currentIndex >= sessionQuestions.length) {
+                // Sauvegarde de la progression locale et en ligne
                 if(typeof currentSoloModId !== 'undefined' && currentSoloModId !== 'all') {
                     let progress = JSON.parse(localStorage.getItem('ncr_sst_progress') || '{}');
                     const maxScore = sessionQuestions.length * 250; 
@@ -910,9 +912,9 @@
                 launchConfetti('confetti-container');
                 return; 
             }
-    
-    renderQuestionStudent(sessionQuestions[currentIndex], 'solo', sessionModuleNames[currentIndex] || "");
-};
+
+            renderQuestionStudent(sessionQuestions[currentIndex], 'solo', sessionModuleNames[currentIndex] || "");
+        };
 
 
         // ==========================================
@@ -974,7 +976,7 @@
             const btns = document.querySelectorAll('#student-ans-grid .answer-card');
             btns.forEach(b => b.disabled = true);
             
-            // Mise à jour visuelle des boutons
+            // // Mise à jour visuelle des boutons
             if(selectedIndex === qData.c) {
                 localScore += (100 + (timeLeft * 10)); // Bonus temps
                 if(currentMode === 'live') update(ref(db, 'scores/' + studentId), { score: localScore });
