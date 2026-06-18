@@ -569,25 +569,32 @@
             }, { onlyOnce: true });
         };
         window.startModule = function(modId) {
-            window.currentSoloModId = modId
             document.getElementById('module-selection-screen').classList.remove('active');
+            window.currentSoloModId = modId; // Gardé pour ta sauvegarde de progression
             
+            // NOUVEAU : Fonction qui mélange l'ordre des réponses de manière aléatoire
+            function shuffleAnswers(q) {
+                let qCopy = JSON.parse(JSON.stringify(q)); // On copie pour ne pas altérer la base de données
+                let correctText = qCopy.a[qCopy.c]; // On mémorise le texte de la vraie bonne réponse
+                qCopy.a.sort(() => Math.random() - 0.5); // On mélange les 4 choix
+                qCopy.c = qCopy.a.indexOf(correctText); // On met à jour "c" avec le nouvel index
+                return qCopy;
+            }
+
             // Chargement des questions selon le module
             if(modId === 'all') {
-                // On construit des paires {question, moduleIndex} pour garder la trace du module d'origine
                 const indexed = allQuestions.map((q, idx) => ({ q, idx }));
                 const shuffled = indexed.sort(() => 0.5 - Math.random()).slice(0, 15);
-                sessionQuestions = shuffled.map(item => item.q);
+                sessionQuestions = shuffled.map(item => shuffleAnswers(item.q)); // Application du mélange
                 sessionModuleNames = shuffled.map(item => getModuleNameForQuestionIndex(item.idx));
                 if(mode === 'host') document.getElementById('host-module-title').innerText = "Examen Général Live";
             } else {
                 const start = modId * QUESTIONS_PER_MODULE;
-                sessionQuestions = allQuestions.slice(start, start + QUESTIONS_PER_MODULE);
-                sessionModuleNames = sessionQuestions.map(() => ""); // pas de badge module en mode mono-module
+                sessionQuestions = allQuestions.slice(start, start + QUESTIONS_PER_MODULE).map(q => shuffleAnswers(q)); // Application du mélange
+                sessionModuleNames = sessionQuestions.map(() => ""); 
                 if(mode === 'host') document.getElementById('host-module-title').innerText = "Module " + (modId + 1) + " Live";
             }
             currentIndex = -1;
-
             if(mode === 'host') {
                 document.getElementById('host-result-screen').classList.remove('active');
                 document.getElementById('host-screen').classList.add('active');
