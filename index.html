@@ -213,6 +213,37 @@
         </div>
     </div>
 
+    <div id="simulator-screen" class="screen" style="justify-content: flex-start; padding-top: 20px;">
+        <h2 style="margin-bottom: 10px;">Simulateur d'Alerte</h2>
+        
+        <div id="sim-scenario" style="background: var(--card-dark); padding: 15px; border-radius: 15px; margin-bottom: 20px; font-style: italic; border-left: 4px solid var(--apple-blue); font-size: 14px;">
+            "Un collègue vient de faire un malaise grave dans l'entrepôt, il ne répond plus et ne respire plus."
+        </div>
+        
+        <div id="sim-step-1">
+            <p style="color: var(--text-sec); font-weight: 600; margin-bottom: 10px;">Quel numéro appelez-vous en priorité ?</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-ncr" style="flex:1; font-size: 24px;" onclick="window.checkSimNum('15')">15</button>
+                <button class="btn-ncr" style="flex:1; font-size: 24px;" onclick="window.checkSimNum('18')">18</button>
+                <button class="btn-ncr" style="flex:1; font-size: 24px;" onclick="window.checkSimNum('112')">112</button>
+            </div>
+        </div>
+
+        <div id="sim-step-2" style="display: none;">
+            <p style="color: var(--text-sec); font-weight: 600; margin-bottom: 10px;">Le régulateur décroche. Cliquez sur les informations dans l'ordre chronologique idéal :</p>
+            
+            <div id="sim-options" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                </div>
+            
+            <div id="sim-result" style="margin-top: 20px; min-height: 80px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 15px; color: white; font-weight: 600; border: 1px solid var(--glass);">
+                Votre message : <br><span id="sim-message-text" style="color: var(--apple-blue);"></span>
+            </div>
+            
+            <button id="sim-btn-verify" class="btn-ncr" style="margin-top: 15px; display: none;" onclick="window.verifySimMessage()">Valider mon message</button>
+        </div>
+
+        <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass); margin-top: 30px;" onclick="document.getElementById('simulator-screen').classList.remove('active'); document.getElementById('module-selection-screen').classList.add('active');">Retour au menu</button>
+    </div>
 
     <div id="host-result-screen" class="screen" style="justify-content: center; text-align: center; overflow-y:auto;">
         <div id="confetti-container-host"></div>
@@ -1053,6 +1084,76 @@
             if(globalAverage >= 75) level = "Expert SST";
             if(globalAverage >= 95) level = "Maître SST 🏆";
             document.getElementById('global-level').innerText = level;
+
+            // --- MOTEUR DU SIMULATEUR D'ALERTE ---
+        window.simAnswers = [];
+        window.simExpected = ["Où (Lieu précis)", "Quoi (Nature du problème)", "Bilan (État de la victime)", "Gestes (Ce qui a été fait)"];
+
+        window.startSimulator = function() {
+            document.getElementById('module-selection-screen').classList.remove('active');
+            document.getElementById('simulator-screen').classList.add('active');
+            document.getElementById('sim-step-1').style.display = 'block';
+            document.getElementById('sim-step-2').style.display = 'none';
+            window.simAnswers = [];
+            document.getElementById('sim-message-text').innerText = "...";
+            document.getElementById('sim-btn-verify').style.display = 'none';
+        };
+
+        window.checkSimNum = function(num) {
+            if(num === '15' || num === '112') {
+                alert("✅ Bonne réponse ! Le " + num + " (SAMU/Urgences) est adapté pour un problème médical grave.");
+                document.getElementById('sim-step-1').style.display = 'none';
+                document.getElementById('sim-step-2').style.display = 'block';
+                window.loadSimOptions();
+            } else {
+                alert("❌ Ce n'est pas le numéro prioritaire ici. Privilégiez un numéro médicalisé (15 ou 112).");
+            }
+        };
+
+        window.loadSimOptions = function() {
+            // Mélange l'ordre des boutons à chaque fois
+            const options = [...window.simExpected].sort(() => Math.random() - 0.5);
+            const container = document.getElementById('sim-options');
+            container.innerHTML = "";
+            options.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'btn-module-card'; // Reprend le joli design de tes modules
+                btn.style.padding = '12px';
+                btn.style.aspectRatio = 'auto';
+                btn.style.textAlign = 'center';
+                btn.innerText = opt;
+                btn.onclick = function() {
+                    if(!window.simAnswers.includes(opt)) {
+                        window.simAnswers.push(opt);
+                        document.getElementById('sim-message-text').innerText = window.simAnswers.join(" ➔ ");
+                        btn.style.opacity = '0.3';
+                        btn.style.pointerEvents = 'none'; // Désactive le clic
+                        if(window.simAnswers.length === 4) {
+                            document.getElementById('sim-btn-verify').style.display = 'block';
+                        }
+                    }
+                };
+                container.appendChild(btn);
+            });
+        };
+
+        window.verifySimMessage = function() {
+            let isCorrect = true;
+            for(let i=0; i<4; i++) {
+                if(window.simAnswers[i] !== window.simExpected[i]) isCorrect = false;
+            }
+            if(isCorrect) {
+                alert("🏆 Parfait ! Ton message est clair, rapide, et structuré exactement comme l'attendent les secours.");
+                document.getElementById('simulator-screen').classList.remove('active');
+                document.getElementById('module-selection-screen').classList.add('active');
+            } else {
+                alert("Oups ! L'ordre idéal est : " + window.simExpected.join(" ➔ ") + ". On recommence !");
+                window.simAnswers = [];
+                document.getElementById('sim-message-text').innerText = "...";
+                document.getElementById('sim-btn-verify').style.display = 'none';
+                window.loadSimOptions();
+            }
+        };
         };
     </script>
 </body>
