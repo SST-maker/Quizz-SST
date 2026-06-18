@@ -31,8 +31,8 @@
         .input-ncr { background: var(--card-dark); border: 1px solid var(--glass); color: white; padding: 18px; border-radius: 16px; font-size: 18px; width: 100%; margin-bottom: 20px; outline: none; transition: border 0.3s; }
         .input-ncr:focus { border-color: var(--apple-blue); }
         
-        .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-bottom: 20px;}
-        .answer-card { aspect-ratio: 1/0.8; border-radius: 20px; border: 4px solid transparent; color: white; font-size: 17px; font-weight: 600; padding: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+       .answers-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; margin-bottom: 20px; }
+        .answer-card { aspect-ratio: 1/0.8; border-radius: 20px; border: 4px solid transparent; color: white; font-size: 16px; font-weight: 600; padding: 10px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); word-break: break-word; overflow-wrap: break-word; }
         .answer-card:active { transform: scale(0.95); }
         .color-0 { background: #E91E63; } .color-1 { background: #2196F3; } .color-2 { background: #FFC107; color: black; } .color-3 { background: #4CAF50; }
 
