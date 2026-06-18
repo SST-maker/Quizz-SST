@@ -100,6 +100,26 @@
 
         /* Indicateur de réponses reçues (formateur) */
         .response-progress { font-size: 13px; color: var(--text-sec); text-align: center; margin-top: 10px; }
+
+        /* --- SIMULATEUR --- */
+        .sim-scenario-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,149,0,0.15); border: 1px solid rgba(255,149,0,0.4); border-radius: 12px; padding: 6px 14px; font-size: 12px; font-weight: 800; color: var(--apple-orange); letter-spacing: 0.5px; margin-bottom: 12px; }
+        .sim-option-btn { background: var(--card-dark); border: 1px solid var(--glass); border-radius: 14px; padding: 14px 16px; color: white; text-align: left; cursor: pointer; transition: all 0.2s; font-size: 15px; font-weight: 600; width: 100%; display: flex; align-items: center; gap: 12px; }
+        .sim-option-btn:active { transform: scale(0.97); border-color: var(--apple-blue); }
+        .sim-option-btn:disabled { opacity: 0.3; pointer-events: none; }
+        .sim-option-btn .sim-opt-icon { font-size: 22px; flex-shrink: 0; }
+        .sim-order-pill { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--apple-blue); font-size: 13px; font-weight: 800; flex-shrink: 0; color: white; }
+        .sim-message-preview { background: rgba(10,132,255,0.08); border: 1px solid rgba(10,132,255,0.25); border-radius: 14px; padding: 14px 16px; margin-top: 14px; min-height: 64px; }
+        .sim-message-preview p { font-size: 13px; color: var(--text-sec); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .sim-message-preview span { font-size: 15px; font-weight: 600; color: var(--apple-blue); line-height: 1.5; }
+        .num-btn { flex: 1; border: none; border-radius: 16px; font-size: 26px; font-weight: 800; padding: 18px 0; cursor: pointer; transition: transform 0.15s; color: white; }
+        .num-btn:active { transform: scale(0.93); }
+        .num-15  { background: linear-gradient(135deg, #0A84FF, #0060CF); }
+        .num-18  { background: linear-gradient(135deg, #FF453A, #C0392B); }
+        .num-112 { background: linear-gradient(135deg, #32D74B, #1E8B30); }
+        .num-17  { background: linear-gradient(135deg, #8E8E93, #5A5A60); }
+        .sim-result-box { border-radius: 16px; padding: 18px; margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; line-height: 1.5; }
+        .sim-result-ok  { background: rgba(50,215,75,0.12); border: 1px solid rgba(50,215,75,0.4); color: var(--apple-green); }
+        .sim-result-ko  { background: rgba(255,69,58,0.12); border: 1px solid rgba(255,69,58,0.4); color: var(--apple-red); }
     </style>
 </head>
 <body>
@@ -224,38 +244,59 @@
         </div>
     </div>
 
-    <div id="simulator-screen" class="screen" style="justify-content: flex-start; padding-top: 20px;">
-        <h2 style="margin-bottom: 10px;">Simulateur d'Alerte</h2>
-        
-        <div id="sim-scenario" style="background: var(--card-dark); padding: 15px; border-radius: 15px; margin-bottom: 20px; font-style: italic; border-left: 4px solid var(--apple-blue); font-size: 14px;">
-            "Un collègue vient de faire un malaise grave dans l'entrepôt, il ne répond plus et ne respire plus."
+    <!-- ============================================================ -->
+    <!--   SIMULATEUR D'ALERTE — version multi-scénarios aléatoires   -->
+    <!-- ============================================================ -->
+    <div id="simulator-screen" class="screen" style="justify-content: flex-start; overflow-y: auto;">
+
+        <!-- EN-TÊTE -->
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+            <div style="font-size:28px;">🚨</div>
+            <div>
+                <h2 style="font-size:20px; letter-spacing:-0.3px;">Simulateur d'Alerte</h2>
+                <p style="color:var(--text-sec); font-size:13px;" id="sim-scenario-counter">Situation tirée au sort</p>
+            </div>
         </div>
-        
+
+        <!-- BADGE TYPE DE SITUATION -->
+        <div id="sim-type-badge" class="sim-scenario-badge"></div>
+
+        <!-- BOÎTE SCÉNARIO -->
+        <div id="sim-scenario" style="background: var(--card-dark); padding: 16px 18px; border-radius: 16px; margin-bottom: 20px; font-style: italic; border-left: 4px solid var(--apple-orange); font-size: 15px; line-height: 1.5; color: #e0e0e0;"></div>
+
+        <!-- ÉTAPE 1 : NUMÉRO D'APPEL -->
         <div id="sim-step-1">
-            <p style="color: var(--text-sec); font-weight: 600; margin-bottom: 10px;">Quel numéro appelez-vous en priorité ?</p>
+            <p style="color: var(--text-sec); font-weight: 700; margin-bottom: 14px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Quel numéro appelez-vous ?</p>
             <div style="display: flex; gap: 10px;">
-               <button onclick="window.checkSimNum('15')">15</button>
-<button onclick="window.checkSimNum('17')">17</button>
-<button onclick="window.checkSimNum('18')">18</button>
-<button onclick="window.checkSimNum('112')">112</button>
+                <button class="num-btn num-15"  onclick="window.checkSimNum('15')">15</button>
+                <button class="num-btn num-18"  onclick="window.checkSimNum('18')">18</button>
+                <button class="num-btn num-112" onclick="window.checkSimNum('112')">112</button>
+                <button class="num-btn num-17"  onclick="window.checkSimNum('17')" style="font-size:20px;">17</button>
             </div>
+            <div id="sim-num-feedback" style="margin-top:14px; min-height:48px;"></div>
         </div>
 
+        <!-- ÉTAPE 2 : MESSAGE D'ALERTE -->
         <div id="sim-step-2" style="display: none;">
-            <p style="color: var(--text-sec); font-weight: 600; margin-bottom: 10px;">Le régulateur décroche. Cliquez sur les informations dans l'ordre chronologique idéal :</p>
-            
-            <div id="sim-options" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
-                </div>
-            
-            <div id="sim-result" style="margin-top: 20px; min-height: 80px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 15px; color: white; font-weight: 600; border: 1px solid var(--glass);">
-                Votre message : <br><span id="sim-message-text" style="color: var(--apple-blue);"></span>
+            <p style="color: var(--text-sec); font-weight: 700; margin-bottom: 14px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                Construisez votre message dans le bon ordre :
+            </p>
+            <div id="sim-options" style="display: flex; flex-direction: column; gap: 10px;"></div>
+
+            <div class="sim-message-preview">
+                <p>Votre message :</p>
+                <span id="sim-message-text">Appuyez sur les éléments ci-dessus...</span>
             </div>
-            
-            <button id="sim-btn-verify" class="btn-ncr" style="margin-top: 15px; display: none;" onclick="window.verifySimMessage()">Valider mon message</button>
+
+            <div id="sim-result-box" style="display:none;" class="sim-result-box"></div>
+
+            <button id="sim-btn-verify" class="btn-ncr" style="margin-top: 16px; display: none;" onclick="window.verifySimMessage()">✅ Valider mon message</button>
+            <button id="sim-btn-retry"  class="btn-ncr" style="margin-top: 10px; display: none; background: var(--card-dark); border:1px solid var(--glass);" onclick="window.retrySimStep2()">🔄 Recommencer</button>
         </div>
 
-        <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass); margin-top: 30px;" onclick="document.getElementById('simulator-screen').classList.remove('active'); document.getElementById('module-selection-screen').classList.add('active');">Retour au menu</button>
+        <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass); margin-top: 24px; flex-shrink:0;" onclick="document.getElementById('simulator-screen').classList.remove('active'); document.getElementById('module-selection-screen').classList.add('active');">← Retour au menu</button>
     </div>
+    <!-- ============================================================ -->
 
     <div id="host-result-screen" class="screen" style="justify-content: center; text-align: center; overflow-y:auto;">
         <div id="confetti-container-host"></div>
@@ -268,7 +309,6 @@
         <button class="btn-ncr" style="background: var(--card-dark); color: white; border: 1px solid var(--glass);" onclick="location.reload()">Retour à l'accueil</button>
     </div>
     
-    <!-- ÉCRAN DE CONNEXION SOLO -->
     <div id="solo-login-screen" class="screen" style="justify-content: center;">
         <h2>Mon Espace Révision</h2>
         <p style="color:var(--text-sec); margin-bottom: 20px;">Créez ou entrez votre identifiant (ex: prénom-nom) pour retrouver votre progression sur n'importe quel appareil.</p>
@@ -327,8 +367,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-
-        // ASTUCE SECURITE : Clé découpée pour GitHub
         const firebaseConfig = {
             apiKey: "AIzaSyBNQ" + "c4WX0KaHKdC" + "2kGekEBrs2x6s" + "9AZELw",
             authDomain: "quizz-sst.firebaseapp.com",
@@ -341,26 +379,453 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Noms des modules, dans l'ordre (index = numéro de module - 1)
         const MODULE_NAMES = [
-            "Module 1 : Rôle du SST",
-            "Module 2 : Protéger",
-            "Module 3 : Examiner",
-            "Module 4 : Alerter",
-            "Module 5 : Secourir",
-            "Module 6 : Prévention",
-            "Module 7 : Risques Pro",
-            "Module 8 : Maîtrise"
+            "Module 1 : Rôle du SST","Module 2 : Protéger","Module 3 : Examiner",
+            "Module 4 : Alerter","Module 5 : Secourir","Module 6 : Prévention",
+            "Module 7 : Risques Pro","Module 8 : Maîtrise"
         ];
         const QUESTIONS_PER_MODULE = 20;
 
-        // Retrouve le nom du module à partir de l'index de la question dans allQuestions
         function getModuleNameForQuestionIndex(idx) {
             const modIdx = Math.floor(idx / QUESTIONS_PER_MODULE);
             return MODULE_NAMES[modIdx] || "";
         }
 
-        // LES QUESTIONS AVEC EXPLICATIONS (INRS)
+        // ============================================================
+        //   BASE DES 15 SCÉNARIOS DU SIMULATEUR D'ALERTE
+        // ============================================================
+        const SIM_SCENARIOS = [
+            {
+                id: 1,
+                type: "🫀 Arrêt Cardiaque",
+                description: "Votre collègue s'effondre brusquement dans l'atelier. Il ne répond plus, ne respire pas. Son teint est bleuâtre.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Parfait ! Le 15 (SAMU) est le bon numéro pour un arrêt cardiaque, une urgence médicale absolue.",
+                    "112": "✅ Bon réflexe ! Le 112 (numéro européen) vous met en contact avec les secours adaptés.",
+                    "18": "⚠️ Le 18 (pompiers) peut aider, mais le 15 (SAMU) est prioritaire pour un arrêt cardiaque.",
+                    "17": "❌ Le 17 est la police. Appelez plutôt le 15 (SAMU) en urgence médicale."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (nom, adresse, étage, bâtiment)", key: "lieu" },
+                    { icon: "❤️", label: "Nature : arrêt cardiaque, victime inconsciente ne respirant pas", key: "nature" },
+                    { icon: "👤", label: "Bilan : homme/femme, âge approximatif, teint bleuâtre", key: "bilan" },
+                    { icon: "🤲", label: "Gestes : massage cardiaque en cours, DAE demandé", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 2,
+                type: "🔥 Incendie avec victime",
+                description: "Un feu se déclare dans le local de stockage. Un salarié a été surpris par les flammes et présente des brûlures sur les avant-bras. Il est conscient et crie de douleur.",
+                goodNums: ["18", "112"],
+                bestNum: "18",
+                numFeedback: {
+                    "18": "✅ Exact ! Le 18 (pompiers) est le numéro prioritaire pour un incendie avec victime brûlée.",
+                    "112": "✅ Bonne réponse ! Le 112 vous redirigera vers les pompiers.",
+                    "15": "⚠️ Le 15 gère les urgences médicales. Ici l'incendie est actif : appelez d'abord le 18 (pompiers).",
+                    "17": "❌ Le 17 est la police. Pour un incendie, composez le 18."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (adresse, bâtiment, local de stockage)", key: "lieu" },
+                    { icon: "🔥", label: "Nature : incendie en cours, un blessé avec brûlures aux bras", key: "nature" },
+                    { icon: "👤", label: "Bilan : victime consciente, brûlures avant-bras, douleur intense", key: "bilan" },
+                    { icon: "🚿", label: "Gestes : victime mise à l'écart, refroidissement brûlures à l'eau", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 3,
+                type: "🪜 Chute de hauteur",
+                description: "Un technicien chute d'un échafaudage à 3 mètres de haut. Il est allongé au sol, conscient, se plaint d'une vive douleur au dos et ne peut plus bouger ses jambes.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Bien ! Traumatisme rachidien suspecté : le 15 (SAMU) coordonnera une extraction adaptée.",
+                    "112": "✅ Correct. Le 112 vous mettra en relation avec les secours appropriés.",
+                    "18": "⚠️ Les pompiers peuvent intervenir, mais privilégiez le 15 pour ce traumatisme grave.",
+                    "17": "❌ Le 17 c'est la police. Appelez le 15 pour cette urgence médicale."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (chantier, adresse, proximité échafaudage)", key: "lieu" },
+                    { icon: "🪜", label: "Nature : chute de 3 m depuis un échafaudage", key: "nature" },
+                    { icon: "👤", label: "Bilan : conscient, douleur dorsale, paralysie des jambes suspectée", key: "bilan" },
+                    { icon: "🤚", label: "Gestes : victime non bougée, tête maintenue immobile", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 4,
+                type: "⚡ Électrisation",
+                description: "Un électricien touche accidentellement un câble sous tension. Il lâche prise mais reste à terre, inconscient. L'installation est maintenant coupée.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Bonne réponse ! Une électrisation peut provoquer des troubles cardiaques invisibles : le 15 s'impose.",
+                    "112": "✅ Correct. Le 112 activera les secours médicalisés nécessaires.",
+                    "18": "⚠️ Les pompiers peuvent intervenir. Cependant le 15 est préférable pour un trouble cardiaque potentiel.",
+                    "17": "❌ Le 17 est la police. Composez le 15 pour cette urgence médicale."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (atelier, adresse, numéro du local électrique)", key: "lieu" },
+                    { icon: "⚡", label: "Nature : électrisation, contact avec câble sous tension, courant coupé", key: "nature" },
+                    { icon: "👤", label: "Bilan : inconscient, respiration à vérifier, brûlures éventuelles", key: "bilan" },
+                    { icon: "🤲", label: "Gestes : courant coupé, ne pas toucher avant coupure, surveillance", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 5,
+                type: "🌊 Noyade",
+                description: "Sur le chantier près d'un bassin de rétention, un ouvrier a chuté dans l'eau. Des collègues l'ont sorti. Il est allongé, inconscient, et ne semble pas respirer normalement.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Parfait ! Une noyade avec arrêt respiratoire possible nécessite le SAMU en urgence.",
+                    "112": "✅ Bon réflexe. Le 112 est adapté à cette urgence vitale.",
+                    "18": "⚠️ Les pompiers peuvent aider mais le 15 coordonne mieux la réanimation médicalisée.",
+                    "17": "❌ C'est la police. Composez le 15 immédiatement pour une noyade."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (chantier, bassin de rétention, adresse)", key: "lieu" },
+                    { icon: "🌊", label: "Nature : noyade, victime sortie de l'eau par des collègues", key: "nature" },
+                    { icon: "👤", label: "Bilan : inconscient, respiration absente ou anormale", key: "bilan" },
+                    { icon: "🤲", label: "Gestes : allongé sur le dos, réanimation (MCE + bouche-à-bouche) débutée", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 6,
+                type: "🧪 Intoxication chimique",
+                description: "Dans un laboratoire, un salarié a renversé un produit chimique. Il se plaint de brûlures aux yeux, tousse fortement et a du mal à respirer. L'odeur est âcre.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Correct ! Une intoxication chimique avec détresse respiratoire nécessite le SAMU.",
+                    "112": "✅ Bon ! Le 112 vous orientera vers les secours adaptés.",
+                    "18": "⚠️ Les pompiers NRBC peuvent intervenir, mais le 15 gère la détresse respiratoire.",
+                    "17": "❌ Le 17 est la police. Appelez le 15 pour une intoxication chimique."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (laboratoire, salle, adresse complète)", key: "lieu" },
+                    { icon: "🧪", label: "Nature : renversement produit chimique, intoxication, nom du produit si connu", key: "nature" },
+                    { icon: "👤", label: "Bilan : brûlures oculaires, toux, détresse respiratoire, conscient", key: "bilan" },
+                    { icon: "💨", label: "Gestes : évacuation de la zone, rinçage yeux à l'eau, aération", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 7,
+                type: "🏗️ Ensevelissement",
+                description: "Une tranchée s'est effondrée sur un ouvrier. Il est partiellement enseveli sous des gravats, conscient, mais coincé. Il se plaint d'une douleur thoracique.",
+                goodNums: ["18", "112"],
+                bestNum: "18",
+                numFeedback: {
+                    "18": "✅ Bon réflexe ! Les pompiers ont les équipements spécialisés pour le désensevelissement.",
+                    "112": "✅ Correct. Le 112 mobilisera les secours adéquats, pompiers en tête.",
+                    "15": "⚠️ Utile pour le suivi médical, mais en premier lieu appelez le 18 pour l'extraction.",
+                    "17": "❌ Le 17 est la police. Pour un ensevelissement, composez le 18."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (chantier, adresse, localisation de la tranchée)", key: "lieu" },
+                    { icon: "🏗️", label: "Nature : effondrement de tranchée, victime ensevelie partiellement", key: "nature" },
+                    { icon: "👤", label: "Bilan : conscient, douleur thoracique, coinçé sous gravats", key: "bilan" },
+                    { icon: "🚫", label: "Gestes : périmètre de sécurité établi, ne pas aggraver l'effondrement", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 8,
+                type: "🩸 Hémorragie grave",
+                description: "Un opérateur a la main happée par une machine. Il perd énormément de sang, crie de douleur. Deux doigts semblent sectionnés.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Exact ! Une hémorragie grave avec amputation nécessite le SAMU (possibilité de réimplantation).",
+                    "112": "✅ Bon réflexe. Le 112 vous mettra en contact avec les secours médicalisés.",
+                    "18": "⚠️ Les pompiers peuvent aider, mais le 15 coordonne la prise en charge chirurgicale urgente.",
+                    "17": "❌ Le 17 c'est la police. Pour une hémorragie grave, appelez le 15."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (atelier, machine concernée, adresse)", key: "lieu" },
+                    { icon: "🩸", label: "Nature : accident machine, section de doigts, hémorragie massive", key: "nature" },
+                    { icon: "👤", label: "Bilan : conscient, saignement abondant main droite/gauche, douleur intense", key: "bilan" },
+                    { icon: "🤲", label: "Gestes : garrot/compression posés, fragments conservés au frais", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 9,
+                type: "😮 Étouffement",
+                description: "À la cantine, un salarié s'étouffe en mangeant. Il porte les mains à sa gorge, ne peut plus parler ni tousser. Son visage devient rouge.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Bien ! Si les manœuvres échouent ou si la victime perd connaissance, le 15 est essentiel.",
+                    "112": "✅ Correct. Le 112 peut aussi envoyer les secours appropriés.",
+                    "18": "⚠️ Le 18 peut intervenir. Le 15 est toutefois préférable pour une obstruction des voies aériennes.",
+                    "17": "❌ Le 17 c'est la police. Pour un étouffement, composez le 15."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (cantine, réfectoire, adresse et étage)", key: "lieu" },
+                    { icon: "😮", label: "Nature : étouffement total, corps étranger dans les voies aériennes", key: "nature" },
+                    { icon: "👤", label: "Bilan : conscient, ne peut ni parler ni tousser, visage congestionné", key: "bilan" },
+                    { icon: "🤲", label: "Gestes : claques dans le dos et compressions abdominales (Heimlich) effectuées", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 10,
+                type: "🧠 AVC suspecté",
+                description: "Une secrétaire de 52 ans se plaint soudainement d'un mal de tête violent. Vous remarquez que son visage est asymétrique, elle ne parvient plus à lever le bras droit et son discours est incompréhensible.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Parfait ! Un AVC est une urgence médicale absolue. Chaque minute compte pour le traitement.",
+                    "112": "✅ Bon réflexe ! Le 112 déclenche aussi les secours médicaux pour un AVC.",
+                    "18": "⚠️ Les pompiers peuvent transporter, mais le 15 coordonne mieux la filière AVC en urgence.",
+                    "17": "❌ Le 17 c'est la police. Pour un AVC suspecté, appelez le 15 immédiatement."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (bureau, étage, adresse complète)", key: "lieu" },
+                    { icon: "🧠", label: "Nature : AVC suspecté, signes soudains (visage, bras, parole)", key: "nature" },
+                    { icon: "👤", label: "Bilan : consciente, asymétrie faciale, bras droit paralysé, discours inintelligible", key: "bilan" },
+                    { icon: "⏰", label: "Gestes : victime assise au repos, heure d'apparition des symptômes notée", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 11,
+                type: "😰 Malaise cardiaque",
+                description: "Un magasinier de 48 ans se plaint d'une douleur oppressante dans la poitrine irradiant vers le bras gauche. Il est pâle, suant et dit qu'il a du mal à respirer.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Exact ! Un infarctus suspecté nécessite le SAMU pour une prise en charge médicalisée d'urgence.",
+                    "112": "✅ Bien ! Le 112 active aussi les secours médicaux adaptés.",
+                    "18": "⚠️ Les pompiers peuvent intervenir, mais le 15 est prioritaire pour un malaise cardiaque.",
+                    "17": "❌ Le 17 est la police. Pour un malaise cardiaque, composez le 15."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (entrepôt, quai de chargement, adresse)", key: "lieu" },
+                    { icon: "💔", label: "Nature : malaise cardiaque suspecté, douleur thoracique irradiant bras gauche", key: "nature" },
+                    { icon: "👤", label: "Bilan : conscient, pâle, suant, difficultés respiratoires, 48 ans", key: "bilan" },
+                    { icon: "🪑", label: "Gestes : installé assis en position semi-assise, au repos strict, ceinture desserrée", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 12,
+                type: "🚗 Accident de la route (trajet)",
+                description: "En allant au travail, vous êtes témoin d'un accident de voiture. Un véhicule est dans le fossé, le conducteur est inconscient, coincé dans l'habitacle. De la fumée s'échappe du capot.",
+                goodNums: ["112", "15"],
+                bestNum: "112",
+                numFeedback: {
+                    "112": "✅ Parfait ! Le 112 est le numéro universel pour coordonner pompiers + SAMU sur un accident de route.",
+                    "15": "✅ Bon réflexe ! Le 15 peut aussi coordonner les secours sur un accident avec blessé grave.",
+                    "18": "⚠️ Le 18 peut intervenir. Le 112 reste la référence pour ce type d'accident.",
+                    "17": "⚠️ La police peut sécuriser la zone. Appelez d'abord le 112 pour les secours médicaux."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (route, département, borne kilométrique ou repère visible)", key: "lieu" },
+                    { icon: "🚗", label: "Nature : accident de la route, véhicule dans fossé, fumée du capot", key: "nature" },
+                    { icon: "👤", label: "Bilan : conducteur inconscient, coincé, nombre de victimes", key: "bilan" },
+                    { icon: "🔺", label: "Gestes : balisage effectué, moteur coupé si possible, ne pas déplacer la victime", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 13,
+                type: "🌡️ Coup de chaleur",
+                description: "En plein été, un agent travaille en extérieur depuis 6 heures. Il s'effondre, sa peau est rouge et brûlante, il ne transpire plus et est confus. La température extérieure est de 38°C.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Correct ! Un coup de chaleur avec confusion est une urgence médicale vitale — appelez le 15.",
+                    "112": "✅ Bien ! Le 112 déclenchera les secours médicaux appropriés.",
+                    "18": "⚠️ Les pompiers peuvent intervenir, mais le 15 gère mieux cette urgence médicale.",
+                    "17": "❌ Le 17 est la police. Appelez le 15 pour un coup de chaleur grave."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (zone extérieure, chantier, adresse, bâtiment proche)", key: "lieu" },
+                    { icon: "🌡️", label: "Nature : coup de chaleur, travail en plein soleil depuis 6h, 38°C extérieur", key: "nature" },
+                    { icon: "👤", label: "Bilan : conscient mais confus, peau rouge et brûlante, absence de transpiration", key: "bilan" },
+                    { icon: "❄️", label: "Gestes : mis à l'ombre, vêtements desserrés, corps rafraîchi avec eau froide", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 14,
+                type: "😨 Crise d'épilepsie",
+                description: "Un salarié est pris de convulsions dans le couloir. Il tombe au sol, ses membres tremblent violemment. Il est inconscient pendant la crise.",
+                goodNums: ["15", "112"],
+                bestNum: "15",
+                numFeedback: {
+                    "15": "✅ Bien ! Si la crise dure plus de 5 minutes ou si c'est la première fois, le 15 est indispensable.",
+                    "112": "✅ Correct. Le 112 peut aussi envoyer les secours médicaux nécessaires.",
+                    "18": "⚠️ Les pompiers peuvent aider, mais le 15 est prioritaire pour une crise convulsive prolongée.",
+                    "17": "❌ Le 17 est la police. Pour une crise d'épilepsie, appelez le 15."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (couloir, étage, bâtiment, adresse complète)", key: "lieu" },
+                    { icon: "😨", label: "Nature : crise convulsive, épilepsie supposée, première fois ou récidive", key: "nature" },
+                    { icon: "👤", label: "Bilan : inconscient pendant la crise, convulsions des membres, durée estimée", key: "bilan" },
+                    { icon: "🛡️", label: "Gestes : zone dégagée, tête protégée, aucun objet en bouche, attente fin de crise", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            },
+            {
+                id: 15,
+                type: "🧯 Explosion / Blast",
+                description: "Une explosion se produit dans le local technique. Plusieurs personnes sont projetées. On dénombre 3 victimes : l'une est inconsciente, les deux autres sont conscientes mais blessées.",
+                goodNums: ["18", "112"],
+                bestNum: "112",
+                numFeedback: {
+                    "112": "✅ Excellent ! Le 112 coordonne tous les services (pompiers + SAMU) pour un accident avec plusieurs victimes.",
+                    "18": "✅ Bon réflexe ! Les pompiers interviennent sur les explosions. Le 112 reste le plus efficace ici.",
+                    "15": "⚠️ Utile pour le suivi médical, mais appelez d'abord le 112 pour coordonner pompiers et SAMU ensemble.",
+                    "17": "⚠️ La police peut sécuriser le périmètre, mais appelez d'abord le 112 pour les secours médicaux urgents."
+                },
+                messageItems: [
+                    { icon: "📍", label: "Lieu précis (local technique, bâtiment, adresse, accès pour secours)", key: "lieu" },
+                    { icon: "💥", label: "Nature : explosion, 3 victimes dont 1 inconsciente, risque de sur-accident", key: "nature" },
+                    { icon: "👥", label: "Bilan : 1 inconsciente (respiration à vérifier), 2 conscientes blessées", key: "bilan" },
+                    { icon: "🔺", label: "Gestes : périmètre de sécurité, victimes non déplacées, point de rendez-vous secours indiqué", key: "gestes" }
+                ],
+                expectedOrder: ["lieu","nature","bilan","gestes"]
+            }
+        ];
+
+        // ============================================================
+        //   LOGIQUE DU SIMULATEUR
+        // ============================================================
+        let currentScenario = null;
+        window.simAnswers = [];
+
+        window.startSimulator = function() {
+            document.getElementById('module-selection-screen').classList.remove('active');
+            document.getElementById('simulator-screen').classList.add('active');
+
+            // Tirage aléatoire parmi les 15 scénarios
+            const idx = Math.floor(Math.random() * SIM_SCENARIOS.length);
+            currentScenario = SIM_SCENARIOS[idx];
+
+            // Remplissage de l'interface
+            document.getElementById('sim-type-badge').innerText = currentScenario.type;
+            document.getElementById('sim-scenario').innerText = currentScenario.description;
+            document.getElementById('sim-scenario-counter').innerText =
+                `Scénario ${currentScenario.id} / ${SIM_SCENARIOS.length} — tiré au sort`;
+
+            // Reset
+            window.simAnswers = [];
+            document.getElementById('sim-step-1').style.display = 'block';
+            document.getElementById('sim-step-2').style.display = 'none';
+            document.getElementById('sim-num-feedback').innerHTML = '';
+        };
+
+        window.checkSimNum = function(num) {
+            const s = currentScenario;
+            const feedback = s.numFeedback[num] || "ℹ️ Ce numéro n'est pas le plus adapté ici.";
+            const isGood = s.goodNums.includes(num);
+
+            document.getElementById('sim-num-feedback').innerHTML =
+                `<div class="${isGood ? 'sim-result-box sim-result-ok' : 'sim-result-box sim-result-ko'}">${feedback}</div>`;
+
+            // Si bonne réponse OU mauvaise → on laisse voir puis on passe à l'étape 2 après 1.8s
+            setTimeout(() => {
+                document.getElementById('sim-step-1').style.display = 'none';
+                document.getElementById('sim-step-2').style.display = 'block';
+                loadSimStep2();
+            }, 1800);
+        };
+
+        function loadSimStep2() {
+            window.simAnswers = [];
+            document.getElementById('sim-message-text').innerText = "Appuyez sur les éléments ci-dessus...";
+            document.getElementById('sim-result-box').style.display = 'none';
+            document.getElementById('sim-btn-verify').style.display = 'none';
+            document.getElementById('sim-btn-retry').style.display = 'none';
+
+            // Mélange des options
+            const shuffled = [...currentScenario.messageItems].sort(() => Math.random() - 0.5);
+            const container = document.getElementById('sim-options');
+            container.innerHTML = '';
+
+            shuffled.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'sim-option-btn';
+                btn.dataset.key = item.key;
+                btn.innerHTML = `<span class="sim-opt-icon">${item.icon}</span><span>${item.label}</span>`;
+                btn.onclick = function() {
+                    if(btn.disabled) return;
+                    btn.disabled = true;
+
+                    // Numéro d'ordre
+                    const orderPill = document.createElement('span');
+                    orderPill.className = 'sim-order-pill';
+                    orderPill.innerText = window.simAnswers.length + 1;
+                    btn.insertBefore(orderPill, btn.firstChild);
+
+                    window.simAnswers.push(item.key);
+
+                    // Mise à jour du preview
+                    const labels = window.simAnswers.map(k => {
+                        const found = currentScenario.messageItems.find(i => i.key === k);
+                        return found ? found.icon + ' ' + found.label.split('(')[0].trim() : k;
+                    });
+                    document.getElementById('sim-message-text').innerText = labels.join(' → ');
+
+                    if(window.simAnswers.length === currentScenario.messageItems.length) {
+                        document.getElementById('sim-btn-verify').style.display = 'block';
+                    }
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        window.verifySimMessage = function() {
+            const expected = currentScenario.expectedOrder;
+            const isCorrect = window.simAnswers.join(',') === expected.join(',');
+            const resultBox = document.getElementById('sim-result-box');
+            resultBox.style.display = 'block';
+
+            if(isCorrect) {
+                resultBox.className = 'sim-result-box sim-result-ok';
+                resultBox.innerText = '🏆 Parfait ! Votre message est clair, structuré et dans le bon ordre. Les secours pourront intervenir efficacement.';
+                document.getElementById('sim-btn-verify').style.display = 'none';
+                document.getElementById('sim-btn-retry').style.display = 'none';
+                // Bouton nouveau scénario
+                const btnNew = document.getElementById('sim-btn-new') || document.createElement('button');
+                btnNew.id = 'sim-btn-new';
+                btnNew.className = 'btn-ncr';
+                btnNew.style.marginTop = '12px';
+                btnNew.innerText = '🔀 Nouveau scénario aléatoire';
+                btnNew.onclick = window.startSimulator;
+                if(!document.getElementById('sim-btn-new')) {
+                    resultBox.insertAdjacentElement('afterend', btnNew);
+                }
+                btnNew.style.display = 'block';
+            } else {
+                resultBox.className = 'sim-result-box sim-result-ko';
+                const correctLabels = expected.map(k => {
+                    const found = currentScenario.messageItems.find(i => i.key === k);
+                    return found ? found.icon + ' ' + found.label.split('(')[0].trim() : k;
+                });
+                resultBox.innerHTML = `❌ Pas tout à fait ! L'ordre idéal est :<br><br><strong>${correctLabels.join(' → ')}</strong><br><br>Réessayez pour mémoriser la bonne structure !`;
+                document.getElementById('sim-btn-verify').style.display = 'none';
+                document.getElementById('sim-btn-retry').style.display = 'block';
+            }
+        };
+
+        window.retrySimStep2 = function() {
+            loadSimStep2();
+        };
+
+        // ============================================================
+        //   TOUT LE RESTE DU CODE (QUIZ, FIREBASE, ETC.) — INCHANGÉ
+        // ============================================================
+
         const allQuestions = [
     // MODULE 1 : Rôle du SST (20 questions)
     { q: "Le SST est un acteur de quelle partie de la santé au travail ?", a: ["Médecine du travail", "Prévention et secours", "Inspection", "Administration"], c: 1, e: "Le SST a un double rôle : porter secours en cas d'accident, mais aussi agir au quotidien pour la prévention des risques." },
@@ -383,7 +848,6 @@
     { q: "Le SST est-il protégé pénalement s'il aggrave la blessure ?", a: ["Non", "Oui (Bon Samaritain)", "Si il paie", "Jamais"], c: 1, e: "La loi protège celui qui porte assistance, sauf faute lourde ou intentionnelle." },
     { q: "Le SST est :", a: ["Un médecin", "Un secouriste", "Un préventeur-secouriste", "Un pompier"], c: 2, e: "Il assure les deux volets : le secours et la prévention." },
     { q: "Le SST intervient-il hors de son entreprise ?", a: ["Oui", "Non", "Jamais", "Seulement si payé"], c: 0, e: "L'assistance à personne en danger est un devoir citoyen général." },
-
     // MODULE 2 : Protéger (20 questions)
     { q: "Quelle est la 1ère étape de la protection ?", a: ["Supprimer danger", "S'exposer", "Alerter", "Examiner"], c: 0, e: "Supprimer la source du danger est la mesure de protection la plus efficace." },
     { q: "Si le danger ne peut être supprimé :", a: ["Isoler la zone", "Rester à côté", "Ignorer", "Porter victime"], c: 0, e: "On isole la zone pour éviter qu'une autre personne soit blessée." },
@@ -405,205 +869,178 @@
     { q: "Protéger c'est :", a: ["Analyser env.", "Toucher victime", "Massage", "Appeler"], c: 0, e: "Avant tout, on observe son environnement." },
     { q: "Règle d'or protection :", a: ["Pas de nouvelle victime", "Vitesse", "Garrot", "Rien"], c: 0, e: "Le bilan zéro victime supplémentaire est le but." },
     { q: "Balisage accident :", a: ["Triangle", "Panneaux", "Balise", "Tout ça"], c: 3, e: "Utiliser tous les moyens à disposition." },
-
-    // MODULE 3 : Examiner (20 questions)
-    { q: "Quel est l'ordre logique de l'examen d'une victime ?", a: ["Saigne, Étouffe, Répond, Respire", "Respire, Répond, Saigne, Étouffe", "Répond, Saigne, Respire, Étouffe", "L'ordre n'a pas d'importance"], c: 0, e: "L'hémorragie massive et l'étouffement total sont les deux seules causes de mort qui surviennent en quelques minutes : on les recherche donc en premier. On évalue ensuite la conscience, puis la respiration. Respecter cet ordre évite de perdre un temps précieux sur un problème secondaire alors qu'une urgence vitale est passée inaperçue." },
-    { q: "Comment vérifier l'état de conscience d'une victime ?", a: ["En la secouant fermement par les épaules", "En lui parlant, en lui posant une question simple et en lui demandant un geste précis", "En lui pinçant la peau pour provoquer une réaction", "En l'aspergeant d'eau froide"], c: 1, e: "On s'adresse calmement à la victime ('Vous m'entendez ? Serrez-moi la main') en lui demandant une réponse verbale et un geste simple à réaliser. Si elle répond et exécute l'ordre de façon cohérente, elle est consciente. L'absence de réponse, même après stimulation légère, signe l'inconscience." },
-    { q: "Comment vérifier que la victime respire ?", a: ["En approchant un miroir de sa bouche", "En basculant prudemment la tête en arrière puis en regardant, écoutant et sentant pendant 10 secondes maximum", "En prenant son pouls au poignet", "En lui demandant de respirer fort"], c: 1, e: "Après avoir basculé la tête en arrière pour dégager les voies aériennes, on place sa joue près du nez et de la bouche de la victime : on regarde si le thorax se soulève, on écoute le bruit de l'air et on sent le souffle sur sa peau. Cette vérification ne doit jamais dépasser 10 secondes." },
-    { q: "Vous découvrez une victime inconsciente qui saigne abondamment d'une jambe. Que faites-vous en priorité ?", a: ["Vous terminez l'examen complet avant d'agir", "Vous comprimez immédiatement le point de saignement", "Vous appelez les secours avant tout autre geste", "Vous attendez l'avis d'un collègue"], c: 1, e: "Une hémorragie abondante peut entraîner la mort en quelques minutes. Dès qu'elle est repérée, on agit sans délai en comprimant la plaie, avant même de poursuivre l'examen ou de téléphoner. L'action passe avant la suite du diagnostic." },
-    { q: "Une victime est inconsciente mais respire normalement. Quel est son état ?", a: ["Elle est en arrêt cardiaque", "Elle est dans un état d'inconscience, comparable à un coma", "Elle dort profondément", "Elle simule"], c: 1, e: "L'inconscience avec respiration conservée correspond à un état comateux : le cerveau ne répond plus aux stimulations mais les fonctions vitales de base sont maintenues. Il faut la mettre en position latérale de sécurité (PLS) pour préserver sa respiration et surveiller en attendant les secours." },
-    { q: "La victime consciente vous dit \"Ça va, ce n'est rien\". Que faites-vous ?", a: ["Vous la laissez repartir immédiatement", "Vous poursuivez quand même l'examen complet", "Vous appelez directement les secours sans l'examiner", "Vous lui faites un massage cardiaque par précaution"], c: 1, e: "Une victime peut minimiser ou ignorer la gravité réelle de son état, notamment sous l'effet du choc ou de l'adrénaline. Le SST doit systématiquement poursuivre son examen méthodique (saigne, étouffe, répond, respire) plutôt que de se fier uniquement à la parole de la victime." },
-    { q: "Faut-il vérifier le pouls pour savoir si une victime respire ?", a: ["Oui, c'est la méthode de référence", "Non, seule l'observation de la respiration (voir, écouter, sentir) est recommandée", "Oui, mais seulement au poignet", "Cela dépend du temps disponible"], c: 1, e: "La recherche du pouls est une méthode peu fiable, longue à réaliser correctement et source d'erreurs même pour des professionnels entraînés. Le secourisme grand public se concentre donc uniquement sur l'observation de la respiration." },
-    { q: "Pourquoi bascule-t-on la tête de la victime en arrière lors de l'examen de la respiration ?", a: ["Pour des raisons de confort visuel", "Pour libérer les voies aériennes en évitant que la langue ne bascule au fond de la gorge", "Pour faciliter l'ouverture des yeux", "Pour l'aider à s'endormir"], c: 1, e: "Chez une personne inconsciente, les muscles se relâchent, y compris ceux de la langue, qui peut alors obstruer le pharynx. La bascule de la tête en arrière (avec extension du cou) tend les tissus et dégage le passage de l'air, permettant une respiration efficace si elle est présente." },
-    { q: "Que signifie un \"gasp\" (mouvement respiratoire bruyant, lent et irrégulier) chez une victime inconsciente ?", a: ["Une respiration tout à fait normale", "Un arrêt cardio-respiratoire : il s'agit d'un réflexe agonique qu'il faut traiter comme une absence de respiration", "Un simple ronflement", "Une crise d'asthme"], c: 1, e: "Le gasp est un mouvement respiratoire réflexe, inefficace, qui peut apparaître dans les premières minutes d'un arrêt cardiaque. Il ne doit jamais être confondu avec une respiration normale : il impose de débuter immédiatement la réanimation cardio-pulmonaire." },
-    { q: "Quel est le temps maximum recommandé pour examiner la respiration d'une victime ?", a: ["5 secondes", "10 secondes", "30 secondes", "1 minute"], c: 1, e: "10 secondes suffisent pour observer, écouter et sentir la respiration de façon fiable. Au-delà, on retarderait inutilement la suite de la prise en charge (alerte, réanimation) en cas d'absence réelle de respiration." },
-    { q: "Dans quel cas est-il justifié de déshabiller partiellement une victime ?", a: ["Systématiquement, pour tout examen", "Uniquement si cela est nécessaire pour visualiser une plaie, une brûlure ou un signe de gravité", "Seulement le haut du corps", "Cela est toujours interdit"], c: 1, e: "On ne déshabille la victime que lorsque cela est indispensable pour évaluer ou traiter une blessure précise (hémorragie cachée, brûlure étendue), en respectant au maximum sa pudeur et en limitant son exposition au froid." },
-    { q: "Quel est le signe caractéristique d'un étouffement total (obstruction complète des voies aériennes) ?", a: ["La victime tousse fort", "La victime parle difficilement mais s'exprime", "La victime ne peut ni parler, ni tousser, ni respirer, et porte souvent les mains à sa gorge", "La victime pleure abondamment"], c: 2, e: "Dans l'obstruction totale, l'air ne passe plus du tout : la victime reste silencieuse, ne peut pas tousser efficacement et s'agite en portant souvent les mains à son cou (signe universel de l'étouffement). C'est une urgence absolue nécessitant les claques dans le dos puis la méthode de Heimlich." },
-    { q: "À quoi sert principalement l'examen de la victime ?", a: ["À identifier l'action de secours prioritaire à réaliser", "À poser un diagnostic médical précis", "À remplir un rapport administratif", "Il n'a pas d'utilité concrète"], c: 0, e: "L'examen du SST n'a pas pour but de poser un diagnostic médical complet (réservé aux professionnels de santé) mais de repérer rapidement les signes qui imposent une action immédiate : hémorragie à comprimer, étouffement à lever, arrêt respiratoire à traiter." },
-    { q: "Une victime consciente se plaint d'une douleur thoracique. Comment doit-on considérer ce signe ?", a: ["Comme un simple problème digestif à surveiller", "Comme un possible problème cardiaque, à prendre très au sérieux", "Comme une simple conséquence du stress", "Comme un signe sans importance"], c: 1, e: "Toute douleur thoracique chez une personne consciente doit être considérée par principe comme pouvant traduire un problème cardiaque (infarctus notamment), même si d'autres causes existent. Le SST doit alerter les secours et installer la victime en position semi-assise, au repos strict." },
-    { q: "Une victime présente une difficulté à parler associée à une déformation du visage. À quoi cela peut-il faire penser ?", a: ["À de la fatigue passagère", "À un accident vasculaire cérébral (AVC)", "À une réaction allergique bénigne", "À une simple grimace volontaire"], c: 1, e: "L'asymétrie du visage, la difficulté soudaine à parler ou à comprendre, et la faiblesse d'un côté du corps sont les signes classiques d'un AVC. C'est une urgence vitale : il faut alerter immédiatement les secours en précisant l'heure d'apparition des symptômes, donnée essentielle pour le traitement." },
-    { q: "Comment doit-on procéder pour examiner une victime au sol ?", a: ["Sans la déplacer, sauf nécessité absolue (danger immédiat)", "En l'asseyant systématiquement", "En la mettant sur le ventre", "En la mettant debout pour mieux voir"], c: 0, e: "Sauf si un danger immédiat l'impose (incendie, danger électrique...), on examine la victime dans la position où elle se trouve, sans la mobiliser inutilement. Un déplacement intempestif peut aggraver une lésion, notamment de la colonne vertébrale." },
-    { q: "Vous repérez à la fois une hémorragie et une absence de respiration. Que traitez-vous en premier ?", a: ["La respiration, car c'est plus grave", "L'hémorragie, car le sang qui s'écoule doit être stoppé sans délai", "Les deux en même temps, seul", "Aucune des deux, vous attendez les secours"], c: 1, e: "Bien que l'arrêt respiratoire soit extrêmement grave, une hémorragie massive non contrôlée peut entraîner le décès très rapidement par perte de sang. La règle générale du SST est donc de stopper immédiatement tout saignement abondant avant d'enchaîner sur les autres gestes, y compris la réanimation, sauf si vous pouvez déléguer l'un des deux gestes à un témoin." },
-    { q: "Comment reconnaît-on un étouffement chez une victime consciente ?", a: ["En l'observant et en l'écoutant : difficulté ou impossibilité à parler, tousser ou respirer", "En palpant son cou", "En lui faisant une radio", "En la secouant énergiquement"], c: 0, e: "L'observation et l'écoute permettent de repérer les signes d'obstruction des voies aériennes : la victime porte souvent les mains à sa gorge, ne peut plus parler ni tousser efficacement, et son visage peut devenir rouge puis bleuté (cyanose)." },
-    { q: "Que faire face à une victime en pleine crise convulsive ?", a: ["La maintenir fermement pour bloquer les mouvements", "La protéger des chocs contre les objets environnants, sans chercher à bloquer les convulsions", "Lui placer un objet dans la bouche pour éviter qu'elle se morde", "Ne rien faire et s'éloigner"], c: 1, e: "Il ne faut jamais entraver les mouvements convulsifs, ni placer un objet dans la bouche de la victime (risque de blessure dentaire ou d'obstruction). On dégage l'espace autour d'elle pour éviter les traumatismes, on protège sa tête si possible, et on attend la fin de la crise avant de la mettre en PLS." },
-    { q: "Quelle qualité doit avoir l'examen réalisé par le SST ?", a: ["Long et exhaustif, comme un bilan médical complet", "Rapide et méthodique, centré sur les signes de détresse vitale", "Facultatif si la victime semble bien", "Inutile si les secours sont déjà prévenus"], c: 1, e: "L'efficacité du SST repose sur la rapidité et la rigueur de son examen : il suit toujours la même méthode (saigne, étouffe, répond, respire) pour ne rien oublier, tout en agissant vite face à une urgence vitale identifiée." },
-
-    // MODULE 4 : Alerter (20 questions)
-    { q: "Quel numéro permet de contacter le SAMU (urgence médicale) en France ?", a: ["15", "17", "18", "112"], c: 0, e: "Le 15 est le numéro dédié à l'aide médicale urgente en France, géré par le centre de régulation médicale (SAMU). Il est à privilégier pour tout problème de santé grave." },
-    { q: "Quel numéro d'urgence est valable dans tous les pays de l'Union européenne ?", a: ["15", "17", "18", "112"], c: 3, e: "Le 112 est le numéro d'appel d'urgence unique européen, accessible gratuitement depuis tout téléphone, y compris sans carte SIM dans certains pays, et utilisable dans toute l'Union européenne." },
-    { q: "Quel numéro permet aux personnes sourdes ou malentendantes d'alerter par SMS ?", a: ["114", "115", "119", "116"], c: 0, e: "Le 114 est le numéro d'urgence accessible par SMS, fax ou visiophonie pour les personnes sourdes, malentendantes, aphasiques ou dysphasiques, leur permettant de joindre les services de secours." },
-    { q: "Lors d'un message d'alerte, quelle information doit être donnée en priorité ?", a: ["Le nom de la victime", "Le lieu précis de l'accident", "L'âge de la victime", "L'heure exacte de l'accident"], c: 1, e: "Donner immédiatement le lieu précis (adresse, repères, étage, bâtiment) permet aux services de secours de localiser rapidement l'intervention et de mobiliser les moyens adéquats sans perdre de temps, même si la communication est ensuite interrompue." },
-    { q: "Après avoir transmis toutes les informations à l'opérateur, que doit faire l'appelant ?", a: ["Raccrocher immédiatement pour libérer la ligne", "Rester en ligne et attendre que le régulateur mette fin à l'appel", "Proposer un café à la victime", "Quitter les lieux"], c: 1, e: "Le régulateur peut avoir besoin de précisions complémentaires ou de donner des consignes (gestes à réaliser en attendant les secours). C'est donc lui qui décide de mettre fin à la communication, jamais l'appelant en premier." },
-    { q: "Qui peut être chargé de transmettre l'alerte interne dans une entreprise ?", a: ["Un témoin de l'accident ou le SST lui-même", "Uniquement le PDG de l'entreprise", "Uniquement le maire de la commune", "Personne, ce n'est pas nécessaire"], c: 0, e: "L'alerte interne suit les procédures propres à chaque établissement : elle peut être donnée par le SST lui-même ou déléguée à un témoin présent, en complément ou en parallèle de l'alerte aux secours extérieurs." },
-    { q: "Le nombre de victimes est-il une information importante à transmettre lors de l'alerte ?", a: ["Oui, car cela conditionne les moyens envoyés sur place", "Non, ce n'est jamais demandé", "Seulement s'il y a plus de 5 victimes", "Seulement si le régulateur le demande explicitement"], c: 0, e: "Le nombre de victimes concernées permet au régulateur de dimensionner correctement les secours (nombre d'ambulances, de véhicules de pompiers, renforts éventuels). C'est une information à donner spontanément, sans attendre qu'on vous la demande." },
-    { q: "Que désigne une \"consigne de sécurité\" dans le cadre de l'alerte en entreprise ?", a: ["Un simple conseil facultatif", "Une procédure propre à l'entreprise que chaque salarié doit connaître", "Un ouvrage de référence", "Une obligation légale identique partout"], c: 1, e: "Chaque entreprise définit ses propres consignes (numéros internes, point de rassemblement, personnes à alerter en priorité). Le SST doit les connaître pour agir efficacement et coordonner l'alerte interne avec l'alerte aux secours publics." },
-    { q: "Face à un arrêt cardiaque, quel équipement faut-il demander en priorité à un témoin ?", a: ["Un défibrillateur automatisé externe (DAE)", "Un verre d'eau", "Une civière", "Un médecin du quartier"], c: 0, e: "Le DAE est l'outil qui permet de délivrer un choc électrique pour relancer un cœur qui fibrille, en complément du massage cardiaque. Chaque minute sans défibrillation réduit fortement les chances de survie, il faut donc l'envoyer chercher dès que possible." },
-    { q: "Quelles informations le message d'alerte doit-il décrire concernant la victime ?", a: ["Son historique médical complet", "La nature de l'accident et l'état apparent de la victime", "Les responsabilités de l'accident", "Le coût estimé des soins"], c: 1, e: "Le message d'alerte doit comporter la nature de l'événement (chute, malaise, accident de la route...) et l'état observé de la victime (consciente, qui respire, qui saigne...), informations essentielles pour que le régulateur évalue la gravité et adapte sa réponse." },
-    { q: "Peut-on charger un témoin de donner l'alerte à la place du SST ?", a: ["Non, jamais", "Oui, à condition de lui donner des consignes claires et précises", "Uniquement si la victime le demande", "Uniquement si le témoin insiste"], c: 1, e: "Si le SST doit rester auprès de la victime pour effectuer un geste de secours, il peut désigner un témoin et lui donner des instructions précises (numéro à appeler, informations à transmettre) pour que l'alerte soit donnée sans délai." },
-    { q: "Qui répond généralement lorsqu'on appelle le 15 (SAMU) ?", a: ["Un agent de police", "Un médecin régulateur ou un assistant de régulation médicale (ARM)", "Un simple standardiste sans formation médicale", "Un système automatisé uniquement"], c: 1, e: "Le centre de régulation médicale du SAMU est composé de médecins régulateurs et d'assistants de régulation médicale formés à évaluer la gravité des situations et à déclencher la réponse la plus adaptée (conseils, envoi d'une ambulance, intervention du SMUR...)." },
-    { q: "À quoi correspond une alerte sonore de type sirène destinée à la population ?", a: ["Un exercice scolaire mineur", "Un risque majeur (industriel, naturel...) nécessitant une mise à l'abri", "La fin d'une alerte incendie", "Un simple signal horaire"], c: 1, e: "Le signal national d'alerte (sirène avec montées et descentes de son sur 1 minute, répété 3 fois) prévient la population d'un danger majeur imminent ou en cours, imposant généralement de se mettre à l'abri et de s'informer via les médias officiels." },
-    { q: "Que faire si la communication avec les secours est interrompue pendant l'appel ?", a: ["Abandonner l'alerte, l'essentiel a déjà été dit", "Rappeler immédiatement le même numéro", "Utiliser un autre téléphone sans rappeler le premier", "Attendre que les secours rappellent"], c: 1, e: "Si l'appel est coupé avant la fin de l'échange avec le régulateur, il faut le rappeler sans tarder pour s'assurer que toutes les informations nécessaires (lieu, état de la victime) ont bien été transmises et compléter si besoin." },
-    { q: "Quel est l'objectif principal du fait d'alerter les secours ?", a: ["Obtenir des moyens de secours adaptés à la situation", "Se décharger de la responsabilité", "Avoir une preuve d'intervention", "Faire peur aux personnes présentes"], c: 0, e: "Alerter permet de mobiliser rapidement les moyens humains et matériels adaptés à la gravité de la situation (ambulance, pompiers, SMUR...), afin que la victime reçoive une prise en charge médicale appropriée dans les meilleurs délais." },
-    { q: "À quel service correspond le numéro 18 ?", a: ["Le SAMU", "La police ou la gendarmerie", "Les sapeurs-pompiers", "Les secours en mer"], c: 2, e: "Le 18 permet de joindre les sapeurs-pompiers, compétents notamment pour les incendies, mais aussi pour de nombreuses interventions de secours à personne, en complément ou en l'absence du SAMU." },
-    { q: "Pour quel type de situation appelle-t-on prioritairement le 15 ?", a: ["Un incendie", "Une détresse médicale (malaise, accident, problème de santé grave)", "Un cambriolage en cours", "Un animal en danger"], c: 1, e: "Le 15 est le numéro médicalisé, à privilégier pour toute urgence de santé : malaise, douleur thoracique, perte de connaissance, accident avec blessé... Le régulateur médical évalue la situation et déclenche la réponse adaptée." },
-    { q: "Vous êtes seul face à une victime en arrêt cardiaque. Que faites-vous en priorité ?", a: ["Donner l'alerte avant tout autre geste, idéalement en mode mains libres", "Commencer le massage cardiaque puis alerter ensuite seulement", "Aller chercher un DAE à 1 km sans masser ni alerter", "Attendre qu'un témoin passe"], c: 0, e: "Seul face à un arrêt cardiaque, on donne d'abord l'alerte (de préférence en haut-parleur pour garder les mains libres) car elle déclenche l'envoi des secours et permet d'obtenir d'éventuelles consignes du régulateur, avant de débuter immédiatement le massage cardiaque." },
-    { q: "Quelles qualités doit avoir un message d'alerte efficace ?", a: ["Vague et général", "Clair et précis", "Le plus long possible", "Crié fort pour être entendu"], c: 1, e: "Un message d'alerte efficace est clair, structuré et précis : lieu, nature de l'accident, nombre et état des victimes, gestes déjà entrepris. La clarté évite les malentendus et accélère la mobilisation des secours." },
-    { q: "Pourquoi est-il utile qu'une personne attende les secours à un point visible (entrée, portail...) ?", a: ["Pour guider rapidement les équipes de secours vers le lieu exact de l'accident", "Pour éviter de s'ennuyer pendant l'attente", "Pour respecter une obligation légale stricte", "Cela n'a aucune utilité réelle"], c: 0, e: "Une personne positionnée à un endroit visible (entrée du site, bord de route) pour guider les secours fait gagner un temps précieux, notamment dans des lieux difficiles d'accès, mal numérotés ou peu visibles depuis la voie publique." },
-
-    // MODULE 5 : Secourir (20 questions)
-    { q: "Face à une hémorragie externe, quel est le geste à réaliser ?", a: ["Comprimer directement la plaie", "Laver abondamment la plaie", "Poser systématiquement un garrot", "Donner un comprimé contre la douleur"], c: 0, e: "La compression manuelle directe sur la plaie (avec un linge propre si possible) est le geste de premier choix pour arrêter une hémorragie. Le garrot n'est utilisé qu'en cas d'échec de la compression ou d'impossibilité de comprimer (hémorragie massive, membre arraché...)." },
-    { q: "Quelle est la technique recommandée face à un étouffement total chez l'adulte conscient ?", a: ["5 claques dans le dos puis 5 compressions abdominales (méthode de Heimlich), en alternance", "Lui faire boire de l'eau rapidement", "L'allonger immédiatement au sol", "Ne rien faire et attendre que cela passe"], c: 0, e: "Face à une obstruction totale des voies aériennes, on réalise jusqu'à 5 claques vigoureuses entre les omoplates, puis, si cela ne suffit pas, jusqu'à 5 compressions abdominales (méthode de Heimlich), en alternant les deux techniques jusqu'à expulsion du corps étranger ou perte de conscience." },
-    { q: "Une victime est inconsciente mais respire. Dans quelle position doit-elle être placée ?", a: ["Assise contre un mur", "En position latérale de sécurité (PLS)", "Allongée sur le dos", "Debout, soutenue par le SST"], c: 1, e: "La PLS permet de maintenir les voies aériennes dégagées chez une victime inconsciente qui respire, en évitant que la langue ne bascule en arrière et que d'éventuels vomissements ne soient inhalés dans les poumons." },
-    { q: "Pourquoi place-t-on une victime inconsciente qui respire en position latérale de sécurité ?", a: ["Pour qu'elle dorme plus confortablement", "Pour maintenir ses voies aériennes libres et prévenir l'inhalation de vomissements", "Pour la réchauffer", "Pour soulager son dos"], c: 1, e: "Cette position favorise l'écoulement naturel des liquides (vomissements, sécrétions) vers l'extérieur de la bouche plutôt que vers les voies respiratoires, et empêche la langue d'obstruer le pharynx, réduisant ainsi le risque d'asphyxie." },
-    { q: "Quel est le rythme recommandé pour le massage cardiaque chez l'adulte ?", a: ["15 compressions pour 2 insufflations", "30 compressions pour 2 insufflations", "100 compressions en continu sans insufflation possible", "10 compressions pour 1 insufflation"], c: 1, e: "Le rythme actuellement recommandé est de 30 compressions thoraciques suivies de 2 insufflations, ce cycle étant répété sans interruption jusqu'à l'arrivée des secours ou la mise en route d'un défibrillateur. Si le secouriste ne peut ou ne veut pas insuffler, des compressions continues restent préférables à l'absence d'action." },
-    { q: "Où doivent être positionnées les mains pour réaliser un massage cardiaque ?", a: ["Sur le ventre", "Au centre de la poitrine, sur le sternum", "Sur le côté gauche des côtes", "Sur la gorge"], c: 1, e: "Les mains, l'une sur l'autre, doigts entrecroisés, sont placées au centre du thorax, sur la moitié inférieure du sternum. Cette position permet de comprimer efficacement le cœur sans risquer de fracturer les côtes flottantes ou le foie." },
-    { q: "Quelle doit être la profondeur des compressions thoraciques chez l'adulte ?", a: ["1 à 2 cm", "5 à 6 cm", "Environ 10 cm", "Aucune profondeur n'est nécessaire"], c: 1, e: "Une compression efficace doit enfoncer le thorax de 5 à 6 cm chez l'adulte, afin de générer une circulation sanguine suffisante. Une compression trop superficielle est inefficace, et l'on ne doit pas hésiter à appuyer fermement malgré le risque de fracture costale, secondaire face à l'urgence vitale." },
-    { q: "Quelle est la vitesse recommandée pour les compressions thoraciques ?", a: ["60 compressions par minute", "100 à 120 compressions par minute", "150 compressions par minute", "200 compressions par minute"], c: 1, e: "Le rythme recommandé se situe entre 100 et 120 compressions par minute, souvent comparé au tempo de certaines chansons connues utilisées comme repère d'entraînement (par exemple 'Stayin' Alive')." },
-    { q: "Quand doit-on utiliser un défibrillateur automatisé externe (DAE) ?", a: ["Dès qu'il est disponible, le plus tôt possible", "Seulement après 10 minutes de massage cardiaque", "Seulement si un médecin est présent", "Seulement si la victime respire encore"], c: 0, e: "Le DAE doit être utilisé dès qu'il est disponible, sans attendre, car chaque minute de fibrillation ventriculaire non traitée réduit significativement les chances de survie. Il s'utilise en complément du massage cardiaque, qui ne doit pas être interrompu inutilement pendant qu'on l'installe." },
-    { q: "Que doit faire le secouriste pendant la phase d'analyse du rythme cardiaque par le DAE ?", a: ["Continuer le massage cardiaque sans interruption", "Ne plus toucher la victime", "Parler fort à la victime", "Débrancher les électrodes"], c: 1, e: "Pendant l'analyse, le DAE mesure l'activité électrique du cœur pour déterminer si un choc est nécessaire. Tout contact avec la victime pendant cette phase peut fausser l'analyse : il faut donc s'écarter et ne toucher personne." },
-    { q: "Comment traiter une plaie simple (peu profonde, qui ne saigne pas abondamment) ?", a: ["La nettoyer à l'eau et au savon", "Y verser de l'alcool", "La recouvrir de terre", "Ne rien faire du tout"], c: 0, e: "Pour une plaie simple, un nettoyage à l'eau claire et au savon suffit pour éliminer les souillures et réduire le risque d'infection, avant de recouvrir d'un pansement propre. Les antiseptiques alcoolisés et les produits non adaptés sont à éviter." },
-    { q: "Quel est le geste de premier secours face à une brûlure thermique ?", a: ["Appliquer du beurre sur la zone brûlée", "Refroidir immédiatement la brûlure à l'eau tempérée pendant environ 10 minutes", "Percer les éventuelles cloques", "Appliquer directement de la glace"], c: 1, e: "Le refroidissement immédiat à l'eau tempérée (15-25°C) pendant environ 10 minutes limite l'extension de la brûlure en profondeur et soulage la douleur. Le beurre, la glace directe ou le perçage des cloques sont à proscrire car ils aggravent la lésion ou favorisent l'infection." },
-    { q: "Une victime consciente présente un malaise simple, sans signe de gravité. Que privilégier ?", a: ["La mettre au repos dans la position où elle se sent le mieux", "La faire courir pour stimuler la circulation", "La gifler pour la \"réveiller\"", "L'ignorer en attendant que cela passe"], c: 0, e: "Face à un malaise, on installe la victime au repos, dans la position qu'elle juge la plus confortable (assise, allongée...), on la rassure, on desserre ses vêtements si besoin et on surveille son évolution en attendant un avis médical si nécessaire." },
-    { q: "Un doigt a été sectionné lors d'un accident. Comment conserver le fragment ?", a: ["Le jeter, il est inutilisable", "Le placer dans un sac propre, lui-même posé sur un lit de glace, sans contact direct", "Le mettre directement en contact avec de la glace", "Tenter de le recoudre soi-même"], c: 1, e: "Le fragment doit être enveloppé dans un linge ou un sac propre, puis placé sur de la glace sans contact direct (pour éviter les brûlures par le froid et les lésions tissulaires), afin de préserver les chances de réimplantation chirurgicale." },
-    { q: "Vous suspectez un traumatisme du dos ou de la colonne vertébrale chez une victime consciente. Que faire ?", a: ["La faire marcher pour vérifier qu'elle tient debout", "Maintenir sa tête et éviter tout mouvement du dos et du cou", "La tirer pour la dégager rapidement", "L'asseoir pour la rassurer"], c: 1, e: "En cas de suspicion de traumatisme du rachis, tout mouvement intempestif peut aggraver une lésion de la moelle épinière. Il faut maintenir la tête en position neutre, éviter toute mobilisation inutile et attendre les secours, sauf danger immédiat imposant un dégagement d'urgence." },
-    { q: "La compression directe d'une hémorragie ne suffit pas à arrêter le saignement. Que faire ensuite ?", a: ["Poser un garrot si la compression reste inefficace", "Laisser la victime saigner en attendant les secours", "Appliquer un pansement simple sans plus de geste", "Pleurer et appeler à l'aide sans agir"], c: 0, e: "Le garrot est une solution de dernier recours, utilisée lorsque la compression directe échoue ou est impossible à maintenir. Il doit être noté avec précision l'heure de pose, car cette information est cruciale pour l'équipe médicale qui prendra le relais." },
-    { q: "Une personne vient d'être dégagée d'un contact électrique. Que faire après la mise en sécurité ?", a: ["Considérer qu'il n'y a rien à faire si elle semble bien", "L'examiner comme pour toute victime, car des lésions internes peuvent être invisibles", "Lui donner à boire de l'eau immédiatement", "Attendre simplement qu'elle se relève seule"], c: 1, e: "Une électrisation peut provoquer des troubles du rythme cardiaque, des brûlures internes ou des lésions invisibles à l'œil nu, même si la victime semble dans un premier temps en bon état apparent. L'examen complet (saigne, étouffe, répond, respire) reste indispensable après toute coupure de courant." },
-    { q: "Quelle position privilégier pour une victime consciente présentant une plaie au ventre ?", a: ["Allongée sur le dos, jambes fléchies (genoux relevés)", "En position latérale de sécurité", "Assise normalement", "Debout, pour limiter l'effort"], c: 0, e: "La position allongée avec les genoux fléchis détend la paroi abdominale et limite la douleur, tout en évitant d'aggraver une éventuelle lésion interne en attendant la prise en charge médicale." },
-    { q: "Quelle position privilégier pour une victime consciente présentant une plaie au thorax ?", a: ["Position semi-assise, qui facilite la respiration", "Position latérale de sécurité", "À plat ventre", "Debout, appuyée contre un mur"], c: 0, e: "La position semi-assise (demi-assise) facilite l'effort respiratoire en cas de plaie thoracique, en limitant la gêne liée à la pression sur les poumons, contrairement à la position allongée à plat qui peut accentuer la difficulté à respirer." },
-    { q: "Une fois les premiers gestes réalisés, que doit faire le SST en attendant les secours ?", a: ["Surveiller la victime de façon continue", "S'éloigner ponctuellement si besoin", "Considérer que la surveillance n'est plus utile", "Laisser la victime seule pour aller chercher de l'aide systématiquement"], c: 0, e: "L'état d'une victime peut évoluer rapidement (aggravation, perte de conscience, arrêt respiratoire). Le SST doit donc rester auprès d'elle et surveiller en continu sa conscience, sa respiration et l'évolution de ses blessures jusqu'à l'arrivée des secours." },
-
-    // MODULE 6 : Prévention (20 questions)
-    { q: "La prévention des risques fait-elle partie des missions quotidiennes au travail ?", a: ["Oui, elle s'intègre au quotidien professionnel de chacun", "Non, c'est rare et ponctuel", "Non, ce n'est pas utile", "C'est une démarche purement administrative"], c: 0, e: "La prévention n'est pas une démarche exceptionnelle réservée à des moments particuliers : elle s'intègre dans les gestes et l'organisation du travail de tous les jours, à travers la vigilance, le respect des consignes et le signalement des anomalies." },
-    { q: "Comment peut-on définir un risque, en prévention des risques professionnels ?", a: ["La combinaison entre un danger et l'exposition d'une personne à ce danger", "Uniquement le danger lui-même", "Uniquement l'exposition, sans lien avec un danger", "Un concept purement théorique sans application"], c: 0, e: "Le risque correspond à la probabilité qu'un dommage survienne, résultant de la rencontre entre un danger (source potentielle de dommage) et l'exposition d'une personne à ce danger. Sans exposition, même un danger réel ne génère pas de risque concret." },
-    { q: "Le SST est-il un acteur ou un simple observateur de la prévention en entreprise ?", a: ["Un acteur à part entière de la prévention", "Un simple spectateur sans rôle réel", "Une personne sans influence sur la sécurité", "Cela dépend uniquement de sa hiérarchie"], c: 0, e: "Le SST contribue activement à la démarche de prévention : il identifie les situations dangereuses, les signale et peut proposer des actions d'amélioration, en plus de sa capacité à intervenir en cas d'accident." },
-    { q: "Faut-il chercher à améliorer continuellement les conditions de sécurité dans l'entreprise ?", a: ["Oui, l'amélioration continue est un objectif permanent", "Non, une fois les règles établies, rien ne doit changer", "Seulement après un accident grave", "Cela ne concerne que la direction"], c: 0, e: "La sécurité n'est jamais figée : les situations de travail évoluent (nouveaux équipements, nouvelles méthodes), ce qui impose une démarche d'amélioration continue impliquant tous les niveaux de l'entreprise, salariés compris." },
-    { q: "Les risques professionnels sont-ils une réalité concrète du quotidien au travail ?", a: ["Oui, ils existent réellement dans toutes les activités professionnelles", "Non, ils relèvent surtout de l'imagination", "Non, ils ne concernent que certains métiers très spécifiques", "Ils n'existent que dans l'industrie lourde"], c: 0, e: "Tout poste de travail comporte des risques potentiels, qu'ils soient physiques (chutes, manutention), chimiques, psychosociaux ou autres. La prévention vise précisément à les identifier et à les réduire, quel que soit le secteur d'activité." },
-    { q: "Quel rôle joue le SST face à une situation dangereuse repérée sur son lieu de travail ?", a: ["Il la signale à sa hiérarchie ou aux personnes compétentes", "Il l'ignore si cela ne le concerne pas directement", "Il attend qu'un accident survienne pour réagir", "Il garde l'information pour lui"], c: 0, e: "Le signalement d'une situation dangereuse permet de la corriger avant qu'elle ne provoque un accident. C'est l'un des rôles essentiels du SST en matière de prévention : repérer et faire remonter l'information aux personnes en mesure d'agir." },
-    { q: "Quel est l'intérêt de prévenir un risque plutôt que d'attendre l'accident pour agir ?", a: ["Éviter que le dommage ne survienne réellement", "Cela ne change rien au résultat final", "Préparer simplement les soins à venir", "Cela coûte toujours plus cher que de réparer"], c: 0, e: "La prévention agit en amont, avant que le dommage ne se produise, alors que le secourisme intervient après. Mieux vaut supprimer ou réduire un danger que d'avoir à porter secours aux conséquences d'un accident qui aurait pu être évité." },
-    { q: "Pourquoi privilégie-t-on la prévention collective à la prévention individuelle ?", a: ["Parce qu'elle protège l'ensemble des personnes exposées en une seule action", "Parce qu'elle est toujours moins coûteuse", "Parce que la prévention individuelle est interdite", "Parce qu'elle ne nécessite aucune organisation"], c: 0, e: "Une mesure collective (protection sur une machine, garde-corps, ventilation générale...) protège automatiquement toutes les personnes exposées, alors qu'une mesure individuelle (EPI) ne protège que la personne qui la porte correctement. La hiérarchie des mesures de prévention place donc le collectif avant l'individuel." },
-    { q: "Que recense le Document Unique d'Évaluation des Risques (DUER) ?", a: ["L'ensemble des risques identifiés dans l'entreprise et les mesures de prévention associées", "Les recettes utilisées en cuisine collective", "Une liste d'anecdotes sur l'entreprise", "Le règlement intérieur uniquement"], c: 0, e: "Le DUER est un document obligatoire dans toute entreprise, qui recense l'ensemble des risques professionnels identifiés par unité de travail, ainsi que les actions de prévention mises en place ou à mettre en place pour les maîtriser." },
-    { q: "Le SST peut-il proposer des pistes d'amélioration en matière de sécurité ?", a: ["Oui, il peut être force de proposition", "Non, ce rôle est réservé à la direction uniquement", "Non, cela sort totalement de son rôle", "Seulement s'il est ingénieur sécurité"], c: 0, e: "Grâce à sa connaissance du terrain et à sa formation, le SST est bien placé pour repérer des situations à risque et proposer des solutions concrètes d'amélioration, qu'il transmet aux personnes compétentes pour décision." },
-    { q: "Pourquoi parle-t-on de \"culture sécurité\" en entreprise ?", a: ["Parce que la sécurité doit devenir un réflexe partagé par tous, intégré aux comportements quotidiens", "Parce qu'il s'agit d'un simple slogan publicitaire", "Parce que cela ne concerne que les nouveaux employés", "Parce que cela remplace les règles légales"], c: 0, e: "Une véritable culture sécurité signifie que la prévention des risques n'est pas vécue comme une contrainte extérieure, mais comme un réflexe naturel partagé par l'ensemble des salariés, intégré à leurs habitudes et décisions quotidiennes." },
-    { q: "À quel moment doit intervenir la démarche de prévention par rapport à l'accident ?", a: ["Avant que l'accident ne survienne", "Uniquement après l'accident, pour en tirer des leçons", "Jamais, ce n'est pas son rôle", "Seulement si l'accident est très grave"], c: 0, e: "Par définition, prévenir signifie agir avant que le risque ne se transforme en accident. C'est la différence essentielle entre prévention (anticiper) et secourisme (réagir une fois l'accident survenu)." },
-    { q: "Pourquoi le SST doit-il connaître les risques spécifiques de son entreprise ?", a: ["Pour adapter sa vigilance et ses actions de prévention au contexte réel de son poste", "Parce que cela fait partie d'un simple exercice théorique sans application", "Pour pouvoir réciter une liste lors d'un contrôle", "Cela n'est pas réellement utile"], c: 0, e: "Chaque entreprise présente des risques particuliers liés à son activité, ses équipements et son organisation. Le SST formé à ces spécificités est davantage en mesure de repérer les situations dangereuses propres à son environnement de travail." },
-    { q: "Pourquoi le signalement des situations dangereuses est-il essentiel ?", a: ["Sans signalement, les situations à risque ne peuvent généralement pas être corrigées", "Le signalement n'a aucun impact concret", "C'est une démarche purement symbolique", "Cela ne concerne que les accidents déjà survenus"], c: 0, e: "Le signalement permet à la direction et aux services compétents (CSSCT, responsable HSE...) de prendre connaissance d'un danger et d'agir pour le supprimer ou le réduire. Sans cette information, le risque persiste souvent jusqu'à ce qu'un accident survienne." },
-    { q: "La démarche de prévention dans l'entreprise doit-elle être ponctuelle ou continue ?", a: ["Continue, car les situations de travail évoluent constamment", "Ponctuelle, lors de la création de l'entreprise uniquement", "Inutile une fois les premières mesures mises en place", "Réservée aux audits annuels uniquement"], c: 0, e: "La sécurité n'est jamais définitivement acquise : nouveaux équipements, nouveaux procédés, nouveaux salariés... la prévention doit donc être réévaluée et adaptée en permanence, et non considérée comme acquise une fois pour toutes." },
-    { q: "Quelle est la différence essentielle entre danger et risque ?", a: ["Le danger est la source potentielle de dommage, le risque est la probabilité que ce dommage survienne réellement", "Ce sont deux termes strictement identiques", "Le danger concerne uniquement les machines", "Le risque n'a aucun lien avec le danger"], c: 0, e: "Le danger est une propriété intrinsèque (un produit chimique toxique, une machine tranchante), alors que le risque dépend de l'exposition réelle d'une personne à ce danger. Un danger sans exposition humaine ne génère pas de risque concret." },
-    { q: "Le SST fait-il partie intégrante de la démarche de prévention de l'entreprise ?", a: ["Oui, il en est un acteur reconnu", "Non, son rôle se limite uniquement aux premiers secours", "Non, il n'a aucun lien avec la prévention", "Cela dépend uniquement de sa fonction hiérarchique"], c: 0, e: "Le SST n'est pas seulement formé à porter secours : il est aussi un relais de la prévention au quotidien, capable de repérer les dangers et de contribuer à les faire corriger avant qu'un accident ne se produise." },
-    { q: "La sécurité au travail est-elle l'affaire d'une seule personne ou de tous ?", a: ["C'est une responsabilité partagée par l'ensemble des acteurs de l'entreprise", "C'est uniquement la responsabilité du chef d'entreprise", "C'est uniquement la responsabilité du SST", "Cela ne concerne que les services administratifs"], c: 0, e: "Si l'employeur a une obligation légale de sécurité, chaque salarié contribue également à la sécurité collective par son comportement, sa vigilance et le respect des consignes. La prévention efficace repose sur l'implication de tous les niveaux de l'organisation." },
-    { q: "Comment un salarié peut-il contribuer concrètement à l'amélioration de la sécurité ?", a: ["En proposant des solutions et en signalant les situations à risque qu'il observe", "En ignorant les situations qui ne le concernent pas directement", "En gardant pour lui les observations qu'il fait", "En attendant que la direction s'en aperçoive seule"], c: 0, e: "Chaque salarié, de par sa connaissance concrète de son poste de travail, peut repérer des situations dangereuses invisibles depuis un bureau. Signaler et proposer des solutions est une contribution active et précieuse à la démarche de prévention collective." },
-    { q: "La prévention des risques est-elle une priorité ou une simple option pour l'entreprise ?", a: ["C'est une priorité, intégrée aux obligations de l'employeur et à la mission du SST", "C'est une option facultative selon les moyens disponibles", "Elle n'a aucune importance réelle", "Elle ne concerne que les grandes entreprises"], c: 0, e: "La prévention des risques professionnels est une obligation légale pour l'employeur (article L.4121-1 du Code du travail) et constitue la mission première du SST, avant même sa capacité à porter secours en cas d'accident déjà survenu." },
-
-    // MODULE 7 : Risques Professionnels (20 questions)
-    { q: "Comment définir un danger en santé et sécurité au travail ?", a: ["Une source ou une situation susceptible de causer un dommage", "Le dommage lui-même une fois survenu", "La probabilité qu'un accident se produise", "Un concept sans réalité concrète"], c: 0, e: "Le danger désigne la propriété intrinsèque d'un produit, d'un équipement, d'une situation ou d'une méthode de travail susceptible de causer un dommage à la santé d'une personne (exemple : une substance toxique, une machine tranchante, une hauteur)." },
-    { q: "Comment définir le risque en santé et sécurité au travail ?", a: ["La probabilité que survienne un dommage du fait de l'exposition à un danger", "Le dommage déjà constaté", "Le danger lui-même, sans nuance", "Un terme purement administratif sans réalité"], c: 0, e: "Le risque correspond à la probabilité de survenue d'un dommage, résultant de la combinaison entre l'existence d'un danger et l'exposition réelle d'une personne à ce danger. Plus l'exposition et la gravité potentielle sont élevées, plus le risque est important." },
-    { q: "Le risque chimique fait-il partie des risques professionnels reconnus ?", a: ["Oui, il est lié à l'utilisation de produits ou substances dangereuses", "Non, il ne concerne que les laboratoires de recherche", "Non, ce risque n'existe pas en entreprise", "Il ne concerne que les produits ménagers"], c: 0, e: "Le risque chimique concerne toute exposition à des substances pouvant être toxiques, irritantes, corrosives, inflammables ou cancérogènes, que l'on retrouve dans de nombreux secteurs d'activité (industrie, nettoyage, agriculture, santé...)." },
-    { q: "Le risque électrique fait-il partie des risques professionnels à prévenir ?", a: ["Oui, il est lié aux installations et équipements sous tension", "Non, il est négligeable dans la plupart des entreprises", "Non, il ne concerne que les électriciens professionnels", "Il ne concerne que les centrales électriques"], c: 0, e: "Le risque électrique peut concerner tout salarié travaillant à proximité d'installations électriques, même sans intervention directe sur celles-ci, avec des conséquences pouvant aller de la simple sensation désagréable à l'électrocution mortelle." },
-    { q: "Le risque de chute fait-il partie des risques professionnels courants ?", a: ["Oui, qu'il s'agisse de chutes de plain-pied ou de chutes de hauteur", "Non, il ne concerne que le secteur du BTP", "Non, ce risque est purement théorique", "Il ne concerne que les escaliers"], c: 0, e: "Les chutes (de plain-pied par glissade ou trébuchement, ou de hauteur depuis un échafaudage, une échelle...) sont l'une des principales causes d'accidents du travail en France, tous secteurs d'activité confondus." },
-    { q: "Le risque lié à la manutention manuelle concerne-t-il les risques professionnels ?", a: ["Oui, il est lié au port ou au déplacement de charges", "Non, il s'agit d'un simple inconfort sans gravité", "Non, ce risque a disparu avec la mécanisation", "Il ne concerne que les métiers du déménagement"], c: 0, e: "La manutention manuelle de charges (port, traction, poussée) est une cause majeure de troubles musculo-squelettiques (lombalgies, hernies discales...), encore très présente dans de nombreux métiers malgré la mécanisation croissante." },
-    { q: "Que signifie \"évaluer un risque\" en prévention ?", a: ["Analyser sa fréquence d'exposition et sa gravité potentielle", "L'ignorer volontairement", "Le cacher à la hiérarchie", "Le considérer comme privé et non concerné par l'entreprise"], c: 0, e: "Évaluer un risque consiste à estimer à la fois la probabilité qu'il survienne (fréquence d'exposition) et la gravité potentielle du dommage qui en résulterait, afin de prioriser les actions de prévention à mettre en place." },
-    { q: "Que désigne le terme \"dommage\" en prévention des risques ?", a: ["La conséquence réelle sur la santé d'une personne (blessure, maladie)", "La cause initiale d'un accident", "Un simple incident sans conséquence", "Un concept purement juridique sans réalité physique"], c: 0, e: "Le dommage est l'atteinte effective à la santé ou à l'intégrité physique d'une personne (blessure, maladie professionnelle...), résultant de la concrétisation d'un risque auquel elle était exposée." },
-    { q: "Pourquoi distingue-t-on clairement danger et risque en prévention ?", a: ["Parce qu'un danger sans exposition humaine ne génère pas nécessairement de risque concret", "Parce que ce sont deux synonymes interchangeables", "Parce que la loi l'impose sans justification pratique", "Parce que cette distinction n'a aucune utilité"], c: 0, e: "Cette distinction est fondamentale en prévention : on peut agir soit en supprimant le danger lui-même, soit en réduisant l'exposition des personnes à ce danger, deux leviers d'action différents pour diminuer le risque global." },
-    { q: "Quelle est la première étape de la démarche d'évaluation des risques ?", a: ["Identifier et repérer les dangers présents sur le poste de travail", "Rédiger directement un rapport final", "Sanctionner les comportements à risque", "Acheter des équipements de protection sans analyse préalable"], c: 0, e: "Avant de pouvoir évaluer ou maîtriser un risque, il faut d'abord l'identifier, c'est-à-dire repérer concrètement les dangers présents dans une situation de travail donnée. Cette étape conditionne la pertinence de toute la démarche de prévention." },
-    { q: "Le risque acoustique (bruit) est-il reconnu comme un risque professionnel ?", a: ["Oui, une exposition prolongée à un bruit excessif peut endommager l'audition", "Non, le bruit n'a jamais d'impact sur la santé", "Non, ce risque ne concerne que les concerts", "Il ne concerne que les métiers du BTP"], c: 0, e: "L'exposition répétée ou prolongée à des niveaux de bruit élevés peut entraîner une surdité professionnelle, irréversible, ainsi que du stress et des troubles de la concentration. C'est un risque encadré par une réglementation spécifique sur les niveaux sonores admissibles." },
-    { q: "Le risque thermique (chaud ou froid extrême) fait-il partie des risques professionnels ?", a: ["Oui, une exposition à des températures extrêmes peut nuire à la santé", "Non, le corps humain s'adapte toujours sans difficulté", "Non, cela ne concerne que les climats extrêmes à l'étranger", "Il ne concerne que les boulangers"], c: 0, e: "Le travail en ambiance très chaude (coup de chaleur, déshydratation) ou très froide (hypothermie, engelures) constitue un risque réel pour la santé, nécessitant des mesures de prévention adaptées (pauses, hydratation, vêtements appropriés)." },
-    { q: "Quel est le rôle du Document Unique d'Évaluation des Risques (DUER) ?", a: ["Servir de support formalisé à l'évaluation des risques de l'entreprise", "Remplacer les outils de travail habituels", "Servir uniquement de preuve en cas de litige judiciaire", "N'avoir aucune utilité concrète au quotidien"], c: 0, e: "Le DUER formalise par écrit l'ensemble de la démarche d'évaluation des risques de l'entreprise : il liste les dangers identifiés par unité de travail et les mesures de prévention associées, et doit être mis à jour régulièrement." },
-    { q: "Les risques psychosociaux (stress, harcèlement, surcharge de travail) sont-ils reconnus comme des risques professionnels ?", a: ["Oui, ils sont pleinement reconnus au même titre que les risques physiques", "Non, ils relèvent uniquement de la vie privée", "Non, ils ne concernent que les cadres", "Ils ne sont jamais pris en compte par la loi"], c: 0, e: "Les risques psychosociaux sont officiellement reconnus comme des risques professionnels à part entière, pouvant entraîner stress chronique, épuisement professionnel (burn-out), troubles anxio-dépressifs, et doivent être intégrés à l'évaluation globale des risques de l'entreprise." },
-    { q: "Que signifie \"caractériser un risque\" ?", a: ["En préciser la nature, la fréquence d'exposition et la gravité potentielle", "Le dissimuler pour éviter des questions", "L'ignorer délibérément", "Le considérer comme une affaire strictement personnelle"], c: 0, e: "Caractériser un risque, c'est en décrire précisément les contours : quel danger, dans quelle situation, pour quelles personnes, à quelle fréquence et avec quelle gravité potentielle, afin de pouvoir le hiérarchiser parmi les autres risques identifiés." },
-    { q: "Un dommage corporel correspond-il à une atteinte physique réelle de la personne ?", a: ["Oui, il s'agit d'une blessure ou atteinte physique concrète", "Non, il s'agit uniquement d'un préjudice moral", "Non, ce terme ne s'applique jamais au travail", "Il ne concerne que les accidents mortels"], c: 0, e: "Le dommage corporel désigne une atteinte réelle à l'intégrité physique de la personne (coupure, fracture, brûlure...), à distinguer d'autres types de dommages possibles comme les atteintes psychologiques ou matérielles." },
-    { q: "Le risque biologique fait-il partie des risques professionnels reconnus ?", a: ["Oui, il est lié à l'exposition à des micro-organismes (bactéries, virus, champignons)", "Non, il ne concerne que les laboratoires de recherche médicale", "Non, ce risque a totalement disparu aujourd'hui", "Il ne concerne que les hôpitaux"], c: 0, e: "Le risque biologique concerne toute exposition professionnelle à des agents biologiques pathogènes (soin à la personne, traitement des déchets, agroalimentaire, agriculture...), pouvant entraîner des infections ou des maladies professionnelles." },
-    { q: "Pourquoi la fréquence d'exposition est-elle un critère important dans l'évaluation d'un risque ?", a: ["Parce qu'une exposition répétée augmente la probabilité de survenue d'un dommage", "Parce qu'elle n'a aucun impact réel sur le niveau de risque", "Parce qu'elle ne concerne que les risques chimiques", "Parce que seule la gravité compte, jamais la fréquence"], c: 0, e: "Plus une personne est exposée fréquemment à un danger donné, plus la probabilité qu'un dommage survienne un jour augmente. La fréquence d'exposition est donc l'un des deux critères majeurs (avec la gravité) de l'évaluation du niveau de risque." },
-    { q: "Pourquoi la gravité potentielle est-elle un critère important dans l'évaluation d'un risque ?", a: ["Parce qu'elle détermine l'ampleur des consequences possibles sur la santé en cas d'accident", "Parce qu'elle est sans rapport avec le niveau de priorité d'action", "Parce qu'elle ne concerne que les accidents mortels", "Parce que seule la fréquence compte réellement"], c: 0, e: "La gravité potentielle évalue l'ampleur des conséquences possibles si le risque se concrétise (blessure légère, invalidité, décès...). Combinée à la fréquence d'exposition, elle permet de hiérarchiser les risques et de prioriser les actions de prévention les plus urgentes." },
-    { q: "Une situation de travail peut-elle présenter plusieurs risques en même temps ?", a: ["Oui, plusieurs risques peuvent coexister sur un même poste de travail", "Non, un poste ne présente jamais qu'un seul type de risque", "Non, les risques sont toujours isolés les uns des autres", "Cela ne concerne que les postes très spécialisés"], c: 0, e: "Un même poste de travail peut cumuler plusieurs types de risques (par exemple chimique, physique et psychosocial simultanément). L'évaluation des risques doit donc être globale et ne pas se limiter à un seul facteur de danger à la fois." },
-
-    // MODULE 8 : Maîtrise des Risques (20 questions)
-    { q: "Quelle est la mesure de prévention la plus efficace selon la hiérarchie des principes généraux de prévention ?", a: ["La suppression totale du danger à la source", "Le port d'un équipement de protection individuelle", "L'affichage d'une simple consigne", "L'assurance contractée par l'entreprise"], c: 0, e: "Les principes généraux de prévention (article L.4121-2 du Code du travail) placent en première place l'élimination du danger à la source : si le danger n'existe plus, le risque disparaît totalement, ce qui en fait la mesure la plus efficace et la plus durable." },
-    { q: "Lorsque la suppression totale du danger est impossible, quelle action privilégier ?", a: ["Réduire le risque en limitant l'exposition ou la gravité potentielle", "Ne rien faire, puisque la suppression est impossible", "Attendre un accident pour réagir", "Se contenter d'un simple affichage d'avertissement"], c: 0, e: "Lorsque l'élimination complète du danger n'est pas réalisable techniquement ou économiquement, la prévention vise alors à réduire le risque résiduel, en diminuant l'exposition des travailleurs ou la gravité potentielle des conséquences." },
-    { q: "Pourquoi est-il important de remonter une situation dangereuse repérée sur son poste de travail ?", a: ["Pour permettre une correction avant qu'un accident ne survienne", "Parce que c'est une simple formalité administrative sans réel impact", "Pour éviter une sanction personnelle uniquement", "Cela n'a pas d'utilité réelle"], c: 0, e: "Le signalement précoce d'une situation dangereuse permet aux personnes compétentes (encadrement, services HSE) d'agir avant que le risque ne se concrétise en accident, ce qui en fait un maillon essentiel de la chaîne de prévention." },
-    { q: "Une mesure de protection collective protège-t-elle l'ensemble des personnes exposées en une seule action ?", a: ["Oui, c'est précisément son intérêt par rapport à une mesure individuelle", "Non, elle ne protège qu'une seule personne à la fois", "Non, elle ne concerne que l'encadrement", "Elle ne sert qu'à des fins esthétiques"], c: 0, e: "Une protection collective (garde-corps, carter de machine, système de ventilation générale) agit sur l'environnement de travail et protège automatiquement toutes les personnes présentes, sans dépendre d'un comportement individuel à respecter en permanence." },
-    { q: "À quel moment intervient une mesure de protection individuelle dans la hiérarchie de prévention ?", a: ["En dernier recours, lorsque les mesures collectives ne suffisent pas à elles seules", "En tout premier lieu, avant toute autre mesure", "Jamais, elle est toujours superflue", "Uniquement à la demande du salarié"], c: 0, e: "Les équipements de protection individuelle (EPI) constituent le dernier niveau de protection dans la hiérarchie des mesures de prévention, à utiliser lorsque les mesures de suppression, de réduction et de protection collective ne permettent pas d'éliminer totalement le risque." },
-    { q: "Le salarié peut-il proposer des améliorations en matière de sécurité au sein de son entreprise ?", a: ["Oui, sa connaissance du terrain en fait un interlocuteur précieux pour cela", "Non, cela ne relève que de la direction", "Non, cela sortirait de son rôle", "Seulement s'il occupe un poste d'encadrement"], c: 0, e: "Le salarié, en particulier le SST, connaît concrètement les contraintes réelles de son poste de travail. Il est donc bien placé pour identifier des solutions pratiques et les proposer aux personnes en charge de la prévention dans l'entreprise." },
-    { q: "Quel est l'intérêt de la formation à la sécurité dans la maîtrise des risques ?", a: ["Elle permet à chacun de connaître les dangers de son poste et les bons gestes de prévention", "Elle n'a aucun lien réel avec la prévention des accidents", "Elle ne concerne que les nouveaux embauchés", "Elle remplace totalement les mesures techniques de sécurité"], c: 0, e: "La formation permet aux salariés de comprendre les risques spécifiques à leur poste, d'adopter les bons comportements et de réagir de manière appropriée. Elle constitue un complément indispensable aux mesures techniques et organisationnelles de prévention, sans pour autant les remplacer." },
-    { q: "À quoi sert la signalisation de sécurité (panneaux, marquages...) sur un lieu de travail ?", a: ["À informer rapidement des dangers présents et des consignes à respecter", "À décorer simplement les locaux", "À remplacer toute autre mesure de prévention", "Elle n'a pas réellement d'utilité pratique"], c: 0, e: "La signalisation de sécurité permet d'attirer l'attention sur un danger (zone glissante, tension électrique, port obligatoire d'un EPI...) de façon rapide et compréhensible, en complément des autres mesures de prévention déjà en place." },
-    { q: "Comment l'organisation du travail peut-elle contribuer à la prévention des risques ?", a: ["En répartissant les tâches, les rythmes et les responsabilités de façon à limiter les expositions dangereuses", "Elle n'a aucun rapport avec la prévention", "Uniquement en imposant davantage de pauses", "Elle ne concerne que les très grandes entreprises"], c: 0, e: "Une organisation du travail adaptée (rotation des tâches, gestion des rythmes, répartition des responsabilités) peut réduire significativement l'exposition des salariés à certains risques, notamment liés à la répétitivité des gestes ou à la charge mentale." },
-    { q: "Quel rôle jouent les équipements de protection individuelle (EPI) dans la maîtrise des risques ?", a: ["Ils constituent une protection de dernier recours pour le salarié exposé", "Ils remplacent toutes les autres mesures de prévention", "Ils ne sont utiles que dans le secteur du BTP", "Ils n'ont aucune utilité réelle"], c: 0, e: "Les EPI (casque, gants, chaussures de sécurité, protections auditives...) protègent directement la personne lorsque le risque n'a pas pu être totalement supprimé par d'autres mesures. Leur efficacité dépend toutefois de leur port effectif et correct par le salarié." },
-    { q: "Pourquoi le rangement et l'organisation des espaces de travail sont-ils importants en prévention ?", a: ["Parce qu'ils réduisent les risques de chutes, de heurts et facilitent les déplacements en sécurité", "Parce qu'ils n'ont qu'un intérêt esthétique", "Parce qu'ils ne concernent que les bureaux", "Parce qu'ils remplacent le besoin de formation"], c: 0, e: "Un espace de travail bien rangé limite les risques de chute (objets au sol), de heurt et facilite une évacuation rapide en cas d'urgence. C'est une mesure simple, peu coûteuse, mais à l'efficacité reconnue en matière de prévention." },
-    { q: "Pourquoi la maintenance régulière des équipements participe-t-elle à la prévention des risques ?", a: ["Parce qu'elle permet de garder les machines en bon état de fonctionnement et de sécurité", "Parce qu'elle est purement esthétique", "Parce qu'elle ne concerne que les machines très anciennes", "Parce qu'elle remplace les dispositifs de sécurité existants"], c: 0, e: "Un équipement mal entretenu peut présenter des défaillances dangereuses (dispositifs de sécurité défectueux, usure non détectée). La maintenance préventive régulière permet de maintenir le niveau de sécurité initial des machines et installations dans le temps." },
-    { q: "À quoi sert le retour d'expérience après un accident ou un incident de travail ?", a: ["À analyser les causes pour éviter qu'un événement similaire ne se reproduise", "À simplement classer le dossier sans suite", "À sanctionner systématiquement la victime", "Il n'a pas d'utilité réelle pour la prévention"], c: 0, e: "L'analyse approfondie des causes d'un accident ou d'un presque-accident permet d'identifier les failles du système de prévention et de mettre en place des actions correctives pour éviter qu'une situation similaire ne se reproduise à l'avenir." },
-    { q: "Pourquoi respecte-t-on un ordre de priorité (hiérarchie) entre les différentes mesures de prévention ?", a: ["Parce que certaines mesures (suppression du danger) sont plus efficaces et durables que d'autres (EPI)", "Parce que la loi impose un ordre purement arbitraire sans logique", "Parce que toutes les mesures ont strictement la même efficacité", "Parce que cela ne concerne que les grandes entreprises"], c: 0, e: "La hiérarchie des mesures de prévention (suppression, réduction, protection collective, puis protection individuelle) reflète leur efficacité décroissante : supprimer un danger protège tout le monde durablement, alors qu'un EPI ne protège qu'une personne et seulement si elle le porte correctement." },
-    { q: "Pourquoi l'adaptation ergonomique d'un poste de travail contribue-t-elle à la prévention des risques ?", a: ["Parce qu'elle réduit les contraintes physiques et limite les troubles musculo-squelettiques", "Parce qu'elle n'a qu'un effet sur le confort, sans lien avec la sécurité", "Parce qu'elle ne concerne que les postes administratifs", "Parce qu'elle remplace systématiquement la formation"], c: 0, e: "Adapter un poste de travail aux caractéristiques physiques de la personne (hauteur de plan de travail, outils adaptés, organisation des gestes) réduit les efforts inutiles et les postures contraignantes, principales causes de troubles musculo-squelettiques au travail." },
-    { q: "Le SST peut-il jouer un rôle de conseil en matière de prévention auprès de ses collègues ?", a: ["Oui, sa formation et sa connaissance du terrain en font un relais utile", "Non, ce rôle est réservé exclusivement aux experts en sécurité", "Non, cela sortirait totalement de ses attributions", "Seulement s'il occupe un poste hiérarchique"], c: 0, e: "Sans se substituer aux experts en prévention (médecine du travail, services HSE), le SST, grâce à sa formation et à sa présence sur le terrain, peut conseiller utilement ses collègues sur les bonnes pratiques de sécurité au quotidien." },
-    { q: "Qu'entend-on par \"prévention active\" ?", a: ["Une démarche qui anticipe les risques avant qu'ils ne se concrétisent en accident", "Une démarche qui consiste à réagir uniquement après un accident", "Une démarche purement administrative sans action concrète", "Une démarche réservée aux grandes entreprises"], c: 0, e: "La prévention active consiste à anticiper les risques en agissant en amont (identification, évaluation, mesures correctives), par opposition à une approche purement réactive qui se contenterait de réagir une fois l'accident survenu." },
-    { q: "La maîtrise des risques est-elle un processus ponctuel ou continu dans le temps ?", a: ["Un processus continu, à réévaluer régulièrement", "Un processus ponctuel, réalisé une seule fois", "Un processus inutile une fois les premières mesures prises", "Un processus réservé uniquement aux audits externes"], c: 0, e: "Les situations de travail évoluant constamment (nouveaux équipements, nouvelles méthodes, nouveaux salariés), la maîtrise des risques doit être réévaluée régulièrement pour rester pertinente et efficace dans le temps." },
-    { q: "L'implication de chaque salarié est-elle nécessaire pour une prévention efficace ?", a: ["Oui, la sécurité repose sur l'engagement de chacun, à tous les niveaux", "Non, seule la direction est concernée", "Non, seuls les SST sont concernés", "Cela ne concerne que les postes à risque élevé"], c: 0, e: "Une politique de prévention, même bien conçue par la direction, ne peut être pleinement efficace sans l'implication concrète de chaque salarié au quotidien : respect des consignes, vigilance, signalement des anomalies." },
-    { q: "Quel est l'objectif final visé par l'ensemble de la démarche de maîtrise des risques ?", a: ["Réduire durablement la survenue d'accidents et de maladies professionnelles", "Remplir une obligation administrative sans réelle ambition", "Éviter uniquement les sanctions de l'inspection du travail", "Satisfaire uniquement les exigences des assurances"], c: 0, e: "Au-delà des obligations légales et administratives, l'objectif central de la maîtrise des risques est bien la protection réelle et durable de la santé et de la sécurité des travailleurs, but ultime de toute démarche de prévention en entreprise." }
-];
-
+    // MODULE 3 : Examiner
+    { q: "Quel est l'ordre logique de l'examen d'une victime ?", a: ["Saigne, Étouffe, Répond, Respire", "Respire, Répond, Saigne, Étouffe", "Répond, Saigne, Respire, Étouffe", "L'ordre n'a pas d'importance"], c: 0, e: "L'hémorragie massive et l'étouffement total sont les deux seules causes de mort qui surviennent en quelques minutes : on les recherche donc en premier." },
+    { q: "Comment vérifier l'état de conscience d'une victime ?", a: ["En la secouant fermement par les épaules", "En lui parlant, en lui posant une question simple et en lui demandant un geste précis", "En lui pinçant la peau pour provoquer une réaction", "En l'aspergeant d'eau froide"], c: 1, e: "On s'adresse calmement à la victime en lui demandant une réponse verbale et un geste simple à réaliser." },
+    { q: "Comment vérifier que la victime respire ?", a: ["En approchant un miroir de sa bouche", "En basculant prudemment la tête en arrière puis en regardant, écoutant et sentant pendant 10 secondes maximum", "En prenant son pouls au poignet", "En lui demandant de respirer fort"], c: 1, e: "Après avoir basculé la tête en arrière pour dégager les voies aériennes, on regarde, écoute et sent pendant maximum 10 secondes." },
+    { q: "Vous découvrez une victime inconsciente qui saigne abondamment d'une jambe. Que faites-vous en priorité ?", a: ["Vous terminez l'examen complet avant d'agir", "Vous comprimez immédiatement le point de saignement", "Vous appelez les secours avant tout autre geste", "Vous attendez l'avis d'un collègue"], c: 1, e: "Une hémorragie abondante peut entraîner la mort en quelques minutes. Dès qu'elle est repérée, on agit sans délai." },
+    { q: "Une victime est inconsciente mais respire normalement. Quel est son état ?", a: ["Elle est en arrêt cardiaque", "Elle est dans un état d'inconscience, comparable à un coma", "Elle dort profondément", "Elle simule"], c: 1, e: "L'inconscience avec respiration conservée correspond à un état comateux. Il faut la mettre en PLS et surveiller." },
+    { q: "La victime consciente vous dit \"Ça va, ce n'est rien\". Que faites-vous ?", a: ["Vous la laissez repartir immédiatement", "Vous poursuivez quand même l'examen complet", "Vous appelez directement les secours sans l'examiner", "Vous lui faites un massage cardiaque par précaution"], c: 1, e: "Une victime peut minimiser ou ignorer la gravité réelle de son état. Le SST doit systématiquement poursuivre son examen." },
+    { q: "Faut-il vérifier le pouls pour savoir si une victime respire ?", a: ["Oui, c'est la méthode de référence", "Non, seule l'observation de la respiration (voir, écouter, sentir) est recommandée", "Oui, mais seulement au poignet", "Cela dépend du temps disponible"], c: 1, e: "La recherche du pouls est peu fiable. Le secourisme se concentre uniquement sur l'observation de la respiration." },
+    { q: "Pourquoi bascule-t-on la tête de la victime en arrière lors de l'examen de la respiration ?", a: ["Pour des raisons de confort visuel", "Pour libérer les voies aériennes en évitant que la langue ne bascule au fond de la gorge", "Pour faciliter l'ouverture des yeux", "Pour l'aider à s'endormir"], c: 1, e: "Chez une personne inconsciente, la langue peut obstruer le pharynx. La bascule dégage le passage de l'air." },
+    { q: "Que signifie un \"gasp\" chez une victime inconsciente ?", a: ["Une respiration tout à fait normale", "Un arrêt cardio-respiratoire : réflexe agonique à traiter comme une absence de respiration", "Un simple ronflement", "Une crise d'asthme"], c: 1, e: "Le gasp est un mouvement respiratoire réflexe inefficace. Il ne doit pas être confondu avec une respiration normale." },
+    { q: "Quel est le temps maximum recommandé pour examiner la respiration d'une victime ?", a: ["5 secondes", "10 secondes", "30 secondes", "1 minute"], c: 1, e: "10 secondes suffisent. Au-delà, on retarderait inutilement la réanimation en cas d'absence de respiration." },
+    { q: "Dans quel cas est-il justifié de déshabiller partiellement une victime ?", a: ["Systématiquement, pour tout examen", "Uniquement si cela est nécessaire pour visualiser une plaie, une brûlure ou un signe de gravité", "Seulement le haut du corps", "Cela est toujours interdit"], c: 1, e: "On ne déshabille la victime que lorsque c'est indispensable pour évaluer ou traiter une blessure précise." },
+    { q: "Quel est le signe caractéristique d'un étouffement total ?", a: ["La victime tousse fort", "La victime parle difficilement mais s'exprime", "La victime ne peut ni parler, ni tousser, ni respirer, et porte souvent les mains à sa gorge", "La victime pleure abondamment"], c: 2, e: "Dans l'obstruction totale, l'air ne passe plus du tout. C'est une urgence absolue." },
+    { q: "À quoi sert principalement l'examen de la victime ?", a: ["À identifier l'action de secours prioritaire à réaliser", "À poser un diagnostic médical précis", "À remplir un rapport administratif", "Il n'a pas d'utilité concrète"], c: 0, e: "L'examen du SST sert à repérer rapidement les signes qui imposent une action immédiate." },
+    { q: "Une victime consciente se plaint d'une douleur thoracique. Comment doit-on considérer ce signe ?", a: ["Comme un simple problème digestif à surveiller", "Comme un possible problème cardiaque, à prendre très au sérieux", "Comme une simple conséquence du stress", "Comme un signe sans importance"], c: 1, e: "Toute douleur thoracique doit être considérée comme pouvant traduire un problème cardiaque." },
+    { q: "Une victime présente une difficulté à parler associée à une déformation du visage. À quoi cela peut-il faire penser ?", a: ["À de la fatigue passagère", "À un accident vasculaire cérébral (AVC)", "À une réaction allergique bénigne", "À une simple grimace volontaire"], c: 1, e: "Ces signes sont classiques d'un AVC. C'est une urgence vitale : alerter immédiatement les secours." },
+    { q: "Comment doit-on procéder pour examiner une victime au sol ?", a: ["Sans la déplacer, sauf nécessité absolue (danger immédiat)", "En l'asseyant systématiquement", "En la mettant sur le ventre", "En la mettant debout pour mieux voir"], c: 0, e: "Un déplacement intempestif peut aggraver une lésion, notamment de la colonne vertébrale." },
+    { q: "Vous repérez à la fois une hémorragie et une absence de respiration. Que traitez-vous en premier ?", a: ["La respiration, car c'est plus grave", "L'hémorragie, car le sang qui s'écoule doit être stoppé sans délai", "Les deux en même temps, seul", "Aucune des deux, vous attendez les secours"], c: 1, e: "Une hémorragie massive non contrôlée peut entraîner le décès très rapidement par perte de sang." },
+    { q: "Comment reconnaît-on un étouffement chez une victime consciente ?", a: ["En l'observant et en l'écoutant : difficulté ou impossibilité à parler, tousser ou respirer", "En palpant son cou", "En lui faisant une radio", "En la secouant énergiquement"], c: 0, e: "L'observation et l'écoute permettent de repérer les signes d'obstruction des voies aériennes." },
+    { q: "Que faire face à une victime en pleine crise convulsive ?", a: ["La maintenir fermement pour bloquer les mouvements", "La protéger des chocs contre les objets environnants, sans chercher à bloquer les convulsions", "Lui placer un objet dans la bouche pour éviter qu'elle se morde", "Ne rien faire et s'éloigner"], c: 1, e: "On ne bloque jamais les convulsions, on protège la tête et on attend la fin de la crise." },
+    { q: "Quelle qualité doit avoir l'examen réalisé par le SST ?", a: ["Long et exhaustif, comme un bilan médical complet", "Rapide et méthodique, centré sur les signes de détresse vitale", "Facultatif si la victime semble bien", "Inutile si les secours sont déjà prévenus"], c: 1, e: "L'efficacité du SST repose sur la rapidité et la rigueur de son examen." },
+    // MODULE 4 : Alerter
+    { q: "Quel numéro permet de contacter le SAMU (urgence médicale) en France ?", a: ["15", "17", "18", "112"], c: 0, e: "Le 15 est le numéro dédié à l'aide médicale urgente en France, géré par le SAMU." },
+    { q: "Quel numéro d'urgence est valable dans tous les pays de l'Union européenne ?", a: ["15", "17", "18", "112"], c: 3, e: "Le 112 est le numéro d'appel d'urgence unique européen." },
+    { q: "Quel numéro permet aux personnes sourdes ou malentendantes d'alerter par SMS ?", a: ["114", "115", "119", "116"], c: 0, e: "Le 114 est accessible par SMS, fax ou visiophonie." },
+    { q: "Lors d'un message d'alerte, quelle information doit être donnée en priorité ?", a: ["Le nom de la victime", "Le lieu précis de l'accident", "L'âge de la victime", "L'heure exacte de l'accident"], c: 1, e: "Donner immédiatement le lieu précis permet aux secours de localiser rapidement l'intervention." },
+    { q: "Après avoir transmis toutes les informations à l'opérateur, que doit faire l'appelant ?", a: ["Raccrocher immédiatement pour libérer la ligne", "Rester en ligne et attendre que le régulateur mette fin à l'appel", "Proposer un café à la victime", "Quitter les lieux"], c: 1, e: "Le régulateur peut avoir besoin de précisions ou de donner des consignes. C'est lui qui met fin à l'appel." },
+    { q: "Qui peut être chargé de transmettre l'alerte interne dans une entreprise ?", a: ["Un témoin de l'accident ou le SST lui-même", "Uniquement le PDG de l'entreprise", "Uniquement le maire de la commune", "Personne, ce n'est pas nécessaire"], c: 0, e: "L'alerte interne peut être donnée par le SST ou déléguée à un témoin présent." },
+    { q: "Le nombre de victimes est-il une information importante à transmettre lors de l'alerte ?", a: ["Oui, car cela conditionne les moyens envoyés sur place", "Non, ce n'est jamais demandé", "Seulement s'il y a plus de 5 victimes", "Seulement si le régulateur le demande explicitement"], c: 0, e: "Le nombre de victimes permet au régulateur de dimensionner correctement les secours." },
+    { q: "Que désigne une \"consigne de sécurité\" dans le cadre de l'alerte en entreprise ?", a: ["Un simple conseil facultatif", "Une procédure propre à l'entreprise que chaque salarié doit connaître", "Un ouvrage de référence", "Une obligation légale identique partout"], c: 1, e: "Chaque entreprise définit ses propres consignes. Le SST doit les connaître pour agir efficacement." },
+    { q: "Face à un arrêt cardiaque, quel équipement faut-il demander en priorité à un témoin ?", a: ["Un défibrillateur automatisé externe (DAE)", "Un verre d'eau", "Une civière", "Un médecin du quartier"], c: 0, e: "Chaque minute sans défibrillation réduit fortement les chances de survie." },
+    { q: "Quelles informations le message d'alerte doit-il décrire concernant la victime ?", a: ["Son historique médical complet", "La nature de l'accident et l'état apparent de la victime", "Les responsabilités de l'accident", "Le coût estimé des soins"], c: 1, e: "Nature de l'événement et état observé de la victime sont essentiels pour que le régulateur évalue la gravité." },
+    { q: "Peut-on charger un témoin de donner l'alerte à la place du SST ?", a: ["Non, jamais", "Oui, à condition de lui donner des consignes claires et précises", "Uniquement si la victime le demande", "Uniquement si le témoin insiste"], c: 1, e: "Si le SST doit rester auprès de la victime, il peut déléguer l'alerte à un témoin avec des instructions précises." },
+    { q: "Qui répond généralement lorsqu'on appelle le 15 (SAMU) ?", a: ["Un agent de police", "Un médecin régulateur ou un assistant de régulation médicale (ARM)", "Un simple standardiste sans formation médicale", "Un système automatisé uniquement"], c: 1, e: "Le SAMU est composé de médecins régulateurs et d'assistants de régulation médicale formés." },
+    { q: "À quoi correspond une alerte sonore de type sirène destinée à la population ?", a: ["Un exercice scolaire mineur", "Un risque majeur (industriel, naturel...) nécessitant une mise à l'abri", "La fin d'une alerte incendie", "Un simple signal horaire"], c: 1, e: "Le signal national d'alerte prévient d'un danger majeur imminent et impose de se mettre à l'abri." },
+    { q: "Que faire si la communication avec les secours est interrompue pendant l'appel ?", a: ["Abandonner l'alerte, l'essentiel a déjà été dit", "Rappeler immédiatement le même numéro", "Utiliser un autre téléphone sans rappeler le premier", "Attendre que les secours rappellent"], c: 1, e: "Si l'appel est coupé, rappeler sans tarder pour s'assurer que toutes les informations ont bien été transmises." },
+    { q: "Quel est l'objectif principal du fait d'alerter les secours ?", a: ["Obtenir des moyens de secours adaptés à la situation", "Se décharger de la responsabilité", "Avoir une preuve d'intervention", "Faire peur aux personnes présentes"], c: 0, e: "Alerter permet de mobiliser rapidement les moyens humains et matériels adaptés à la situation." },
+    { q: "À quel service correspond le numéro 18 ?", a: ["Le SAMU", "La police ou la gendarmerie", "Les sapeurs-pompiers", "Les secours en mer"], c: 2, e: "Le 18 permet de joindre les sapeurs-pompiers." },
+    { q: "Pour quel type de situation appelle-t-on prioritairement le 15 ?", a: ["Un incendie", "Une détresse médicale (malaise, accident, problème de santé grave)", "Un cambriolage en cours", "Un animal en danger"], c: 1, e: "Le 15 est le numéro médicalisé, à privilégier pour toute urgence de santé." },
+    { q: "Vous êtes seul face à une victime en arrêt cardiaque. Que faites-vous en priorité ?", a: ["Donner l'alerte avant tout autre geste, idéalement en mode mains libres", "Commencer le massage cardiaque puis alerter ensuite seulement", "Aller chercher un DAE à 1 km sans masser ni alerter", "Attendre qu'un témoin passe"], c: 0, e: "Seul, on donne d'abord l'alerte (en haut-parleur si possible) avant de débuter le massage cardiaque." },
+    { q: "Quelles qualités doit avoir un message d'alerte efficace ?", a: ["Vague et général", "Clair et précis", "Le plus long possible", "Crié fort pour être entendu"], c: 1, e: "Un message d'alerte efficace est clair, structuré et précis : lieu, nature, victimes, gestes déjà entrepris." },
+    { q: "Pourquoi est-il utile qu'une personne attende les secours à un point visible ?", a: ["Pour guider rapidement les équipes de secours vers le lieu exact de l'accident", "Pour éviter de s'ennuyer pendant l'attente", "Pour respecter une obligation légale stricte", "Cela n'a aucune utilité réelle"], c: 0, e: "Une personne visible guide les secours, surtout dans des lieux difficiles d'accès." },
+    // MODULE 5 : Secourir
+    { q: "Face à une hémorragie externe, quel est le geste à réaliser ?", a: ["Comprimer directement la plaie", "Laver abondamment la plaie", "Poser systématiquement un garrot", "Donner un comprimé contre la douleur"], c: 0, e: "La compression manuelle directe est le geste de premier choix pour arrêter une hémorragie." },
+    { q: "Quelle est la technique recommandée face à un étouffement total chez l'adulte conscient ?", a: ["5 claques dans le dos puis 5 compressions abdominales (méthode de Heimlich), en alternance", "Lui faire boire de l'eau rapidement", "L'allonger immédiatement au sol", "Ne rien faire et attendre que cela passe"], c: 0, e: "On réalise jusqu'à 5 claques vigoureuses entre les omoplates, puis si besoin 5 compressions abdominales." },
+    { q: "Une victime est inconsciente mais respire. Dans quelle position doit-elle être placée ?", a: ["Assise contre un mur", "En position latérale de sécurité (PLS)", "Allongée sur le dos", "Debout, soutenue par le SST"], c: 1, e: "La PLS maintient les voies aériennes dégagées et prévient l'inhalation de vomissements." },
+    { q: "Pourquoi place-t-on une victime inconsciente qui respire en position latérale de sécurité ?", a: ["Pour qu'elle dorme plus confortablement", "Pour maintenir ses voies aériennes libres et prévenir l'inhalation de vomissements", "Pour la réchauffer", "Pour soulager son dos"], c: 1, e: "La PLS favorise l'écoulement des liquides vers l'extérieur et empêche la langue d'obstruer le pharynx." },
+    { q: "Quel est le rythme recommandé pour le massage cardiaque chez l'adulte ?", a: ["15 compressions pour 2 insufflations", "30 compressions pour 2 insufflations", "100 compressions en continu sans insufflation possible", "10 compressions pour 1 insufflation"], c: 1, e: "30 compressions pour 2 insufflations, cycle répété sans interruption jusqu'à l'arrivée des secours." },
+    { q: "Où doivent être positionnées les mains pour réaliser un massage cardiaque ?", a: ["Sur le ventre", "Au centre de la poitrine, sur le sternum", "Sur le côté gauche des côtes", "Sur la gorge"], c: 1, e: "Les mains, l'une sur l'autre, sont placées au centre du thorax, sur la moitié inférieure du sternum." },
+    { q: "Quelle doit être la profondeur des compressions thoraciques chez l'adulte ?", a: ["1 à 2 cm", "5 à 6 cm", "Environ 10 cm", "Aucune profondeur n'est nécessaire"], c: 1, e: "5 à 6 cm pour générer une circulation sanguine suffisante. Ne pas hésiter à appuyer fermement." },
+    { q: "Quelle est la vitesse recommandée pour les compressions thoraciques ?", a: ["60 compressions par minute", "100 à 120 compressions par minute", "150 compressions par minute", "200 compressions par minute"], c: 1, e: "100 à 120 compressions par minute — le tempo de 'Stayin' Alive' sert souvent de repère." },
+    { q: "Quand doit-on utiliser un défibrillateur automatisé externe (DAE) ?", a: ["Dès qu'il est disponible, le plus tôt possible", "Seulement après 10 minutes de massage cardiaque", "Seulement si un médecin est présent", "Seulement si la victime respire encore"], c: 0, e: "Le DAE doit être utilisé dès qu'il est disponible, sans attendre." },
+    { q: "Que doit faire le secouriste pendant la phase d'analyse du rythme cardiaque par le DAE ?", a: ["Continuer le massage cardiaque sans interruption", "Ne plus toucher la victime", "Parler fort à la victime", "Débrancher les électrodes"], c: 1, e: "Pendant l'analyse, tout contact peut fausser le résultat : s'écarter et ne toucher personne." },
+    { q: "Comment traiter une plaie simple (peu profonde, qui ne saigne pas abondamment) ?", a: ["La nettoyer à l'eau et au savon", "Y verser de l'alcool", "La recouvrir de terre", "Ne rien faire du tout"], c: 0, e: "Un nettoyage à l'eau claire et au savon suffit avant de recouvrir d'un pansement propre." },
+    { q: "Quel est le geste de premier secours face à une brûlure thermique ?", a: ["Appliquer du beurre sur la zone brûlée", "Refroidir immédiatement la brûlure à l'eau tempérée pendant environ 10 minutes", "Percer les éventuelles cloques", "Appliquer directement de la glace"], c: 1, e: "Refroidissement à l'eau tempérée (15-25°C) pendant environ 10 minutes. Beurre et glace directe sont à proscrire." },
+    { q: "Une victime consciente présente un malaise simple, sans signe de gravité. Que privilégier ?", a: ["La mettre au repos dans la position où elle se sent le mieux", "La faire courir pour stimuler la circulation", "La gifler pour la \"réveiller\"", "L'ignorer en attendant que cela passe"], c: 0, e: "On installe la victime au repos, dans la position la plus confortable, on la rassure et on surveille." },
+    { q: "Un doigt a été sectionné lors d'un accident. Comment conserver le fragment ?", a: ["Le jeter, il est inutilisable", "Le placer dans un sac propre, lui-même posé sur un lit de glace, sans contact direct", "Le mettre directement en contact avec de la glace", "Tenter de le recoudre soi-même"], c: 1, e: "Le fragment dans un sac propre sur de la glace sans contact direct préserve les chances de réimplantation." },
+    { q: "Vous suspectez un traumatisme du dos ou de la colonne vertébrale chez une victime consciente. Que faire ?", a: ["La faire marcher pour vérifier qu'elle tient debout", "Maintenir sa tête et éviter tout mouvement du dos et du cou", "La tirer pour la dégager rapidement", "L'asseoir pour la rassurer"], c: 1, e: "Tout mouvement peut aggraver une lésion de la moelle épinière. Attendre les secours en maintenant la tête." },
+    { q: "La compression directe d'une hémorragie ne suffit pas à arrêter le saignement. Que faire ensuite ?", a: ["Poser un garrot si la compression reste inefficace", "Laisser la victime saigner en attendant les secours", "Appliquer un pansement simple sans plus de geste", "Pleurer et appeler à l'aide sans agir"], c: 0, e: "Le garrot est utilisé en dernier recours. Noter l'heure de pose est crucial pour l'équipe médicale." },
+    { q: "Une personne vient d'être dégagée d'un contact électrique. Que faire après la mise en sécurité ?", a: ["Considérer qu'il n'y a rien à faire si elle semble bien", "L'examiner comme pour toute victime, car des lésions internes peuvent être invisibles", "Lui donner à boire de l'eau immédiatement", "Attendre simplement qu'elle se relève seule"], c: 1, e: "Une électrisation peut provoquer des troubles du rythme cardiaque ou des brûlures invisibles." },
+    { q: "Quelle position privilégier pour une victime consciente présentant une plaie au ventre ?", a: ["Allongée sur le dos, jambes fléchies (genoux relevés)", "En position latérale de sécurité", "Assise normalement", "Debout, pour limiter l'effort"], c: 0, e: "Jambes fléchies : détend la paroi abdominale et limite la douleur." },
+    { q: "Quelle position privilégier pour une victime consciente présentant une plaie au thorax ?", a: ["Position semi-assise, qui facilite la respiration", "Position latérale de sécurité", "À plat ventre", "Debout, appuyée contre un mur"], c: 0, e: "La position semi-assise facilite l'effort respiratoire en cas de plaie thoracique." },
+    { q: "Une fois les premiers gestes réalisés, que doit faire le SST en attendant les secours ?", a: ["Surveiller la victime de façon continue", "S'éloigner ponctuellement si besoin", "Considérer que la surveillance n'est plus utile", "Laisser la victime seule pour aller chercher de l'aide systématiquement"], c: 0, e: "L'état d'une victime peut évoluer rapidement. Le SST surveille en continu jusqu'à l'arrivée des secours." },
+    // MODULE 6 : Prévention
+    { q: "La prévention des risques fait-elle partie des missions quotidiennes au travail ?", a: ["Oui, elle s'intègre au quotidien professionnel de chacun", "Non, c'est rare et ponctuel", "Non, ce n'est pas utile", "C'est une démarche purement administrative"], c: 0, e: "La prévention s'intègre dans les gestes et l'organisation du travail de tous les jours." },
+    { q: "Comment peut-on définir un risque, en prévention des risques professionnels ?", a: ["La combinaison entre un danger et l'exposition d'une personne à ce danger", "Uniquement le danger lui-même", "Uniquement l'exposition, sans lien avec un danger", "Un concept purement théorique sans application"], c: 0, e: "Le risque correspond à la probabilité qu'un dommage survienne du fait de l'exposition à un danger." },
+    { q: "Le SST est-il un acteur ou un simple observateur de la prévention en entreprise ?", a: ["Un acteur à part entière de la prévention", "Un simple spectateur sans rôle réel", "Une personne sans influence sur la sécurité", "Cela dépend uniquement de sa hiérarchie"], c: 0, e: "Le SST contribue activement : il identifie les situations dangereuses, les signale et propose des améliorations." },
+    { q: "Faut-il chercher à améliorer continuellement les conditions de sécurité dans l'entreprise ?", a: ["Oui, l'amélioration continue est un objectif permanent", "Non, une fois les règles établies, rien ne doit changer", "Seulement après un accident grave", "Cela ne concerne que la direction"], c: 0, e: "Les situations de travail évoluent, ce qui impose une démarche d'amélioration continue impliquant tous les niveaux." },
+    { q: "Les risques professionnels sont-ils une réalité concrète du quotidien au travail ?", a: ["Oui, ils existent réellement dans toutes les activités professionnelles", "Non, ils relèvent surtout de l'imagination", "Non, ils ne concernent que certains métiers très spécifiques", "Ils n'existent que dans l'industrie lourde"], c: 0, e: "Tout poste de travail comporte des risques potentiels. La prévention vise à les identifier et les réduire." },
+    { q: "Quel rôle joue le SST face à une situation dangereuse repérée sur son lieu de travail ?", a: ["Il la signale à sa hiérarchie ou aux personnes compétentes", "Il l'ignore si cela ne le concerne pas directement", "Il attend qu'un accident survienne pour réagir", "Il garde l'information pour lui"], c: 0, e: "Le signalement d'une situation dangereuse permet de la corriger avant qu'elle ne provoque un accident." },
+    { q: "Quel est l'intérêt de prévenir un risque plutôt que d'attendre l'accident pour agir ?", a: ["Éviter que le dommage ne survienne réellement", "Cela ne change rien au résultat final", "Préparer simplement les soins à venir", "Cela coûte toujours plus cher que de réparer"], c: 0, e: "La prévention agit en amont, avant que le dommage ne se produise." },
+    { q: "Pourquoi privilégie-t-on la prévention collective à la prévention individuelle ?", a: ["Parce qu'elle protège l'ensemble des personnes exposées en une seule action", "Parce qu'elle est toujours moins coûteuse", "Parce que la prévention individuelle est interdite", "Parce qu'elle ne nécessite aucune organisation"], c: 0, e: "Une mesure collective protège automatiquement toutes les personnes exposées." },
+    { q: "Que recense le Document Unique d'Évaluation des Risques (DUER) ?", a: ["L'ensemble des risques identifiés dans l'entreprise et les mesures de prévention associées", "Les recettes utilisées en cuisine collective", "Une liste d'anecdotes sur l'entreprise", "Le règlement intérieur uniquement"], c: 0, e: "Le DUER recense l'ensemble des risques professionnels et les actions de prévention mises en place." },
+    { q: "Le SST peut-il proposer des pistes d'amélioration en matière de sécurité ?", a: ["Oui, il peut être force de proposition", "Non, ce rôle est réservé à la direction uniquement", "Non, cela sort totalement de son rôle", "Seulement s'il est ingénieur sécurité"], c: 0, e: "Grâce à sa connaissance du terrain, le SST peut repérer des situations à risque et proposer des solutions." },
+    { q: "Pourquoi parle-t-on de \"culture sécurité\" en entreprise ?", a: ["Parce que la sécurité doit devenir un réflexe partagé par tous, intégré aux comportements quotidiens", "Parce qu'il s'agit d'un simple slogan publicitaire", "Parce que cela ne concerne que les nouveaux employés", "Parce que cela remplace les règles légales"], c: 0, e: "Une véritable culture sécurité signifie que la prévention est un réflexe naturel partagé par tous." },
+    { q: "À quel moment doit intervenir la démarche de prévention par rapport à l'accident ?", a: ["Avant que l'accident ne survienne", "Uniquement après l'accident, pour en tirer des leçons", "Jamais, ce n'est pas son rôle", "Seulement si l'accident est très grave"], c: 0, e: "Prévenir signifie agir avant que le risque ne se transforme en accident." },
+    { q: "Pourquoi le SST doit-il connaître les risques spécifiques de son entreprise ?", a: ["Pour adapter sa vigilance et ses actions de prévention au contexte réel de son poste", "Parce que cela fait partie d'un simple exercice théorique sans application", "Pour pouvoir réciter une liste lors d'un contrôle", "Cela n'est pas réellement utile"], c: 0, e: "Chaque entreprise présente des risques particuliers. Le SST formé à ces spécificités est plus efficace." },
+    { q: "Pourquoi le signalement des situations dangereuses est-il essentiel ?", a: ["Sans signalement, les situations à risque ne peuvent généralement pas être corrigées", "Le signalement n'a aucun impact concret", "C'est une démarche purement symbolique", "Cela ne concerne que les accidents déjà survenus"], c: 0, e: "Le signalement permet d'agir pour supprimer un danger avant qu'un accident ne survienne." },
+    { q: "La démarche de prévention dans l'entreprise doit-elle être ponctuelle ou continue ?", a: ["Continue, car les situations de travail évoluent constamment", "Ponctuelle, lors de la création de l'entreprise uniquement", "Inutile une fois les premières mesures mises en place", "Réservée aux audits annuels uniquement"], c: 0, e: "La prévention doit être réévaluée et adaptée en permanence." },
+    { q: "Quelle est la différence essentielle entre danger et risque ?", a: ["Le danger est la source potentielle de dommage, le risque est la probabilité que ce dommage survienne réellement", "Ce sont deux termes strictement identiques", "Le danger concerne uniquement les machines", "Le risque n'a aucun lien avec le danger"], c: 0, e: "Danger = propriété intrinsèque ; risque = probabilité selon l'exposition humaine à ce danger." },
+    { q: "Le SST fait-il partie intégrante de la démarche de prévention de l'entreprise ?", a: ["Oui, il en est un acteur reconnu", "Non, son rôle se limite uniquement aux premiers secours", "Non, il n'a aucun lien avec la prévention", "Cela dépend uniquement de sa fonction hiérarchique"], c: 0, e: "Le SST est aussi un relais de la prévention au quotidien." },
+    { q: "La sécurité au travail est-elle l'affaire d'une seule personne ou de tous ?", a: ["C'est une responsabilité partagée par l'ensemble des acteurs de l'entreprise", "C'est uniquement la responsabilité du chef d'entreprise", "C'est uniquement la responsabilité du SST", "Cela ne concerne que les services administratifs"], c: 0, e: "Chaque salarié contribue à la sécurité collective par son comportement et sa vigilance." },
+    { q: "Comment un salarié peut-il contribuer concrètement à l'amélioration de la sécurité ?", a: ["En proposant des solutions et en signalant les situations à risque qu'il observe", "En ignorant les situations qui ne le concernent pas directement", "En gardant pour lui les observations qu'il fait", "En attendant que la direction s'en aperçoive seule"], c: 0, e: "Signaler et proposer des solutions est une contribution active à la démarche de prévention collective." },
+    { q: "La prévention des risques est-elle une priorité ou une simple option pour l'entreprise ?", a: ["C'est une priorité, intégrée aux obligations de l'employeur et à la mission du SST", "C'est une option facultative selon les moyens disponibles", "Elle n'a aucune importance réelle", "Elle ne concerne que les grandes entreprises"], c: 0, e: "La prévention des risques professionnels est une obligation légale pour l'employeur." },
+    // MODULE 7 : Risques Professionnels
+    { q: "Comment définir un danger en santé et sécurité au travail ?", a: ["Une source ou une situation susceptible de causer un dommage", "Le dommage lui-même une fois survenu", "La probabilité qu'un accident se produise", "Un concept sans réalité concrète"], c: 0, e: "Le danger désigne la propriété intrinsèque susceptible de causer un dommage." },
+    { q: "Comment définir le risque en santé et sécurité au travail ?", a: ["La probabilité que survienne un dommage du fait de l'exposition à un danger", "Le dommage déjà constaté", "Le danger lui-même, sans nuance", "Un terme purement administratif sans réalité"], c: 0, e: "Le risque = probabilité de dommage = combinaison danger + exposition." },
+    { q: "Le risque chimique fait-il partie des risques professionnels reconnus ?", a: ["Oui, il est lié à l'utilisation de produits ou substances dangereuses", "Non, il ne concerne que les laboratoires de recherche", "Non, ce risque n'existe pas en entreprise", "Il ne concerne que les produits ménagers"], c: 0, e: "Le risque chimique concerne tous les secteurs utilisant des substances toxiques, irritantes ou corrosives." },
+    { q: "Le risque électrique fait-il partie des risques professionnels à prévenir ?", a: ["Oui, il est lié aux installations et équipements sous tension", "Non, il est négligeable dans la plupart des entreprises", "Non, il ne concerne que les électriciens professionnels", "Il ne concerne que les centrales électriques"], c: 0, e: "Le risque électrique peut concerner tout salarié travaillant à proximité d'installations sous tension." },
+    { q: "Le risque de chute fait-il partie des risques professionnels courants ?", a: ["Oui, qu'il s'agisse de chutes de plain-pied ou de chutes de hauteur", "Non, il ne concerne que le secteur du BTP", "Non, ce risque est purement théorique", "Il ne concerne que les escaliers"], c: 0, e: "Les chutes sont l'une des principales causes d'accidents du travail en France, tous secteurs confondus." },
+    { q: "Le risque lié à la manutention manuelle concerne-t-il les risques professionnels ?", a: ["Oui, il est lié au port ou au déplacement de charges", "Non, il s'agit d'un simple inconfort sans gravité", "Non, ce risque a disparu avec la mécanisation", "Il ne concerne que les métiers du déménagement"], c: 0, e: "La manutention est une cause majeure de troubles musculo-squelettiques (lombalgies, hernies discales...)." },
+    { q: "Que signifie \"évaluer un risque\" en prévention ?", a: ["Analyser sa fréquence d'exposition et sa gravité potentielle", "L'ignorer volontairement", "Le cacher à la hiérarchie", "Le considérer comme privé et non concerné par l'entreprise"], c: 0, e: "Évaluer un risque = estimer la probabilité de survenue et la gravité potentielle du dommage." },
+    { q: "Que désigne le terme \"dommage\" en prévention des risques ?", a: ["La conséquence réelle sur la santé d'une personne (blessure, maladie)", "La cause initiale d'un accident", "Un simple incident sans conséquence", "Un concept purement juridique sans réalité physique"], c: 0, e: "Le dommage est l'atteinte effective à la santé résultant de la concrétisation d'un risque." },
+    { q: "Pourquoi distingue-t-on clairement danger et risque en prévention ?", a: ["Parce qu'un danger sans exposition humaine ne génère pas nécessairement de risque concret", "Parce que ce sont deux synonymes interchangeables", "Parce que la loi l'impose sans justification pratique", "Parce que cette distinction n'a aucune utilité"], c: 0, e: "On peut agir en supprimant le danger ou en réduisant l'exposition : deux leviers d'action différents." },
+    { q: "Quelle est la première étape de la démarche d'évaluation des risques ?", a: ["Identifier et repérer les dangers présents sur le poste de travail", "Rédiger directement un rapport final", "Sanctionner les comportements à risque", "Acheter des équipements de protection sans analyse préalable"], c: 0, e: "Avant d'évaluer ou maîtriser un risque, il faut d'abord identifier les dangers présents." },
+    { q: "Le risque acoustique (bruit) est-il reconnu comme un risque professionnel ?", a: ["Oui, une exposition prolongée à un bruit excessif peut endommager l'audition", "Non, le bruit n'a jamais d'impact sur la santé", "Non, ce risque ne concerne que les concerts", "Il ne concerne que les métiers du BTP"], c: 0, e: "L'exposition répétée à des niveaux élevés peut entraîner une surdité professionnelle irréversible." },
+    { q: "Le risque thermique (chaud ou froid extrême) fait-il partie des risques professionnels ?", a: ["Oui, une exposition à des températures extrêmes peut nuire à la santé", "Non, le corps humain s'adapte toujours sans difficulté", "Non, cela ne concerne que les climats extrêmes à l'étranger", "Il ne concerne que les boulangers"], c: 0, e: "Le travail en ambiance très chaude ou froide nécessite des mesures de prévention adaptées." },
+    { q: "Quel est le rôle du Document Unique d'Évaluation des Risques (DUER) ?", a: ["Servir de support formalisé à l'évaluation des risques de l'entreprise", "Remplacer les outils de travail habituels", "Servir uniquement de preuve en cas de litige judiciaire", "N'avoir aucune utilité concrète au quotidien"], c: 0, e: "Le DUER formalise l'évaluation des risques et les mesures de prévention associées. Il doit être mis à jour régulièrement." },
+    { q: "Les risques psychosociaux (stress, harcèlement, surcharge de travail) sont-ils reconnus comme des risques professionnels ?", a: ["Oui, ils sont pleinement reconnus au même titre que les risques physiques", "Non, ils relèvent uniquement de la vie privée", "Non, ils ne concernent que les cadres", "Ils ne sont jamais pris en compte par la loi"], c: 0, e: "Les RPS sont officiellement reconnus et doivent être intégrés à l'évaluation globale des risques." },
+    { q: "Que signifie \"caractériser un risque\" ?", a: ["En préciser la nature, la fréquence d'exposition et la gravité potentielle", "Le dissimuler pour éviter des questions", "L'ignorer délibérément", "Le considérer comme une affaire strictement personnelle"], c: 0, e: "Caractériser = décrire précisément nature, fréquence et gravité pour hiérarchiser les risques." },
+    { q: "Un dommage corporel correspond-il à une atteinte physique réelle de la personne ?", a: ["Oui, il s'agit d'une blessure ou atteinte physique concrète", "Non, il s'agit uniquement d'un préjudice moral", "Non, ce terme ne s'applique jamais au travail", "Il ne concerne que les accidents mortels"], c: 0, e: "Le dommage corporel désigne une atteinte réelle à l'intégrité physique (coupure, fracture, brûlure...)." },
+    { q: "Le risque biologique fait-il partie des risques professionnels reconnus ?", a: ["Oui, il est lié à l'exposition à des micro-organismes (bactéries, virus, champignons)", "Non, il ne concerne que les laboratoires de recherche médicale", "Non, ce risque a totalement disparu aujourd'hui", "Il ne concerne que les hôpitaux"], c: 0, e: "Le risque biologique concerne tout secteur exposant à des agents pathogènes (soins, déchets, agriculture...)." },
+    { q: "Pourquoi la fréquence d'exposition est-elle un critère important dans l'évaluation d'un risque ?", a: ["Parce qu'une exposition répétée augmente la probabilité de survenue d'un dommage", "Parce qu'elle n'a aucun impact réel sur le niveau de risque", "Parce qu'elle ne concerne que les risques chimiques", "Parce que seule la gravité compte, jamais la fréquence"], c: 0, e: "Plus l'exposition est fréquente, plus la probabilité de dommage augmente." },
+    { q: "Pourquoi la gravité potentielle est-elle un critère important dans l'évaluation d'un risque ?", a: ["Parce qu'elle détermine l'ampleur des conséquences possibles sur la santé en cas d'accident", "Parce qu'elle est sans rapport avec le niveau de priorité d'action", "Parce qu'elle ne concerne que les accidents mortels", "Parce que seule la fréquence compte réellement"], c: 0, e: "Gravité + fréquence = hiérarchisation des risques pour prioriser les actions de prévention." },
+    { q: "Une situation de travail peut-elle présenter plusieurs risques en même temps ?", a: ["Oui, plusieurs risques peuvent coexister sur un même poste de travail", "Non, un poste ne présente jamais qu'un seul type de risque", "Non, les risques sont toujours isolés les uns des autres", "Cela ne concerne que les postes très spécialisés"], c: 0, e: "Un poste peut cumuler plusieurs types de risques. L'évaluation doit être globale." },
+    // MODULE 8 : Maîtrise des Risques
+    { q: "Quelle est la mesure de prévention la plus efficace selon la hiérarchie des principes généraux de prévention ?", a: ["La suppression totale du danger à la source", "Le port d'un équipement de protection individuelle", "L'affichage d'une simple consigne", "L'assurance contractée par l'entreprise"], c: 0, e: "Éliminer le danger à la source : si le danger n'existe plus, le risque disparaît totalement." },
+    { q: "Lorsque la suppression totale du danger est impossible, quelle action privilégier ?", a: ["Réduire le risque en limitant l'exposition ou la gravité potentielle", "Ne rien faire, puisque la suppression est impossible", "Attendre un accident pour réagir", "Se contenter d'un simple affichage d'avertissement"], c: 0, e: "On vise alors à réduire le risque résiduel en diminuant l'exposition ou la gravité potentielle." },
+    { q: "Pourquoi est-il important de remonter une situation dangereuse repérée sur son poste de travail ?", a: ["Pour permettre une correction avant qu'un accident ne survienne", "Parce que c'est une simple formalité administrative sans réel impact", "Pour éviter une sanction personnelle uniquement", "Cela n'a pas d'utilité réelle"], c: 0, e: "Le signalement précoce permet d'agir avant que le risque ne se concrétise en accident." },
+    { q: "Une mesure de protection collective protège-t-elle l'ensemble des personnes exposées en une seule action ?", a: ["Oui, c'est précisément son intérêt par rapport à une mesure individuelle", "Non, elle ne protège qu'une seule personne à la fois", "Non, elle ne concerne que l'encadrement", "Elle ne sert qu'à des fins esthétiques"], c: 0, e: "Une protection collective agit sur l'environnement et protège automatiquement toutes les personnes présentes." },
+    { q: "À quel moment intervient une mesure de protection individuelle dans la hiérarchie de prévention ?", a: ["En dernier recours, lorsque les mesures collectives ne suffisent pas à elles seules", "En tout premier lieu, avant toute autre mesure", "Jamais, elle est toujours superflue", "Uniquement à la demande du salarié"], c: 0, e: "Les EPI constituent le dernier niveau de protection, après suppression, réduction et protection collective." },
+    { q: "Le salarié peut-il proposer des améliorations en matière de sécurité au sein de son entreprise ?", a: ["Oui, sa connaissance du terrain en fait un interlocuteur précieux pour cela", "Non, cela ne relève que de la direction", "Non, cela sortirait de son rôle", "Seulement s'il occupe un poste d'encadrement"], c: 0, e: "Le salarié, notamment le SST, est bien placé pour identifier des solutions pratiques." },
+    { q: "Quel est l'intérêt de la formation à la sécurité dans la maîtrise des risques ?", a: ["Elle permet à chacun de connaître les dangers de son poste et les bons gestes de prévention", "Elle n'a aucun lien réel avec la prévention des accidents", "Elle ne concerne que les nouveaux embauchés", "Elle remplace totalement les mesures techniques de sécurité"], c: 0, e: "La formation permet de comprendre les risques et d'adopter les bons comportements. Elle complète les mesures techniques." },
+    { q: "À quoi sert la signalisation de sécurité (panneaux, marquages...) sur un lieu de travail ?", a: ["À informer rapidement des dangers présents et des consignes à respecter", "À décorer simplement les locaux", "À remplacer toute autre mesure de prévention", "Elle n'a pas réellement d'utilité pratique"], c: 0, e: "La signalisation attire l'attention sur un danger de façon rapide, en complément d'autres mesures." },
+    { q: "Comment l'organisation du travail peut-elle contribuer à la prévention des risques ?", a: ["En répartissant les tâches, les rythmes et les responsabilités de façon à limiter les expositions dangereuses", "Elle n'a aucun rapport avec la prévention", "Uniquement en imposant davantage de pauses", "Elle ne concerne que les très grandes entreprises"], c: 0, e: "Une organisation adaptée (rotation, rythmes, responsabilités) réduit l'exposition à certains risques." },
+    { q: "Quel rôle jouent les équipements de protection individuelle (EPI) dans la maîtrise des risques ?", a: ["Ils constituent une protection de dernier recours pour le salarié exposé", "Ils remplacent toutes les autres mesures de prévention", "Ils ne sont utiles que dans le secteur du BTP", "Ils n'ont aucune utilité réelle"], c: 0, e: "Les EPI protègent la personne quand le risque n'a pas pu être supprimé. Leur efficacité dépend du port effectif." },
+    { q: "Pourquoi le rangement et l'organisation des espaces de travail sont-ils importants en prévention ?", a: ["Parce qu'ils réduisent les risques de chutes, de heurts et facilitent les déplacements en sécurité", "Parce qu'ils n'ont qu'un intérêt esthétique", "Parce qu'ils ne concernent que les bureaux", "Parce qu'ils remplacent le besoin de formation"], c: 0, e: "Un espace bien rangé limite chutes, heurts et facilite une évacuation rapide. Mesure simple et efficace." },
+    { q: "Pourquoi la maintenance régulière des équipements participe-t-elle à la prévention des risques ?", a: ["Parce qu'elle permet de garder les machines en bon état de fonctionnement et de sécurité", "Parce qu'elle est purement esthétique", "Parce qu'elle ne concerne que les machines très anciennes", "Parce qu'elle remplace les dispositifs de sécurité existants"], c: 0, e: "La maintenance préventive maintient le niveau de sécurité initial des machines dans le temps." },
+    { q: "À quoi sert le retour d'expérience après un accident ou un incident de travail ?", a: ["À analyser les causes pour éviter qu'un événement similaire ne se reproduise", "À simplement classer le dossier sans suite", "À sanctionner systématiquement la victime", "Il n'a pas d'utilité réelle pour la prévention"], c: 0, e: "L'analyse des causes permet de mettre en place des actions correctives pour éviter la récidive." },
+    { q: "Pourquoi respecte-t-on un ordre de priorité (hiérarchie) entre les différentes mesures de prévention ?", a: ["Parce que certaines mesures (suppression du danger) sont plus efficaces et durables que d'autres (EPI)", "Parce que la loi impose un ordre purement arbitraire sans logique", "Parce que toutes les mesures ont strictement la même efficacité", "Parce que cela ne concerne que les grandes entreprises"], c: 0, e: "La hiérarchie reflète l'efficacité décroissante : supprimer = protection totale ; EPI = dépend du port correct." },
+    { q: "Pourquoi l'adaptation ergonomique d'un poste de travail contribue-t-elle à la prévention des risques ?", a: ["Parce qu'elle réduit les contraintes physiques et limite les troubles musculo-squelettiques", "Parce qu'elle n'a qu'un effet sur le confort, sans lien avec la sécurité", "Parce qu'elle ne concerne que les postes administratifs", "Parce qu'elle remplace systématiquement la formation"], c: 0, e: "Adapter le poste aux caractéristiques physiques réduit les efforts inutiles, cause principale de TMS." },
+    { q: "Le SST peut-il jouer un rôle de conseil en matière de prévention auprès de ses collègues ?", a: ["Oui, sa formation et sa connaissance du terrain en font un relais utile", "Non, ce rôle est réservé exclusivement aux experts en sécurité", "Non, cela sortirait totalement de ses attributions", "Seulement s'il occupe un poste hiérarchique"], c: 0, e: "Sans se substituer aux experts, le SST peut conseiller utilement ses collègues sur les bonnes pratiques." },
+    { q: "Qu'entend-on par \"prévention active\" ?", a: ["Une démarche qui anticipe les risques avant qu'ils ne se concrétisent en accident", "Une démarche qui consiste à réagir uniquement après un accident", "Une démarche purement administrative sans action concrète", "Une démarche réservée aux grandes entreprises"], c: 0, e: "La prévention active anticipe les risques en agissant en amont, par opposition à une approche réactive." },
+    { q: "La maîtrise des risques est-elle un processus ponctuel ou continu dans le temps ?", a: ["Un processus continu, à réévaluer régulièrement", "Un processus ponctuel, réalisé une seule fois", "Un processus inutile une fois les premières mesures prises", "Un processus réservé uniquement aux audits externes"], c: 0, e: "Les situations évoluant constamment, la maîtrise des risques doit être réévaluée régulièrement." },
+    { q: "L'implication de chaque salarié est-elle nécessaire pour une prévention efficace ?", a: ["Oui, la sécurité repose sur l'engagement de chacun, à tous les niveaux", "Non, seule la direction est concernée", "Non, seuls les SST sont concernés", "Cela ne concerne que les postes à risque élevé"], c: 0, e: "Même bien conçue, une politique de prévention ne peut être pleinement efficace sans l'implication de chacun." },
+    { q: "Quel est l'objectif final visé par l'ensemble de la démarche de maîtrise des risques ?", a: ["Réduire durablement la survenue d'accidents et de maladies professionnelles", "Remplir une obligation administrative sans réelle ambition", "Éviter uniquement les sanctions de l'inspection du travail", "Satisfaire uniquement les exigences des assurances"], c: 0, e: "L'objectif central est la protection réelle et durable de la santé et de la sécurité des travailleurs." }
+        ];
 
         // --- VARIABLES GLOBALES ---
-        let mode = ""; // 'host', 'live_student', 'solo_student'
+        let mode = "";
         let studentId = "";
         let localScore = 0;
         let currentTimer;
         let timeLeft = 15;
         let sessionQuestions = [];
-        // Pour le mode mixte : on garde le nom du module associé à chaque question de la session
         let sessionModuleNames = [];
         let currentIndex = -1;
         let isQuestionAnswered = false;
-        let currentModuleLabel = ""; // nom du module à afficher pour la question en cours (mode mixte)
-
-        // Pour le formateur : suivi des réponses reçues pour la question en cours
         let responseListenerUnsub = null;
         let autoExplainTriggered = false;
         let connectedPlayerCount = 0;
 
-        // --- 1. ROUTAGE ET MOT DE PASSE ---
+        // --- ROUTAGE ---
         window.selectRole = function(role) {
             if(role === 'host') {
                 const pwd = prompt("Accès Formateur - Entrez le mot de passe N.C.R :");
-                if(pwd !== "NCR2026") {
-                    alert("Mot de passe incorrect.");
-                    return;
-                }
+                if(pwd !== "NCR2026") { alert("Mot de passe incorrect."); return; }
                 mode = 'host';
                 document.getElementById('role-screen').classList.remove('active');
                 document.getElementById('module-title-dynamic').innerText = "Session Live : Choisir Module";
                 document.getElementById('module-selection-screen').classList.add('active');
-            } 
-            else if (role === 'solo_student') {
+            } else if (role === 'solo_student') {
                 mode = 'solo_student';
                 document.getElementById('role-screen').classList.remove('active');
-                // On affiche le nouvel écran de connexion au lieu d'aller direct aux modules
                 document.getElementById('solo-login-screen').classList.add('active');
-            }
-            else if (role === 'live_student') {
+            } else if (role === 'live_student') {
                 mode = 'live_student';
                 document.getElementById('role-screen').classList.remove('active');
                 document.getElementById('student-login-screen').classList.add('active');
             }
         };
 
-        // --- 2. SELECTION DU MODULE ---
         window.currentSoloUserId = "";
 
         window.loginSolo = function() {
-            // Nettoyage de l'ID pour éviter les caractères interdits par Firebase (., #, $, [, ])
             const rawId = document.getElementById('solo-student-id').value.trim().toLowerCase();
-            const userId = rawId.replace(/[^a-z0-9]/gi, '_'); 
-            
+            const userId = rawId.replace(/[^a-z0-9]/gi, '_');
             if(!userId) return alert("Veuillez saisir un identifiant valide.");
-            
             window.currentSoloUserId = userId;
-            
-            // 1. Récupération de la progression dans Firebase
             onValue(ref(db, 'users_progress/' + userId), (snapshot) => {
                 const data = snapshot.val() || {};
-                
-                // 2. On l'injecte dans le navigateur de l'élève
                 localStorage.setItem('ncr_sst_progress', JSON.stringify(data));
-                
-                // 3. On ferme l'écran de login et on ouvre le menu des modules mis à jour
                 document.getElementById('solo-login-screen').classList.remove('active');
                 document.getElementById('module-title-dynamic').innerText = "Mon Espace Révision";
                 document.getElementById('student-dashboard').style.display = 'block';
@@ -611,30 +1048,30 @@
                 document.getElementById('module-selection-screen').classList.add('active');
             }, { onlyOnce: true });
         };
+
         window.startModule = function(modId) {
             document.getElementById('module-selection-screen').classList.remove('active');
-            window.currentSoloModId = modId; // Gardé pour ta sauvegarde de progression
-            
-            // NOUVEAU : Fonction qui mélange l'ordre des réponses de manière aléatoire
+            window.currentSoloModId = modId;
+
             function shuffleAnswers(q) {
-                let qCopy = JSON.parse(JSON.stringify(q)); // On copie pour ne pas altérer la base de données
-                let correctText = qCopy.a[qCopy.c]; // On mémorise le texte de la vraie bonne réponse
-                qCopy.a.sort(() => Math.random() - 0.5); // On mélange les 4 choix
-                qCopy.c = qCopy.a.indexOf(correctText); // On met à jour "c" avec le nouvel index
+                let qCopy = JSON.parse(JSON.stringify(q));
+                let correctText = qCopy.a[qCopy.c];
+                qCopy.a.sort(() => Math.random() - 0.5);
+                qCopy.c = qCopy.a.indexOf(correctText);
                 return qCopy;
             }
 
-            // Chargement des questions selon le module
+            const QUESTIONS_PER_MODULE_LOCAL = 20;
             if(modId === 'all') {
                 const indexed = allQuestions.map((q, idx) => ({ q, idx }));
                 const shuffled = indexed.sort(() => 0.5 - Math.random()).slice(0, 15);
-                sessionQuestions = shuffled.map(item => shuffleAnswers(item.q)); // Application du mélange
+                sessionQuestions = shuffled.map(item => shuffleAnswers(item.q));
                 sessionModuleNames = shuffled.map(item => getModuleNameForQuestionIndex(item.idx));
                 if(mode === 'host') document.getElementById('host-module-title').innerText = "Examen Général Live";
             } else {
-                const start = modId * QUESTIONS_PER_MODULE;
-                sessionQuestions = allQuestions.slice(start, start + QUESTIONS_PER_MODULE).map(q => shuffleAnswers(q)); // Application du mélange
-                sessionModuleNames = sessionQuestions.map(() => ""); 
+                const start = modId * QUESTIONS_PER_MODULE_LOCAL;
+                sessionQuestions = allQuestions.slice(start, start + QUESTIONS_PER_MODULE_LOCAL).map(q => shuffleAnswers(q));
+                sessionModuleNames = sessionQuestions.map(() => "");
                 if(mode === 'host') document.getElementById('host-module-title').innerText = "Module " + (modId + 1) + " Live";
             }
             currentIndex = -1;
@@ -659,39 +1096,29 @@
             }
         };
 
-        // Permet au formateur de revenir choisir un autre module sans perdre le classement affiché jusque-là
         window.backToModuleSelectionHost = function() {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('module-title-dynamic').innerText = "Session Live : Choisir Module";
             document.getElementById('module-selection-screen').classList.add('active');
         };
 
-        // ==========================================
-        //         LOGIQUE FORMATEUR (LIVE)
-        // ==========================================
         window.nextQuestionHost = function() {
-            // On arrête d'écouter les réponses de la question précédente, le cas échéant
             if(responseListenerUnsub) { responseListenerUnsub(); responseListenerUnsub = null; }
-
             currentIndex++;
             if(currentIndex >= sessionQuestions.length) {
                 update(ref(db, 'session'), { status: 'finished' });
                 showHostFinalResults();
                 return;
             }
-
             const qData = sessionQuestions[currentIndex];
             const moduleLabel = sessionModuleNames[currentIndex] || "";
             autoExplainTriggered = false;
-            
-            // Interface formateur
             const titlePrefix = moduleLabel ? `[${moduleLabel}] ` : '';
             document.getElementById('host-question-text').innerText = `${titlePrefix}Q${currentIndex + 1}: ` + qData.q;
             document.getElementById('host-explanation').classList.remove('show');
             document.getElementById('btn-host-next').style.display = 'none';
             document.getElementById('btn-host-explain').style.display = 'block';
             document.getElementById('host-response-progress').innerText = 'Réponses : 0 / ' + connectedPlayerCount;
-
             const hostGrid = document.getElementById('host-ans-grid');
             hostGrid.innerHTML = '';
             qData.a.forEach((ans, i) => {
@@ -701,20 +1128,13 @@
                 if(i === qData.c) div.style.border = "2px solid var(--apple-green)";
                 hostGrid.appendChild(div);
             });
-
             const qId = Date.now();
-
-            // Envoi Firebase (on inclut le nom du module pour l'écran élève)
             update(ref(db, 'session'), { status: 'playing', question: qData, qId: qId, moduleLabel: moduleLabel });
-
-            // On nettoie les réponses précédentes puis on écoute les nouvelles
             remove(ref(db, 'responses')).then(() => {
                 responseListenerUnsub = onValue(ref(db, 'responses/' + qId), (snapshot) => {
                     const data = snapshot.val() || {};
                     const count = Object.keys(data).length;
                     document.getElementById('host-response-progress').innerText = 'Réponses : ' + count + ' / ' + connectedPlayerCount;
-
-                    // Dès que tout le monde a répondu (et qu'il y a au moins 1 joueur), on déclenche l'explication automatiquement
                     if(!autoExplainTriggered && connectedPlayerCount > 0 && count >= connectedPlayerCount) {
                         autoExplainTriggered = true;
                         window.showExplanationHost();
@@ -724,18 +1144,13 @@
         };
 
         window.showExplanationHost = function() {
-            if(autoExplainTriggered === false) autoExplainTriggered = true; // sécurité si déclenché manuellement
+            if(autoExplainTriggered === false) autoExplainTriggered = true;
             const qData = sessionQuestions[currentIndex];
-            // Afficher côté formateur
             document.getElementById('host-exp-text').innerText = qData.e || "Pas d'explication fournie.";
             document.getElementById('host-explanation').classList.add('show');
-            
-            // Changer les boutons
             document.getElementById('btn-host-explain').style.display = 'none';
             document.getElementById('btn-host-next').style.display = 'block';
             document.getElementById('btn-host-next').innerText = "Question Suivante ➡️";
-
-            // Envoi Firebase pour afficher l'explication sur le tel des élèves
             update(ref(db, 'session'), { status: 'explanation' });
         };
 
@@ -749,7 +1164,6 @@
                 sorted.forEach(student => {
                     list.innerHTML += `<div class="score-row"><span>${student.name}</span><span style="color:var(--apple-blue)">${student.score} pts</span></div>`;
                 });
-                // Met à jour le compteur affiché si une question est en cours
                 const progressEl = document.getElementById('host-response-progress');
                 if(progressEl && progressEl.innerText.startsWith('Réponses')) {
                     const current = progressEl.innerText.split('/')[0].replace(/[^0-9]/g, '');
@@ -758,89 +1172,59 @@
             });
         }
 
-        // ==========================================
-        //      CLASSEMENT FINAL : OUTILS COMMUNS
-        // ==========================================
-        function initials(name) {
-            return (name || '?').trim().slice(0, 2).toUpperCase();
-        }
+        function initials(name) { return (name || '?').trim().slice(0, 2).toUpperCase(); }
 
-        // Construit le HTML du podium (top 3) dans l'ordre visuel 2-1-3
         function buildPodiumHTML(sortedStudents) {
             const top3 = sortedStudents.slice(0, 3);
-            const order = [1, 0, 2]; // affichage : 2e à gauche, 1er au milieu, 3e à droite
+            const order = [1, 0, 2];
             let html = '';
             order.forEach(idx => {
                 const student = top3[idx];
                 if(!student) { html += '<div class="podium-spot"></div>'; return; }
                 const place = idx + 1;
                 const trophy = place === 1 ? '<div class="trophy-glow">🏆</div>' : '';
-                html += `
-                    <div class="podium-spot spot-${place}">
-                        ${trophy}
-                        <div class="podium-avatar">${initials(student.name)}</div>
-                        <div class="podium-name">${student.name}</div>
-                        <div class="podium-score">${student.score} pts</div>
-                        <div class="podium-bar">${place}</div>
-                    </div>`;
+                html += `<div class="podium-spot spot-${place}">${trophy}<div class="podium-avatar">${initials(student.name)}</div><div class="podium-name">${student.name}</div><div class="podium-score">${student.score} pts</div><div class="podium-bar">${place}</div></div>`;
             });
             return html;
         }
 
-        // Lance une pluie de confettis dans le conteneur donné
         function launchConfetti(containerId) {
             const container = document.getElementById(containerId);
             if(!container) return;
             container.innerHTML = '';
-            const colors = ['#FFD60A', '#0A84FF', '#32D74B', '#FF453A', '#FF9F0A', '#E91E63'];
-            const pieceCount = 60;
-            for(let i = 0; i < pieceCount; i++) {
+            const colors = ['#FFD60A','#0A84FF','#32D74B','#FF453A','#FF9F0A','#E91E63'];
+            for(let i = 0; i < 60; i++) {
                 const piece = document.createElement('div');
                 piece.className = 'confetti-piece';
                 const size = 6 + Math.random() * 6;
-                piece.style.width = size + 'px';
-                piece.style.height = (size * 0.4) + 'px';
-                piece.style.left = Math.random() * 100 + '%';
-                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-                piece.style.animationDuration = (2.5 + Math.random() * 2) + 's';
-                piece.style.animationDelay = (Math.random() * 0.6) + 's';
+                piece.style.cssText = `width:${size}px;height:${size*0.4}px;left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${2.5+Math.random()*2}s;animation-delay:${Math.random()*0.6}s;`;
                 container.appendChild(piece);
             }
-            // Nettoyage après l'animation pour ne pas alourdir le DOM
             setTimeout(() => { if(container) container.innerHTML = ''; }, 6000);
         }
 
-        // Affiche, côté formateur, l'écran de classement final complet
         function showHostFinalResults() {
             onValue(ref(db, 'scores'), (snapshot) => {
                 const data = snapshot.val() || {};
                 const sorted = Object.values(data).sort((a, b) => b.score - a.score);
-
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById('host-result-screen').classList.add('active');
                 document.getElementById('host-podium-wrap').innerHTML = buildPodiumHTML(sorted);
-
                 const listEl = document.getElementById('host-final-leaderboard');
                 listEl.innerHTML = '';
                 sorted.forEach((student, i) => {
-                    listEl.innerHTML += `<div class="score-row"><span><span class="rank-badge">${i + 1}</span>${student.name}</span><span style="color:var(--apple-blue)">${student.score} pts</span></div>`;
+                    listEl.innerHTML += `<div class="score-row"><span><span class="rank-badge">${i+1}</span>${student.name}</span><span style="color:var(--apple-blue)">${student.score} pts</span></div>`;
                 });
-
                 launchConfetti('confetti-container-host');
             }, { onlyOnce: true });
         }
 
-        // ==========================================
-        //         LOGIQUE ÉLÈVE (LIVE)
-        // ==========================================
         window.joinLiveQuiz = function() {
             const name = document.getElementById('student-name').value;
             if(!name) return alert("Veuillez saisir votre prénom.");
-            
             studentId = 'stu_' + Math.random().toString(36).substr(2, 9);
             document.getElementById('student-login-screen').classList.remove('active');
             document.getElementById('waiting-screen').classList.add('active');
-            
             set(ref(db, 'scores/' + studentId), { name: name, score: 0 });
             listenToLiveState();
         };
@@ -851,73 +1235,50 @@
             onValue(ref(db, 'session'), (snapshot) => {
                 const state = snapshot.val();
                 if(!state) return;
-                
                 if(state.status === 'playing' && state.qId !== lastQId) {
                     lastQId = state.qId;
                     currentLiveQId = state.qId;
                     renderQuestionStudent(state.question, 'live', state.moduleLabel || "");
-                } 
-                else if (state.status === 'waiting') {
-                    // Le formateur a choisi un nouveau module : on remet l'élève en salle d'attente
+                } else if (state.status === 'waiting') {
                     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                     document.getElementById('waiting-screen').classList.add('active');
                     document.getElementById('waiting-text').innerText = "Nouveau module à venir !";
-                }
-                else if (state.status === 'explanation') {
-                    // L'explication est déclenchée (automatiquement, ou par le formateur en backup)
+                } else if (state.status === 'explanation') {
                     clearInterval(currentTimer);
                     document.getElementById('timer-bar').style.width = '0%';
                     forceShowAnswerLive(state.question);
                     document.getElementById('student-exp-text').innerText = state.question.e || "";
                     document.getElementById('student-explanation').classList.add('show');
-                    document.getElementById('btn-solo-next').style.display = 'none'; // Pas de bouton en live
-                }
-                else if (state.status === 'finished') {
+                    document.getElementById('btn-solo-next').style.display = 'none';
+                } else if (state.status === 'finished') {
                     showStudentFinalResults();
                 }
             });
         }
 
-        // Affiche, côté élève (mode live), le podium top 3 + sa propre position
         function showStudentFinalResults() {
             onValue(ref(db, 'scores'), (snapshot) => {
                 const data = snapshot.val() || {};
                 const sorted = Object.values(data).sort((a, b) => b.score - a.score);
-                // Recherche de mon rang via l'ID (trié par score décroissant)
-                let myRank = -1;
                 const ids = Object.keys(data).sort((a, b) => data[b].score - data[a].score);
-                myRank = ids.indexOf(studentId) + 1;
-
+                const myRank = ids.indexOf(studentId) + 1;
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById('result-screen').classList.add('active');
                 document.getElementById('result-solo-block').style.display = 'none';
                 document.getElementById('result-live-block').style.display = 'block';
                 document.getElementById('podium-wrap').innerHTML = buildPodiumHTML(sorted);
-
                 const myRankBlock = document.getElementById('my-rank-block');
                 if(myRank > 0 && myRank <= 3) {
                     myRankBlock.innerHTML = `<p style="color:var(--apple-green); font-weight:600; margin-top:10px;">Bravo, vous terminez sur le podium ! 🎉</p>`;
                 } else if (myRank > 0) {
                     const me = data[studentId];
-                    myRankBlock.innerHTML = `
-                        <div class="my-rank-card">
-                            <span class="rank-badge">${myRank}</span>
-                            <div style="text-align:left; flex-grow:1;">
-                                <div style="font-weight:700;">${me.name}</div>
-                                <div style="color:var(--text-sec); font-size:13px;">Votre position</div>
-                            </div>
-                            <div style="color:var(--apple-blue); font-weight:700;">${me.score} pts</div>
-                        </div>`;
-                } else {
-                    myRankBlock.innerHTML = '';
-                }
-
+                    myRankBlock.innerHTML = `<div class="my-rank-card"><span class="rank-badge">${myRank}</span><div style="text-align:left; flex-grow:1;"><div style="font-weight:700;">${me.name}</div><div style="color:var(--text-sec); font-size:13px;">Votre position</div></div><div style="color:var(--apple-blue); font-weight:700;">${me.score} pts</div></div>`;
+                } else { myRankBlock.innerHTML = ''; }
                 launchConfetti('confetti-container');
             }, { onlyOnce: true });
         }
 
         function forceShowAnswerLive(qData) {
-            // Si l'élève n'a pas répondu à temps
             if(!isQuestionAnswered) {
                 const btns = document.querySelectorAll('#student-ans-grid .answer-card');
                 btns.forEach((b, i) => {
@@ -928,66 +1289,39 @@
             }
         }
 
-        // ==========================================
-        //         LOGIQUE ÉLÈVE (SOLO)
-        // ==========================================
         window.nextSoloQuestion = function() {
             currentIndex++;
-
-            // Si on a dépassé la dernière question : fin du module, on sauvegarde et on affiche le résultat
             if(currentIndex >= sessionQuestions.length) {
-                // Sauvegarde de la progression locale et en ligne
                 if(typeof currentSoloModId !== 'undefined' && currentSoloModId !== 'all') {
                     let progress = JSON.parse(localStorage.getItem('ncr_sst_progress') || '{}');
-                    const maxScore = sessionQuestions.length * 250; 
+                    const maxScore = sessionQuestions.length * 250;
                     let percent = Math.min(100, Math.round((localScore / maxScore) * 100));
-                    
                     if(!progress[currentSoloModId] || percent > progress[currentSoloModId]) {
                         progress[currentSoloModId] = percent;
-                        // Sauvegarde locale
                         localStorage.setItem('ncr_sst_progress', JSON.stringify(progress));
-                        
-                        // NOUVEAU : Sauvegarde Cloud Firebase
-                        if(window.currentSoloUserId) {
-                            set(ref(db, 'users_progress/' + window.currentSoloUserId), progress);
-                        }
+                        if(window.currentSoloUserId) { set(ref(db, 'users_progress/' + window.currentSoloUserId), progress); }
                     }
                 }
-
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById('result-screen').classList.add('active');
                 document.getElementById('result-live-block').style.display = 'none';
                 document.getElementById('result-solo-block').style.display = 'block';
                 document.getElementById('final-score').innerText = localScore;
                 launchConfetti('confetti-container');
-                return; 
+                return;
             }
-
             renderQuestionStudent(sessionQuestions[currentIndex], 'solo', sessionModuleNames[currentIndex] || "");
         };
 
-
-        // ==========================================
-        //      MOTEUR DE QUESTION (COMMUN)
-        // ==========================================
         function renderQuestionStudent(qData, currentMode, moduleLabel) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('student-quiz-screen').classList.add('active');
             document.getElementById('student-explanation').classList.remove('show');
             document.getElementById('btn-solo-next').style.display = 'none';
             isQuestionAnswered = false;
-
-            // Badge du nom de module (visible uniquement si renseigné, ex : mode mixte)
             const badge = document.getElementById('student-module-badge');
-            if(moduleLabel) {
-                badge.innerText = moduleLabel;
-                badge.style.display = 'inline-block';
-            } else {
-                badge.style.display = 'none';
-            }
-            
+            if(moduleLabel) { badge.innerText = moduleLabel; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; }
             document.getElementById('student-q-text').innerText = qData.q;
-            
             const grid = document.getElementById('student-ans-grid');
             grid.innerHTML = '';
             qData.a.forEach((ans, i) => {
@@ -997,7 +1331,6 @@
                 btn.onclick = () => handleStudentAnswer(i, qData, currentMode);
                 grid.appendChild(btn);
             });
-
             startTimer(qData, currentMode);
         }
 
@@ -1005,16 +1338,11 @@
             clearInterval(currentTimer);
             timeLeft = 15;
             const bar = document.getElementById('timer-bar');
-            
             bar.style.transition = 'none'; bar.style.width = '100%';
             setTimeout(() => { bar.style.transition = 'width 15s linear'; bar.style.width = '0%'; }, 50);
-            
             currentTimer = setInterval(() => {
                 timeLeft--;
-                if(timeLeft <= 0) {
-                    clearInterval(currentTimer);
-                    handleStudentAnswer(-1, qData, currentMode); // Temps écoulé
-                }
+                if(timeLeft <= 0) { clearInterval(currentTimer); handleStudentAnswer(-1, qData, currentMode); }
             }, 1000);
         }
 
@@ -1022,54 +1350,34 @@
             if(isQuestionAnswered) return;
             isQuestionAnswered = true;
             clearInterval(currentTimer);
-            
             const btns = document.querySelectorAll('#student-ans-grid .answer-card');
             btns.forEach(b => b.disabled = true);
-            
-            // // Mise à jour visuelle des boutons
             if(selectedIndex === qData.c) {
-                localScore += (100 + (timeLeft * 10)); // Bonus temps
+                localScore += (100 + (timeLeft * 10));
                 if(currentMode === 'live') update(ref(db, 'scores/' + studentId), { score: localScore });
                 if(btns[selectedIndex]) btns[selectedIndex].style.border = "4px solid var(--apple-green)";
             } else {
-                if(selectedIndex >= 0 && btns[selectedIndex]) {
-                    btns[selectedIndex].style.opacity = "0.3";
-                    btns[selectedIndex].style.border = "4px solid var(--apple-red)";
-                }
+                if(selectedIndex >= 0 && btns[selectedIndex]) { btns[selectedIndex].style.opacity = "0.3"; btns[selectedIndex].style.border = "4px solid var(--apple-red)"; }
                 if(btns[qData.c]) btns[qData.c].style.border = "4px solid var(--apple-green)";
             }
-
-            // En mode live, on signale au formateur que cet élève a répondu (réponse ou timeout),
-            // ce qui permet le déclenchement automatique de l'explication quand tout le monde a répondu.
-            if(currentMode === 'live' && currentLiveQId) {
-                set(ref(db, 'responses/' + currentLiveQId + '/' + studentId), true).catch(() => {});
-            }
-
-            // Gestion de l'après-réponse selon le mode
+            if(currentMode === 'live' && currentLiveQId) { set(ref(db, 'responses/' + currentLiveQId + '/' + studentId), true).catch(() => {}); }
             if(currentMode === 'solo') {
-                // En solo, on affiche l'explication direct
                 document.getElementById('student-exp-text').innerText = qData.e || "";
                 document.getElementById('student-explanation').classList.add('show');
                 document.getElementById('btn-solo-next').style.display = 'block';
-            } 
-            else if (currentMode === 'live') {
-                // En live, on affiche "En attente" : l'explication apparaîtra automatiquement
-                // dès que tout le monde aura répondu (ou à la fin du timer pour les retardataires).
+            } else if (currentMode === 'live') {
                 document.getElementById('student-exp-text').innerText = "⏳ En attente des autres participants...";
                 document.getElementById('student-explanation').classList.add('show');
             }
         }
-        // --- NOUVEAU : Calcul et Affichage de la Progression ---
-        // BLOC 3 : Mise à jour générale de l'Espace Élève
+
         window.updateStudentProgressUI = function() {
             let progress = JSON.parse(localStorage.getItem('ncr_sst_progress') || '{}');
             let totalPercent = 0;
             const cards = document.querySelectorAll('.btn-module-card');
-            
             for(let i = 0; i < 8; i++) {
                 let p = progress[i] || 0;
                 totalPercent += p;
-                
                 if(cards[i]) {
                     let scoreBadge = cards[i].querySelector('.mod-score');
                     if(!scoreBadge) {
@@ -1082,280 +1390,19 @@
                     scoreBadge.style.color = p >= 80 ? 'var(--apple-green)' : (p >= 50 ? 'var(--apple-orange)' : 'var(--text-sec)');
                 }
             }
-            
             let globalAverage = Math.round(totalPercent / 8);
             document.getElementById('global-percent').innerText = globalAverage + '%';
-            
-            setTimeout(() => { 
-                if(document.getElementById('global-progress-bar')) {
-                    document.getElementById('global-progress-bar').style.width = globalAverage + '%'; 
-                }
-            }, 100);
-            
+            setTimeout(() => { if(document.getElementById('global-progress-bar')) { document.getElementById('global-progress-bar').style.width = globalAverage + '%'; } }, 100);
             let level = "Débutant";
             if(globalAverage >= 25) level = "Apprenti SST";
             if(globalAverage >= 50) level = "Confirmé";
             if(globalAverage >= 75) level = "Expert SST";
             if(globalAverage >= 95) level = "Maître SST 🏆";
-            
-            if(document.getElementById('global-level')) {
-                document.getElementById('global-level').innerText = level;
-            }
-
-            // Récupération automatique de la date MAC sauvegardée
+            if(document.getElementById('global-level')) { document.getElementById('global-level').innerText = level; }
             if(progress.sstDate) {
                 const dateInput = document.getElementById('sst-date');
-                if(dateInput) {
-                    dateInput.value = progress.sstDate;
-                    window.updateMacValidity();
-                }
+                if(dateInput) { dateInput.value = progress.sstDate; window.updateMacValidity(); }
             }
-        };
-
-            // --- MOTEUR DU SIMULATEUR D'ALERTE ---
-        // --- MOTEUR DU SIMULATEUR D'ALERTE ---
-
-window.simAnswers = [];
-window.simExpected = [
-"Où (Lieu précis)",
-"Quoi (Nature du problème)",
-"Bilan (État de la victime)",
-"Gestes (Ce qui a été fait)"
-];
-
-// Base de scénarios SST
-window.simSituations = [
-{
-scenario: "Un collègue vient de faire un malaise grave dans l'entrepôt. Il ne répond plus et ne respire plus.",
-numbers: ["15","112"]
-},
-{
-scenario: "Un salarié chute d'une échelle de 3 mètres et reste au sol avec une douleur importante au dos.",
-numbers: ["15","112"]
-},
-{
-scenario: "Un employé est victime d'une hémorragie importante après une coupure avec une disqueuse.",
-numbers: ["15","112"]
-},
-{
-scenario: "Une personne s'étouffe totalement à la cafétéria et ne peut plus parler.",
-numbers: ["15","112"]
-},
-{
-scenario: "Un salarié reçoit une décharge électrique et s'effondre au sol.",
-numbers: ["15","112"]
-},
-{
-scenario: "Un feu se déclare dans le local de stockage des produits d'entretien.",
-numbers: ["18","112"]
-},
-{
-scenario: "Une explosion provoque un départ d'incendie dans un atelier.",
-numbers: ["18","112"]
-},
-{
-scenario: "Une forte odeur de gaz est détectée dans le bâtiment.",
-numbers: ["18","112"]
-},
-{
-scenario: "Un individu armé menace les salariés à l'accueil.",
-numbers: ["17","112"]
-},
-{
-scenario: "Une bagarre éclate et plusieurs personnes sont agressées.",
-numbers: ["17","112"]
-},
-{
-scenario: "Un salarié présente une douleur thoracique brutale avec sueurs et malaise.",
-numbers: ["15","112"]
-},
-{
-scenario: "Une personne fait une crise convulsive dans l'atelier.",
-numbers: ["15","112"]
-},
-{
-scenario: "Un salarié est retrouvé inconscient dans les vestiaires mais respire.",
-numbers: ["15","112"]
-},
-{
-scenario: "Un piéton est renversé devant l'entreprise.",
-numbers: ["15","112"]
-},
-{
-scenario: "Une brûlure chimique importante touche le visage d'un employé.",
-numbers: ["15","112"]
-}
-];
-
-window.startSimulator = function() {
-
-```
-document.getElementById('module-selection-screen').classList.remove('active');
-document.getElementById('simulator-screen').classList.add('active');
-
-document.getElementById('sim-step-1').style.display = 'block';
-document.getElementById('sim-step-2').style.display = 'none';
-
-window.simAnswers = [];
-
-window.currentSituation =
-    window.simSituations[Math.floor(Math.random() * window.simSituations.length)];
-
-document.getElementById('sim-scenario').innerHTML =
-    '"' + window.currentSituation.scenario + '"';
-
-document.getElementById('sim-message-text').innerText = "...";
-document.getElementById('sim-btn-verify').style.display = 'none';
-```
-
-};
-
-window.checkSimNum = function(num) {
-
-```
-if(window.currentSituation.numbers.includes(num)) {
-
-    alert("✅ Bonne réponse ! Le numéro choisi est adapté à cette situation.");
-
-    document.getElementById('sim-step-1').style.display = 'none';
-    document.getElementById('sim-step-2').style.display = 'block';
-
-    window.loadSimOptions();
-
-} else {
-
-    alert(
-        "❌ Mauvais choix. Les numéros adaptés étaient : " +
-        window.currentSituation.numbers.join(" ou ")
-    );
-
-}
-```
-
-};
-
-window.loadSimOptions = function() {
-
-```
-const options =
-    [...window.simExpected].sort(() => Math.random() - 0.5);
-
-const container =
-    document.getElementById('sim-options');
-
-container.innerHTML = "";
-
-options.forEach(opt => {
-
-    let btn = document.createElement('button');
-
-    btn.className = 'btn-module-card';
-    btn.style.padding = '12px';
-    btn.style.aspectRatio = 'auto';
-    btn.style.textAlign = 'center';
-
-    btn.innerText = opt;
-
-    btn.onclick = function() {
-
-        if(!window.simAnswers.includes(opt)) {
-
-            window.simAnswers.push(opt);
-
-            document.getElementById('sim-message-text').innerText =
-                window.simAnswers.join(" ➔ ");
-
-            btn.style.opacity = '0.3';
-            btn.style.pointerEvents = 'none';
-
-            if(window.simAnswers.length === 4) {
-                document.getElementById('sim-btn-verify').style.display = 'block';
-            }
-        }
-    };
-
-    container.appendChild(btn);
-});
-```
-
-};
-
-window.verifySimMessage = function() {
-
-```
-let isCorrect = true;
-
-for(let i = 0; i < 4; i++) {
-    if(window.simAnswers[i] !== window.simExpected[i]) {
-        isCorrect = false;
-    }
-}
-
-if(isCorrect) {
-
-    alert(
-        "🏆 Parfait ! Ton message d'alerte est structuré correctement : Où ➔ Quoi ➔ Bilan ➔ Gestes."
-    );
-
-    document.getElementById('simulator-screen').classList.remove('active');
-    document.getElementById('module-selection-screen').classList.add('active');
-
-} else {
-
-    alert(
-        "❌ L'ordre idéal est : " +
-        window.simExpected.join(" ➔ ")
-    );
-
-    window.simAnswers = [];
-
-    document.getElementById('sim-message-text').innerText = "...";
-
-    document.getElementById('sim-btn-verify').style.display = 'none';
-
-    window.loadSimOptions = function() {
-            // Mélange l'ordre des boutons à chaque fois
-            const options = [...window.simExpected].sort(() => Math.random() - 0.5);
-            const container = document.getElementById('sim-options');
-            container.innerHTML = "";
-            options.forEach(opt => {
-                let btn = document.createElement('button');
-                btn.className = 'btn-module-card'; // Reprend le joli design de tes modules
-                btn.style.padding = '12px';
-                btn.style.aspectRatio = 'auto';
-                btn.style.textAlign = 'center';
-                btn.innerText = opt;
-                btn.onclick = function() {
-                    if(!window.simAnswers.includes(opt)) {
-                        window.simAnswers.push(opt);
-                        document.getElementById('sim-message-text').innerText = window.simAnswers.join(" ➔ ");
-                        btn.style.opacity = '0.3';
-                        btn.style.pointerEvents = 'none'; // Désactive le clic
-                        if(window.simAnswers.length === 4) {
-                            document.getElementById('sim-btn-verify').style.display = 'block';
-                        }
-                    }
-                };
-                container.appendChild(btn);
-            });
-        };
-
-        window.verifySimMessage = function() {
-            let isCorrect = true;
-            for(let i=0; i<4; i++) {
-                if(window.simAnswers[i] !== window.simExpected[i]) isCorrect = false;
-            }
-            if(isCorrect) {
-                alert("🏆 Parfait ! Ton message est clair, rapide, et structuré exactement comme l'attendent les secours.");
-                document.getElementById('simulator-screen').classList.remove('active');
-                document.getElementById('module-selection-screen').classList.add('active');
-            } else {
-                alert("Oups ! L'ordre idéal est : " + window.simExpected.join(" ➔ ") + ". On recommence !");
-                window.simAnswers = [];
-                document.getElementById('sim-message-text').innerText = "...";
-                document.getElementById('sim-btn-verify').style.display = 'none';
-                window.loadSimOptions();
-          }
         };
     </script>
 </body>
