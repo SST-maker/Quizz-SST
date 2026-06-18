@@ -224,6 +224,15 @@
         <button class="btn-ncr" style="margin-top: 20px;" onclick="window.backToModuleSelectionHost()">Choisir un autre module 🔁</button>
         <button class="btn-ncr" style="background: var(--card-dark); color: white; border: 1px solid var(--glass);" onclick="location.reload()">Retour à l'accueil</button>
     </div>
+    
+    <!-- ÉCRAN DE CONNEXION SOLO -->
+    <div id="solo-login-screen" class="screen" style="justify-content: center;">
+        <h2>Mon Espace Révision</h2>
+        <p style="color:var(--text-sec); margin-bottom: 20px;">Créez ou entrez votre identifiant (ex: prénom-nom) pour retrouver votre progression sur n'importe quel appareil.</p>
+        <input type="text" id="solo-student-id" class="input-ncr" placeholder="Identifiant unique...">
+        <button class="btn-ncr" onclick="window.loginSolo()">Accéder à mon espace</button>
+        <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass);" onclick="location.reload()">Retour à l'accueil</button>
+    </div>
 
     <div id="student-login-screen" class="screen" style="justify-content: center;">
         <h2>Rejoindre la session Live</h2>
@@ -522,10 +531,8 @@
             else if (role === 'solo_student') {
                 mode = 'solo_student';
                 document.getElementById('role-screen').classList.remove('active');
-                document.getElementById('module-title-dynamic').innerText = "Mon Espace Révision";
-                document.getElementById('student-dashboard').style.display = 'block'; // Fait apparaître le tableau de bord
-                window.updateStudentProgressUI(); // Charge les scores
-                document.getElementById('module-selection-screen').classList.add('active');
+                // On affiche le nouvel écran de connexion au lieu d'aller direct aux modules
+                document.getElementById('solo-login-screen').classList.add('active');
             }
             else if (role === 'live_student') {
                 mode = 'live_student';
@@ -535,6 +542,32 @@
         };
 
         // --- 2. SELECTION DU MODULE ---
+        window.currentSoloUserId = "";
+
+        window.loginSolo = function() {
+            // Nettoyage de l'ID pour éviter les caractères interdits par Firebase (., #, $, [, ])
+            const rawId = document.getElementById('solo-student-id').value.trim().toLowerCase();
+            const userId = rawId.replace(/[^a-z0-9]/gi, '_'); 
+            
+            if(!userId) return alert("Veuillez saisir un identifiant valide.");
+            
+            window.currentSoloUserId = userId;
+            
+            // 1. Récupération de la progression dans Firebase
+            onValue(ref(db, 'users_progress/' + userId), (snapshot) => {
+                const data = snapshot.val() || {};
+                
+                // 2. On l'injecte dans le navigateur de l'élève
+                localStorage.setItem('ncr_sst_progress', JSON.stringify(data));
+                
+                // 3. On ferme l'écran de login et on ouvre le menu des modules mis à jour
+                document.getElementById('solo-login-screen').classList.remove('active');
+                document.getElementById('module-title-dynamic').innerText = "Mon Espace Révision";
+                document.getElementById('student-dashboard').style.display = 'block';
+                window.updateStudentProgressUI();
+                document.getElementById('module-selection-screen').classList.add('active');
+            }, { onlyOnce: true });
+        };
         window.startModule = function(modId) {
             window.currentSoloModId = modId
             document.getElementById('module-selection-screen').classList.remove('active');
@@ -851,18 +884,21 @@
         window.nextSoloQuestion = function() {
     currentIndex++;
     
-    // Si c'est la fin du module, on bloque tout et on sauvegarde
-            if(currentIndex >= sessionQuestions.length) {
-                // Sauvegarde de la progression locale (Uniquement si c'est un module spécifique, pas le Test Général)
+    // Sauvegarde de la progression locale et en ligne
                 if(typeof currentSoloModId !== 'undefined' && currentSoloModId !== 'all') {
                     let progress = JSON.parse(localStorage.getItem('ncr_sst_progress') || '{}');
-                    const maxScore = sessionQuestions.length * 250; // 250 = score max par question (100 + 15s*10)
+                    const maxScore = sessionQuestions.length * 250; 
                     let percent = Math.min(100, Math.round((localScore / maxScore) * 100));
                     
-                    // On n'écrase le score que si le nouveau est meilleur
                     if(!progress[currentSoloModId] || percent > progress[currentSoloModId]) {
                         progress[currentSoloModId] = percent;
+                        // Sauvegarde locale
                         localStorage.setItem('ncr_sst_progress', JSON.stringify(progress));
+                        
+                        // NOUVEAU : Sauvegarde Cloud Firebase
+                        if(window.currentSoloUserId) {
+                            set(ref(db, 'users_progress/' + window.currentSoloUserId), progress);
+                        }
                     }
                 }
 
