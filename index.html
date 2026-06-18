@@ -36,6 +36,9 @@
         .answer-card:active { transform: scale(0.95); }
         .color-0 { background: #E91E63; } .color-1 { background: #2196F3; } .color-2 { background: #FFC107; color: black; } .color-3 { background: #4CAF50; }
 
+        .module-badge { display: inline-block; background: var(--glass); color: var(--apple-blue); font-size: 13px; font-weight: 700; letter-spacing: 0.3px; padding: 6px 14px; border-radius: 999px; margin: 0 auto 12px auto; text-align: center; }
+        .module-badge-wrap { display: flex; justify-content: center; }
+
         .timer-container { width: 100%; height: 6px; background: var(--glass); border-radius: 3px; margin: 15px 0; overflow: hidden; }
         #timer-bar { width: 100%; height: 100%; background: var(--apple-blue); transition: width 15s linear; }
 
@@ -74,6 +77,9 @@
             0% { transform: translateY(0) rotate(0deg); opacity: 1; }
             100% { transform: translateY(110vh) rotate(540deg); opacity: 0.3; }
         }
+
+        /* Indicateur de réponses reçues (formateur) */
+        .response-progress { font-size: 13px; color: var(--text-sec); text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -119,6 +125,7 @@
         <div style="background: var(--card-dark); border: 1px solid var(--glass); border-radius: 16px; padding: 20px; margin-bottom: 20px;">
             <h3 id="host-question-text" style="color:var(--apple-blue); margin-bottom: 15px; font-size: 18px;">En attente de lancement...</h3>
             <div id="host-ans-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
+            <div id="host-response-progress" class="response-progress"></div>
             <div id="host-explanation" class="explanation-box" style="margin-top:15px;">
                 <h4 style="color:var(--apple-orange); margin-bottom:5px;">Explication</h4>
                 <p id="host-exp-text" style="font-size:14px; line-height:1.4;"></p>
@@ -157,6 +164,7 @@
     </div>
 
     <div id="student-quiz-screen" class="screen" style="overflow-y:auto;">
+        <div class="module-badge-wrap"><span class="module-badge" id="student-module-badge" style="display:none;"></span></div>
         <div class="timer-container"><div id="timer-bar"></div></div>
         <h2 id="student-q-text" style="text-align: center; margin: 10px 0 30px 0; font-size: 22px; line-height:1.3;">Préparation...</h2>
         <div class="answers-grid" id="student-ans-grid"></div>
@@ -192,7 +200,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
         // ASTUCE SECURITE : Clé découpée pour GitHub
@@ -207,6 +215,25 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // Noms des modules, dans l'ordre (index = numéro de module - 1)
+        const MODULE_NAMES = [
+            "Module 1 : Rôle du SST",
+            "Module 2 : Protéger",
+            "Module 3 : Examiner",
+            "Module 4 : Alerter",
+            "Module 5 : Secourir",
+            "Module 6 : Prévention",
+            "Module 7 : Risques Pro",
+            "Module 8 : Maîtrise"
+        ];
+        const QUESTIONS_PER_MODULE = 20;
+
+        // Retrouve le nom du module à partir de l'index de la question dans allQuestions
+        function getModuleNameForQuestionIndex(idx) {
+            const modIdx = Math.floor(idx / QUESTIONS_PER_MODULE);
+            return MODULE_NAMES[modIdx] || "";
+        }
 
         // LES QUESTIONS AVEC EXPLICATIONS (INRS)
         const allQuestions = [
@@ -267,7 +294,7 @@
     { q: "Quel est le temps maximum recommandé pour examiner la respiration d'une victime ?", a: ["5 secondes", "10 secondes", "30 secondes", "1 minute"], c: 1, e: "10 secondes suffisent pour observer, écouter et sentir la respiration de façon fiable. Au-delà, on retarderait inutilement la suite de la prise en charge (alerte, réanimation) en cas d'absence réelle de respiration." },
     { q: "Dans quel cas est-il justifié de déshabiller partiellement une victime ?", a: ["Systématiquement, pour tout examen", "Uniquement si cela est nécessaire pour visualiser une plaie, une brûlure ou un signe de gravité", "Seulement le haut du corps", "Cela est toujours interdit"], c: 1, e: "On ne déshabille la victime que lorsque cela est indispensable pour évaluer ou traiter une blessure précise (hémorragie cachée, brûlure étendue), en respectant au maximum sa pudeur et en limitant son exposition au froid." },
     { q: "Quel est le signe caractéristique d'un étouffement total (obstruction complète des voies aériennes) ?", a: ["La victime tousse fort", "La victime parle difficilement mais s'exprime", "La victime ne peut ni parler, ni tousser, ni respirer, et porte souvent les mains à sa gorge", "La victime pleure abondamment"], c: 2, e: "Dans l'obstruction totale, l'air ne passe plus du tout : la victime reste silencieuse, ne peut pas tousser efficacement et s'agite en portant souvent les mains à son cou (signe universel de l'étouffement). C'est une urgence absolue nécessitant les claques dans le dos puis la méthode de Heimlich." },
-    { q: "À quoi sert principalement l'examen de la victime ?", a: ["À identifier l'action de secours prioritaire à réaliser", "À poser un diagnostic médical précis", "À remplir un rapport administratif", "Il n'a pas d'utilité concrète"], c: 0, e: "L'examen du SST n'a pas pour but de poser un diagnostic médical complet (réservé aux professionnels de santue) mais de repérer rapidement les signes qui imposent une action immédiate : hémorragie à comprimer, étouffement à lever, arrêt respiratoire à traiter." },
+    { q: "À quoi sert principalement l'examen de la victime ?", a: ["À identifier l'action de secours prioritaire à réaliser", "À poser un diagnostic médical précis", "À remplir un rapport administratif", "Il n'a pas d'utilité concrète"], c: 0, e: "L'examen du SST n'a pas pour but de poser un diagnostic médical complet (réservé aux professionnels de santé) mais de repérer rapidement les signes qui imposent une action immédiate : hémorragie à comprimer, étouffement à lever, arrêt respiratoire à traiter." },
     { q: "Une victime consciente se plaint d'une douleur thoracique. Comment doit-on considérer ce signe ?", a: ["Comme un simple problème digestif à surveiller", "Comme un possible problème cardiaque, à prendre très au sérieux", "Comme une simple conséquence du stress", "Comme un signe sans importance"], c: 1, e: "Toute douleur thoracique chez une personne consciente doit être considérée par principe comme pouvant traduire un problème cardiaque (infarctus notamment), même si d'autres causes existent. Le SST doit alerter les secours et installer la victime en position semi-assise, au repos strict." },
     { q: "Une victime présente une difficulté à parler associée à une déformation du visage. À quoi cela peut-il faire penser ?", a: ["À de la fatigue passagère", "À un accident vasculaire cérébral (AVC)", "À une réaction allergique bénigne", "À une simple grimace volontaire"], c: 1, e: "L'asymétrie du visage, la difficulté soudaine à parler ou à comprendre, et la faiblesse d'un côté du corps sont les signes classiques d'un AVC. C'est une urgence vitale : il faut alerter immédiatement les secours en précisant l'heure d'apparition des symptômes, donnée essentielle pour le traitement." },
     { q: "Comment doit-on procéder pour examiner une victime au sol ?", a: ["Sans la déplacer, sauf nécessité absolue (danger immédiat)", "En l'asseyant systématiquement", "En la mettant sur le ventre", "En la mettant debout pour mieux voir"], c: 0, e: "Sauf si un danger immédiat l'impose (incendie, danger électrique...), on examine la victime dans la position où elle se trouve, sans la mobiliser inutilement. Un déplacement intempestif peut aggraver une lésion, notamment de la colonne vertébrale." },
@@ -276,7 +303,7 @@
     { q: "Que faire face à une victime en pleine crise convulsive ?", a: ["La maintenir fermement pour bloquer les mouvements", "La protéger des chocs contre les objets environnants, sans chercher à bloquer les convulsions", "Lui placer un objet dans la bouche pour éviter qu'elle se morde", "Ne rien faire et s'éloigner"], c: 1, e: "Il ne faut jamais entraver les mouvements convulsifs, ni placer un objet dans la bouche de la victime (risque de blessure dentaire ou d'obstruction). On dégage l'espace autour d'elle pour éviter les traumatismes, on protège sa tête si possible, et on attend la fin de la crise avant de la mettre en PLS." },
     { q: "Quelle qualité doit avoir l'examen réalisé par le SST ?", a: ["Long et exhaustif, comme un bilan médical complet", "Rapide et méthodique, centré sur les signes de détresse vitale", "Facultatif si la victime semble bien", "Inutile si les secours sont déjà prévenus"], c: 1, e: "L'efficacité du SST repose sur la rapidité et la rigueur de son examen : il suit toujours la même méthode (saigne, étouffe, répond, respire) pour ne rien oublier, tout en agissant vite face à une urgence vitale identifiée." },
 
-// MODULE 4 : Alerter (20 questions)
+    // MODULE 4 : Alerter (20 questions)
     { q: "Quel numéro permet de contacter le SAMU (urgence médicale) en France ?", a: ["15", "17", "18", "112"], c: 0, e: "Le 15 est le numéro dédié à l'aide médicale urgente en France, géré par le centre de régulation médicale (SAMU). Il est à privilégier pour tout problème de santé grave." },
     { q: "Quel numéro d'urgence est valable dans tous les pays de l'Union européenne ?", a: ["15", "17", "18", "112"], c: 3, e: "Le 112 est le numéro d'appel d'urgence unique européen, accessible gratuitement depuis tout téléphone, y compris sans carte SIM dans certains pays, et utilisable dans toute l'Union européenne." },
     { q: "Quel numéro permet aux personnes sourdes ou malentendantes d'alerter par SMS ?", a: ["114", "115", "119", "116"], c: 0, e: "Le 114 est le numéro d'urgence accessible par SMS, fax ou visiophonie pour les personnes sourdes, malentendantes, aphasiques ou dysphasiques, leur permettant de joindre les services de secours." },
@@ -298,7 +325,7 @@
     { q: "Quelles qualités doit avoir un message d'alerte efficace ?", a: ["Vague et général", "Clair et précis", "Le plus long possible", "Crié fort pour être entendu"], c: 1, e: "Un message d'alerte efficace est clair, structuré et précis : lieu, nature de l'accident, nombre et état des victimes, gestes déjà entrepris. La clarté évite les malentendus et accélère la mobilisation des secours." },
     { q: "Pourquoi est-il utile qu'une personne attende les secours à un point visible (entrée, portail...) ?", a: ["Pour guider rapidement les équipes de secours vers le lieu exact de l'accident", "Pour éviter de s'ennuyer pendant l'attente", "Pour respecter une obligation légale stricte", "Cela n'a aucune utilité réelle"], c: 0, e: "Une personne positionnée à un endroit visible (entrée du site, bord de route) pour guider les secours fait gagner un temps précieux, notamment dans des lieux difficiles d'accès, mal numérotés ou peu visibles depuis la voie publique." },
 
-// MODULE 5 : Secourir (20 questions)
+    // MODULE 5 : Secourir (20 questions)
     { q: "Face à une hémorragie externe, quel est le geste à réaliser ?", a: ["Comprimer directement la plaie", "Laver abondamment la plaie", "Poser systématiquement un garrot", "Donner un comprimé contre la douleur"], c: 0, e: "La compression manuelle directe sur la plaie (avec un linge propre si possible) est le geste de premier choix pour arrêter une hémorragie. Le garrot n'est utilisé qu'en cas d'échec de la compression ou d'impossibilité de comprimer (hémorragie massive, membre arraché...)." },
     { q: "Quelle est la technique recommandée face à un étouffement total chez l'adulte conscient ?", a: ["5 claques dans le dos puis 5 compressions abdominales (méthode de Heimlich), en alternance", "Lui faire boire de l'eau rapidement", "L'allonger immédiatement au sol", "Ne rien faire et attendre que cela passe"], c: 0, e: "Face à une obstruction totale des voies aériennes, on réalise jusqu'à 5 claques vigoureuses entre les omoplates, puis, si cela ne suffit pas, jusqu'à 5 compressions abdominales (méthode de Heimlich), en alternant les deux techniques jusqu'à expulsion du corps étranger ou perte de conscience." },
     { q: "Une victime est inconsciente mais respire. Dans quelle position doit-elle être placée ?", a: ["Assise contre un mur", "En position latérale de sécurité (PLS)", "Allongée sur le dos", "Debout, soutenue par le SST"], c: 1, e: "La PLS permet de maintenir les voies aériennes dégagées chez une victime inconsciente qui respire, en évitant que la langue ne bascule en arrière et que d'éventuels vomissements ne soient inhalés dans les poumons." },
@@ -320,7 +347,7 @@
     { q: "Quelle position privilégier pour une victime consciente présentant une plaie au thorax ?", a: ["Position semi-assise, qui facilite la respiration", "Position latérale de sécurité", "À plat ventre", "Debout, appuyée contre un mur"], c: 0, e: "La position semi-assise (demi-assise) facilite l'effort respiratoire en cas de plaie thoracique, en limitant la gêne liée à la pression sur les poumons, contrairement à la position allongée à plat qui peut accentuer la difficulté à respirer." },
     { q: "Une fois les premiers gestes réalisés, que doit faire le SST en attendant les secours ?", a: ["Surveiller la victime de façon continue", "S'éloigner ponctuellement si besoin", "Considérer que la surveillance n'est plus utile", "Laisser la victime seule pour aller chercher de l'aide systématiquement"], c: 0, e: "L'état d'une victime peut évoluer rapidement (aggravation, perte de conscience, arrêt respiratoire). Le SST doit donc rester auprès d'elle et surveiller en continu sa conscience, sa respiration et l'évolution de ses blessures jusqu'à l'arrivée des secours." },
 
-// MODULE 6 : Prévention (20 questions)
+    // MODULE 6 : Prévention (20 questions)
     { q: "La prévention des risques fait-elle partie des missions quotidiennes au travail ?", a: ["Oui, elle s'intègre au quotidien professionnel de chacun", "Non, c'est rare et ponctuel", "Non, ce n'est pas utile", "C'est une démarche purement administrative"], c: 0, e: "La prévention n'est pas une démarche exceptionnelle réservée à des moments particuliers : elle s'intègre dans les gestes et l'organisation du travail de tous les jours, à travers la vigilance, le respect des consignes et le signalement des anomalies." },
     { q: "Comment peut-on définir un risque, en prévention des risques professionnels ?", a: ["La combinaison entre un danger et l'exposition d'une personne à ce danger", "Uniquement le danger lui-même", "Uniquement l'exposition, sans lien avec un danger", "Un concept purement théorique sans application"], c: 0, e: "Le risque correspond à la probabilité qu'un dommage survienne, résultant de la rencontre entre un danger (source potentielle de dommage) et l'exposition d'une personne à ce danger. Sans exposition, même un danger réel ne génère pas de risque concret." },
     { q: "Le SST est-il un acteur ou un simple observateur de la prévention en entreprise ?", a: ["Un acteur à part entière de la prévention", "Un simple spectateur sans rôle réel", "Une personne sans influence sur la sécurité", "Cela dépend uniquement de sa hiérarchie"], c: 0, e: "Le SST contribue activement à la démarche de prévention : il identifie les situations dangereuses, les signale et peut proposer des actions d'amélioration, en plus de sa capacité à intervenir en cas d'accident." },
@@ -342,7 +369,7 @@
     { q: "Comment un salarié peut-il contribuer concrètement à l'amélioration de la sécurité ?", a: ["En proposant des solutions et en signalant les situations à risque qu'il observe", "En ignorant les situations qui ne le concernent pas directement", "En gardant pour lui les observations qu'il fait", "En attendant que la direction s'en aperçoive seule"], c: 0, e: "Chaque salarié, de par sa connaissance concrète de son poste de travail, peut repérer des situations dangereuses invisibles depuis un bureau. Signaler et proposer des solutions est une contribution active et précieuse à la démarche de prévention collective." },
     { q: "La prévention des risques est-elle une priorité ou une simple option pour l'entreprise ?", a: ["C'est une priorité, intégrée aux obligations de l'employeur et à la mission du SST", "C'est une option facultative selon les moyens disponibles", "Elle n'a aucune importance réelle", "Elle ne concerne que les grandes entreprises"], c: 0, e: "La prévention des risques professionnels est une obligation légale pour l'employeur (article L.4121-1 du Code du travail) et constitue la mission première du SST, avant même sa capacité à porter secours en cas d'accident déjà survenu." },
 
-// MODULE 7 : Risques Professionnels (20 questions)
+    // MODULE 7 : Risques Professionnels (20 questions)
     { q: "Comment définir un danger en santé et sécurité au travail ?", a: ["Une source ou une situation susceptible de causer un dommage", "Le dommage lui-même une fois survenu", "La probabilité qu'un accident se produise", "Un concept sans réalité concrète"], c: 0, e: "Le danger désigne la propriété intrinsèque d'un produit, d'un équipement, d'une situation ou d'une méthode de travail susceptible de causer un dommage à la santé d'une personne (exemple : une substance toxique, une machine tranchante, une hauteur)." },
     { q: "Comment définir le risque en santé et sécurité au travail ?", a: ["La probabilité que survienne un dommage du fait de l'exposition à un danger", "Le dommage déjà constaté", "Le danger lui-même, sans nuance", "Un terme purement administratif sans réalité"], c: 0, e: "Le risque correspond à la probabilité de survenue d'un dommage, résultant de la combinaison entre l'existence d'un danger et l'exposition réelle d'une personne à ce danger. Plus l'exposition et la gravité potentielle sont élevées, plus le risque est important." },
     { q: "Le risque chimique fait-il partie des risques professionnels reconnus ?", a: ["Oui, il est lié à l'utilisation de produits ou substances dangereuses", "Non, il ne concerne que les laboratoires de recherche", "Non, ce risque n'existe pas en entreprise", "Il ne concerne que les produits ménagers"], c: 0, e: "Le risque chimique concerne toute exposition à des substances pouvant être toxiques, irritantes, corrosives, inflammables ou cancérogènes, que l'on retrouve dans de nombreux secteurs d'activité (industrie, nettoyage, agriculture, santé...)." },
@@ -364,7 +391,7 @@
     { q: "Pourquoi la gravité potentielle est-elle un critère important dans l'évaluation d'un risque ?", a: ["Parce qu'elle détermine l'ampleur des consequences possibles sur la santé en cas d'accident", "Parce qu'elle est sans rapport avec le niveau de priorité d'action", "Parce qu'elle ne concerne que les accidents mortels", "Parce que seule la fréquence compte réellement"], c: 0, e: "La gravité potentielle évalue l'ampleur des conséquences possibles si le risque se concrétise (blessure légère, invalidité, décès...). Combinée à la fréquence d'exposition, elle permet de hiérarchiser les risques et de prioriser les actions de prévention les plus urgentes." },
     { q: "Une situation de travail peut-elle présenter plusieurs risques en même temps ?", a: ["Oui, plusieurs risques peuvent coexister sur un même poste de travail", "Non, un poste ne présente jamais qu'un seul type de risque", "Non, les risques sont toujours isolés les uns des autres", "Cela ne concerne que les postes très spécialisés"], c: 0, e: "Un même poste de travail peut cumuler plusieurs types de risques (par exemple chimique, physique et psychosocial simultanément). L'évaluation des risques doit donc être globale et ne pas se limiter à un seul facteur de danger à la fois." },
 
-// MODULE 8 : Maîtrise des Risques (20 questions)
+    // MODULE 8 : Maîtrise des Risques (20 questions)
     { q: "Quelle est la mesure de prévention la plus efficace selon la hiérarchie des principes généraux de prévention ?", a: ["La suppression totale du danger à la source", "Le port d'un équipement de protection individuelle", "L'affichage d'une simple consigne", "L'assurance contractée par l'entreprise"], c: 0, e: "Les principes généraux de prévention (article L.4121-2 du Code du travail) placent en première place l'élimination du danger à la source : si le danger n'existe plus, le risque disparaît totalement, ce qui en fait la mesure la plus efficace et la plus durable." },
     { q: "Lorsque la suppression totale du danger est impossible, quelle action privilégier ?", a: ["Réduire le risque en limitant l'exposition ou la gravité potentielle", "Ne rien faire, puisque la suppression est impossible", "Attendre un accident pour réagir", "Se contenter d'un simple affichage d'avertissement"], c: 0, e: "Lorsque l'élimination complète du danger n'est pas réalisable techniquement ou économiquement, la prévention vise alors à réduire le risque résiduel, en diminuant l'exposition des travailleurs ou la gravité potentielle des conséquences." },
     { q: "Pourquoi est-il important de remonter une situation dangereuse repérée sur son poste de travail ?", a: ["Pour permettre une correction avant qu'un accident ne survienne", "Parce que c'est une simple formalité administrative sans réel impact", "Pour éviter une sanction personnelle uniquement", "Cela n'a pas d'utilité réelle"], c: 0, e: "Le signalement précoce d'une situation dangereuse permet aux personnes compétentes (encadrement, services HSE) d'agir avant que le risque ne se concrétise en accident, ce qui en fait un maillon essentiel de la chaîne de prévention." },
@@ -395,8 +422,16 @@
         let currentTimer;
         let timeLeft = 15;
         let sessionQuestions = [];
+        // Pour le mode mixte : on garde le nom du module associé à chaque question de la session
+        let sessionModuleNames = [];
         let currentIndex = -1;
         let isQuestionAnswered = false;
+        let currentModuleLabel = ""; // nom du module à afficher pour la question en cours (mode mixte)
+
+        // Pour le formateur : suivi des réponses reçues pour la question en cours
+        let responseListenerUnsub = null;
+        let autoExplainTriggered = false;
+        let connectedPlayerCount = 0;
 
         // --- 1. ROUTAGE ET MOT DE PASSE ---
         window.selectRole = function(role) {
@@ -430,12 +465,16 @@
             
             // Chargement des questions selon le module
             if(modId === 'all') {
-                sessionQuestions = [...allQuestions].sort(() => 0.5 - Math.random()).slice(0, 15);
+                // On construit des paires {question, moduleIndex} pour garder la trace du module d'origine
+                const indexed = allQuestions.map((q, idx) => ({ q, idx }));
+                const shuffled = indexed.sort(() => 0.5 - Math.random()).slice(0, 15);
+                sessionQuestions = shuffled.map(item => item.q);
+                sessionModuleNames = shuffled.map(item => getModuleNameForQuestionIndex(item.idx));
                 if(mode === 'host') document.getElementById('host-module-title').innerText = "Examen Général Live";
             } else {
-                const QUESTIONS_PER_MODULE = 20;
                 const start = modId * QUESTIONS_PER_MODULE;
                 sessionQuestions = allQuestions.slice(start, start + QUESTIONS_PER_MODULE);
+                sessionModuleNames = sessionQuestions.map(() => ""); // pas de badge module en mode mono-module
                 if(mode === 'host') document.getElementById('host-module-title').innerText = "Module " + (modId + 1) + " Live";
             }
             currentIndex = -1;
@@ -445,12 +484,14 @@
                 document.getElementById('host-screen').classList.add('active');
                 document.getElementById('host-question-text').innerText = "En attente de lancement...";
                 document.getElementById('host-ans-grid').innerHTML = '';
+                document.getElementById('host-response-progress').innerText = '';
                 document.getElementById('host-explanation').classList.remove('show');
                 document.getElementById('btn-host-next').style.display = 'block';
                 document.getElementById('btn-host-next').innerText = "Lancer Question ➡️";
                 document.getElementById('btn-host-explain').style.display = 'none';
                 set(ref(db, 'session'), { status: 'waiting' });
                 set(ref(db, 'scores'), {});
+                remove(ref(db, 'responses'));
                 listenToScores();
             } else if (mode === 'solo_student') {
                 localScore = 0;
@@ -470,6 +511,9 @@
         //         LOGIQUE FORMATEUR (LIVE)
         // ==========================================
         window.nextQuestionHost = function() {
+            // On arrête d'écouter les réponses de la question précédente, le cas échéant
+            if(responseListenerUnsub) { responseListenerUnsub(); responseListenerUnsub = null; }
+
             currentIndex++;
             if(currentIndex >= sessionQuestions.length) {
                 update(ref(db, 'session'), { status: 'finished' });
@@ -478,12 +522,16 @@
             }
 
             const qData = sessionQuestions[currentIndex];
+            const moduleLabel = sessionModuleNames[currentIndex] || "";
+            autoExplainTriggered = false;
             
             // Interface formateur
-            document.getElementById('host-question-text').innerText = `Q${currentIndex + 1}: ` + qData.q;
+            const titlePrefix = moduleLabel ? `[${moduleLabel}] ` : '';
+            document.getElementById('host-question-text').innerText = `${titlePrefix}Q${currentIndex + 1}: ` + qData.q;
             document.getElementById('host-explanation').classList.remove('show');
             document.getElementById('btn-host-next').style.display = 'none';
             document.getElementById('btn-host-explain').style.display = 'block';
+            document.getElementById('host-response-progress').innerText = 'Réponses : 0 / ' + connectedPlayerCount;
 
             const hostGrid = document.getElementById('host-ans-grid');
             hostGrid.innerHTML = '';
@@ -495,11 +543,29 @@
                 hostGrid.appendChild(div);
             });
 
-            // Envoi Firebase
-            update(ref(db, 'session'), { status: 'playing', question: qData, qId: Date.now() });
+            const qId = Date.now();
+
+            // Envoi Firebase (on inclut le nom du module pour l'écran élève)
+            update(ref(db, 'session'), { status: 'playing', question: qData, qId: qId, moduleLabel: moduleLabel });
+
+            // On nettoie les réponses précédentes puis on écoute les nouvelles
+            remove(ref(db, 'responses')).then(() => {
+                responseListenerUnsub = onValue(ref(db, 'responses/' + qId), (snapshot) => {
+                    const data = snapshot.val() || {};
+                    const count = Object.keys(data).length;
+                    document.getElementById('host-response-progress').innerText = 'Réponses : ' + count + ' / ' + connectedPlayerCount;
+
+                    // Dès que tout le monde a répondu (et qu'il y a au moins 1 joueur), on déclenche l'explication automatiquement
+                    if(!autoExplainTriggered && connectedPlayerCount > 0 && count >= connectedPlayerCount) {
+                        autoExplainTriggered = true;
+                        window.showExplanationHost();
+                    }
+                });
+            });
         };
 
         window.showExplanationHost = function() {
+            if(autoExplainTriggered === false) autoExplainTriggered = true; // sécurité si déclenché manuellement
             const qData = sessionQuestions[currentIndex];
             // Afficher côté formateur
             document.getElementById('host-exp-text').innerText = qData.e || "Pas d'explication fournie.";
@@ -517,12 +583,19 @@
         function listenToScores() {
             onValue(ref(db, 'scores'), (snapshot) => {
                 const data = snapshot.val() || {};
+                connectedPlayerCount = Object.keys(data).length;
                 const list = document.getElementById('live-leaderboard');
                 list.innerHTML = '';
                 const sorted = Object.values(data).sort((a, b) => b.score - a.score);
                 sorted.forEach(student => {
                     list.innerHTML += `<div class="score-row"><span>${student.name}</span><span style="color:var(--apple-blue)">${student.score} pts</span></div>`;
                 });
+                // Met à jour le compteur affiché si une question est en cours
+                const progressEl = document.getElementById('host-response-progress');
+                if(progressEl && progressEl.innerText.startsWith('Réponses')) {
+                    const current = progressEl.innerText.split('/')[0].replace(/[^0-9]/g, '');
+                    progressEl.innerText = 'Réponses : ' + (current || 0) + ' / ' + connectedPlayerCount;
+                }
             });
         }
 
@@ -614,6 +687,7 @@
         };
 
         let lastQId = null;
+        let currentLiveQId = null;
         function listenToLiveState() {
             onValue(ref(db, 'session'), (snapshot) => {
                 const state = snapshot.val();
@@ -621,7 +695,8 @@
                 
                 if(state.status === 'playing' && state.qId !== lastQId) {
                     lastQId = state.qId;
-                    renderQuestionStudent(state.question, 'live');
+                    currentLiveQId = state.qId;
+                    renderQuestionStudent(state.question, 'live', state.moduleLabel || "");
                 } 
                 else if (state.status === 'waiting') {
                     // Le formateur a choisi un nouveau module : on remet l'élève en salle d'attente
@@ -630,7 +705,7 @@
                     document.getElementById('waiting-text').innerText = "Nouveau module à venir !";
                 }
                 else if (state.status === 'explanation') {
-                    // Le formateur a cliqué sur "Afficher explication"
+                    // L'explication est déclenchée (automatiquement, ou par le formateur en backup)
                     clearInterval(currentTimer);
                     document.getElementById('timer-bar').style.width = '0%';
                     forceShowAnswerLive(state.question);
@@ -711,19 +786,28 @@
         return; // On arrête la fonction ici
     }
     
-    renderQuestionStudent(sessionQuestions[currentIndex], 'solo');
+    renderQuestionStudent(sessionQuestions[currentIndex], 'solo', sessionModuleNames[currentIndex] || "");
 };
 
 
         // ==========================================
         //      MOTEUR DE QUESTION (COMMUN)
         // ==========================================
-        function renderQuestionStudent(qData, currentMode) {
+        function renderQuestionStudent(qData, currentMode, moduleLabel) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('student-quiz-screen').classList.add('active');
             document.getElementById('student-explanation').classList.remove('show');
             document.getElementById('btn-solo-next').style.display = 'none';
             isQuestionAnswered = false;
+
+            // Badge du nom de module (visible uniquement si renseigné, ex : mode mixte)
+            const badge = document.getElementById('student-module-badge');
+            if(moduleLabel) {
+                badge.innerText = moduleLabel;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
             
             document.getElementById('student-q-text').innerText = qData.q;
             
@@ -778,6 +862,12 @@
                 if(btns[qData.c]) btns[qData.c].style.border = "4px solid var(--apple-green)";
             }
 
+            // En mode live, on signale au formateur que cet élève a répondu (réponse ou timeout),
+            // ce qui permet le déclenchement automatique de l'explication quand tout le monde a répondu.
+            if(currentMode === 'live' && currentLiveQId) {
+                set(ref(db, 'responses/' + currentLiveQId + '/' + studentId), true).catch(() => {});
+            }
+
             // Gestion de l'après-réponse selon le mode
             if(currentMode === 'solo') {
                 // En solo, on affiche l'explication direct
@@ -786,8 +876,9 @@
                 document.getElementById('btn-solo-next').style.display = 'block';
             } 
             else if (currentMode === 'live') {
-                // En live, on affiche juste "En attente du formateur" en bas
-                document.getElementById('student-exp-text').innerText = "⏳ En attente de la correction par le formateur...";
+                // En live, on affiche "En attente" : l'explication apparaîtra automatiquement
+                // dès que tout le monde aura répondu (ou à la fin du timer pour les retardataires).
+                document.getElementById('student-exp-text').innerText = "⏳ En attente des autres participants...";
                 document.getElementById('student-explanation').classList.add('show');
             }
         }
