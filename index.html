@@ -234,9 +234,10 @@
         <div id="sim-step-1">
             <p style="color: var(--text-sec); font-weight: 600; margin-bottom: 10px;">Quel numéro appelez-vous en priorité ?</p>
             <div style="display: flex; gap: 10px;">
-                <button class="btn-ncr" style="flex:1; font-size: 24px;" onclick="window.checkSimNum('15')">15</button>
-                <button class="btn-ncr" style="flex:1; font-size: 24px;" onclick="window.checkSimNum('18')">18</button>
-                <button class="btn-ncr" style="flex:1; font-size: 24px;" onclick="window.checkSimNum('112')">112</button>
+               <button onclick="window.checkSimNum('15')">15</button>
+<button onclick="window.checkSimNum('17')">17</button>
+<button onclick="window.checkSimNum('18')">18</button>
+<button onclick="window.checkSimNum('112')">112</button>
             </div>
         </div>
 
@@ -1112,31 +1113,207 @@
         };
 
             // --- MOTEUR DU SIMULATEUR D'ALERTE ---
-        window.simAnswers = [];
-        window.simExpected = ["Où (Lieu précis)", "Quoi (Nature du problème)", "Bilan (État de la victime)", "Gestes (Ce qui a été fait)"];
+        // --- MOTEUR DU SIMULATEUR D'ALERTE ---
 
-        window.startSimulator = function() {
-            document.getElementById('module-selection-screen').classList.remove('active');
-            document.getElementById('simulator-screen').classList.add('active');
-            document.getElementById('sim-step-1').style.display = 'block';
-            document.getElementById('sim-step-2').style.display = 'none';
-            window.simAnswers = [];
-            document.getElementById('sim-message-text').innerText = "...";
-            document.getElementById('sim-btn-verify').style.display = 'none';
-        };
+window.simAnswers = [];
+window.simExpected = [
+"Où (Lieu précis)",
+"Quoi (Nature du problème)",
+"Bilan (État de la victime)",
+"Gestes (Ce qui a été fait)"
+];
 
-        window.checkSimNum = function(num) {
-            if(num === '15' || num === '112') {
-                alert("✅ Bonne réponse ! Le " + num + " (SAMU/Urgences) est adapté pour un problème médical grave.");
-                document.getElementById('sim-step-1').style.display = 'none';
-                document.getElementById('sim-step-2').style.display = 'block';
-                window.loadSimOptions();
-            } else {
-                alert("❌ Ce n'est pas le numéro prioritaire ici. Privilégiez un numéro médicalisé (15 ou 112).");
+// Base de scénarios SST
+window.simSituations = [
+{
+scenario: "Un collègue vient de faire un malaise grave dans l'entrepôt. Il ne répond plus et ne respire plus.",
+numbers: ["15","112"]
+},
+{
+scenario: "Un salarié chute d'une échelle de 3 mètres et reste au sol avec une douleur importante au dos.",
+numbers: ["15","112"]
+},
+{
+scenario: "Un employé est victime d'une hémorragie importante après une coupure avec une disqueuse.",
+numbers: ["15","112"]
+},
+{
+scenario: "Une personne s'étouffe totalement à la cafétéria et ne peut plus parler.",
+numbers: ["15","112"]
+},
+{
+scenario: "Un salarié reçoit une décharge électrique et s'effondre au sol.",
+numbers: ["15","112"]
+},
+{
+scenario: "Un feu se déclare dans le local de stockage des produits d'entretien.",
+numbers: ["18","112"]
+},
+{
+scenario: "Une explosion provoque un départ d'incendie dans un atelier.",
+numbers: ["18","112"]
+},
+{
+scenario: "Une forte odeur de gaz est détectée dans le bâtiment.",
+numbers: ["18","112"]
+},
+{
+scenario: "Un individu armé menace les salariés à l'accueil.",
+numbers: ["17","112"]
+},
+{
+scenario: "Une bagarre éclate et plusieurs personnes sont agressées.",
+numbers: ["17","112"]
+},
+{
+scenario: "Un salarié présente une douleur thoracique brutale avec sueurs et malaise.",
+numbers: ["15","112"]
+},
+{
+scenario: "Une personne fait une crise convulsive dans l'atelier.",
+numbers: ["15","112"]
+},
+{
+scenario: "Un salarié est retrouvé inconscient dans les vestiaires mais respire.",
+numbers: ["15","112"]
+},
+{
+scenario: "Un piéton est renversé devant l'entreprise.",
+numbers: ["15","112"]
+},
+{
+scenario: "Une brûlure chimique importante touche le visage d'un employé.",
+numbers: ["15","112"]
+}
+];
+
+window.startSimulator = function() {
+
+```
+document.getElementById('module-selection-screen').classList.remove('active');
+document.getElementById('simulator-screen').classList.add('active');
+
+document.getElementById('sim-step-1').style.display = 'block';
+document.getElementById('sim-step-2').style.display = 'none';
+
+window.simAnswers = [];
+
+window.currentSituation =
+    window.simSituations[Math.floor(Math.random() * window.simSituations.length)];
+
+document.getElementById('sim-scenario').innerHTML =
+    '"' + window.currentSituation.scenario + '"';
+
+document.getElementById('sim-message-text').innerText = "...";
+document.getElementById('sim-btn-verify').style.display = 'none';
+```
+
+};
+
+window.checkSimNum = function(num) {
+
+```
+if(window.currentSituation.numbers.includes(num)) {
+
+    alert("✅ Bonne réponse ! Le numéro choisi est adapté à cette situation.");
+
+    document.getElementById('sim-step-1').style.display = 'none';
+    document.getElementById('sim-step-2').style.display = 'block';
+
+    window.loadSimOptions();
+
+} else {
+
+    alert(
+        "❌ Mauvais choix. Les numéros adaptés étaient : " +
+        window.currentSituation.numbers.join(" ou ")
+    );
+
+}
+```
+
+};
+
+window.loadSimOptions = function() {
+
+```
+const options =
+    [...window.simExpected].sort(() => Math.random() - 0.5);
+
+const container =
+    document.getElementById('sim-options');
+
+container.innerHTML = "";
+
+options.forEach(opt => {
+
+    let btn = document.createElement('button');
+
+    btn.className = 'btn-module-card';
+    btn.style.padding = '12px';
+    btn.style.aspectRatio = 'auto';
+    btn.style.textAlign = 'center';
+
+    btn.innerText = opt;
+
+    btn.onclick = function() {
+
+        if(!window.simAnswers.includes(opt)) {
+
+            window.simAnswers.push(opt);
+
+            document.getElementById('sim-message-text').innerText =
+                window.simAnswers.join(" ➔ ");
+
+            btn.style.opacity = '0.3';
+            btn.style.pointerEvents = 'none';
+
+            if(window.simAnswers.length === 4) {
+                document.getElementById('sim-btn-verify').style.display = 'block';
             }
-        };
+        }
+    };
 
-        window.loadSimOptions = function() {
+    container.appendChild(btn);
+});
+```
+
+};
+
+window.verifySimMessage = function() {
+
+```
+let isCorrect = true;
+
+for(let i = 0; i < 4; i++) {
+    if(window.simAnswers[i] !== window.simExpected[i]) {
+        isCorrect = false;
+    }
+}
+
+if(isCorrect) {
+
+    alert(
+        "🏆 Parfait ! Ton message d'alerte est structuré correctement : Où ➔ Quoi ➔ Bilan ➔ Gestes."
+    );
+
+    document.getElementById('simulator-screen').classList.remove('active');
+    document.getElementById('module-selection-screen').classList.add('active');
+
+} else {
+
+    alert(
+        "❌ L'ordre idéal est : " +
+        window.simExpected.join(" ➔ ")
+    );
+
+    window.simAnswers = [];
+
+    document.getElementById('sim-message-text').innerText = "...";
+
+    document.getElementById('sim-btn-verify').style.display = 'none';
+
+    window.loadSimOptions = function() {
             // Mélange l'ordre des boutons à chaque fois
             const options = [...window.simExpected].sort(() => Math.random() - 0.5);
             const container = document.getElementById('sim-options');
