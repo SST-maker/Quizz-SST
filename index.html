@@ -132,6 +132,17 @@
                 <div class="timer-container" style="height: 10px; margin: 0; background: rgba(255,255,255,0.1); border-radius: 5px;">
                     <div id="global-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--apple-blue), var(--apple-green)); border-radius: 5px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                 </div>
+
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--glass);">
+                    <div style="font-size: 13px; color: var(--text-sec); margin-bottom: 5px;">Date de formation initiale SST :</div>
+                    <input type="date" id="sst-date" class="input-ncr" style="margin-bottom: 10px; width: 100%;" onchange="window.updateMacValidity()">
+                    <div id="mac-status" style="font-size: 14px; font-weight: bold; color: var(--apple-blue);">Renseignez votre date</div>
+                    <div class="timer-container" style="height: 6px; margin-top: 5px; background: rgba(255,255,255,0.1); margin-bottom: 0;">
+                        <div id="mac-progress-bar" style="width: 0%; height: 100%; background: var(--apple-blue); border-radius: 5px; transition: width 1s ease;"></div>
+                    </div>
+                </div>
+                
+                <button class="btn-ncr" style="margin-top: 15px; width: 100%; background: linear-gradient(135deg, #FF9500, #FF5E3A);" onclick="window.startSimulator()">🚨 Lancer le Simulateur d'Alerte</button>
             </div>
             <button class="btn-module-hero" onclick="startModule('all')">
                 <div>
@@ -1048,6 +1059,7 @@
             }
         }
         // --- NOUVEAU : Calcul et Affichage de la Progression ---
+        // BLOC 3 : Mise à jour générale de l'Espace Élève
         window.updateStudentProgressUI = function() {
             let progress = JSON.parse(localStorage.getItem('ncr_sst_progress') || '{}');
             let totalPercent = 0;
@@ -1057,7 +1069,6 @@
                 let p = progress[i] || 0;
                 totalPercent += p;
                 
-                // Injecte un petit badge de score sur les cartes du menu
                 if(cards[i]) {
                     let scoreBadge = cards[i].querySelector('.mod-score');
                     if(!scoreBadge) {
@@ -1074,16 +1085,31 @@
             let globalAverage = Math.round(totalPercent / 8);
             document.getElementById('global-percent').innerText = globalAverage + '%';
             
-            // Animation fluide de la barre
-            setTimeout(() => { document.getElementById('global-progress-bar').style.width = globalAverage + '%'; }, 100);
+            setTimeout(() => { 
+                if(document.getElementById('global-progress-bar')) {
+                    document.getElementById('global-progress-bar').style.width = globalAverage + '%'; 
+                }
+            }, 100);
             
-            // Niveaux de "gamification"
             let level = "Débutant";
             if(globalAverage >= 25) level = "Apprenti SST";
             if(globalAverage >= 50) level = "Confirmé";
             if(globalAverage >= 75) level = "Expert SST";
             if(globalAverage >= 95) level = "Maître SST 🏆";
-            document.getElementById('global-level').innerText = level;
+            
+            if(document.getElementById('global-level')) {
+                document.getElementById('global-level').innerText = level;
+            }
+
+            // Récupération automatique de la date MAC sauvegardée
+            if(progress.sstDate) {
+                const dateInput = document.getElementById('sst-date');
+                if(dateInput) {
+                    dateInput.value = progress.sstDate;
+                    window.updateMacValidity();
+                }
+            }
+        };
 
             // --- MOTEUR DU SIMULATEUR D'ALERTE ---
         window.simAnswers = [];
