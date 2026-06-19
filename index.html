@@ -21,13 +21,13 @@
     <style>
         /* --- FICHES RÉFLEXES (Style Apple Wallet) --- */
         .fiches-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; width: 100%; }
-        .flip-card { background-color: transparent; width: 100%; height: 130px; perspective: 1000px; cursor: pointer; }
-        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+        .flip-card { background-color: transparent; width: 100%; min-height: 100px; perspective: 1000px; cursor: pointer; }
+        .flip-card-inner { position: relative; width: 100%; display: grid; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
         .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
-        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 20px; padding: 20px; box-sizing: border-box; border: 1px solid var(--glass); display: flex; align-items: center; }
-        .flip-card-front { background: linear-gradient(135deg, var(--card-dark), #1c1c1e); color: white; font-size: 24px; font-weight: 800; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        .flip-card-back { background: var(--apple-blue); color: white; transform: rotateY(180deg); flex-direction: column; text-align: left; align-items: flex-start; justify-content: center; }
-        .fiche-step { font-size: 15px; font-weight: 600; margin-bottom: 5px; line-height: 1.3; }
+        .flip-card-front, .flip-card-back { grid-area: 1 / 1; width: 100%; backface-visibility: hidden; border-radius: 20px; padding: 20px; box-sizing: border-box; border: 1px solid var(--glass); display: flex; align-items: center; }
+        .flip-card-front { background: linear-gradient(135deg, var(--card-dark), #1c1c1e); color: white; font-size: 22px; font-weight: 800; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); min-height: 100px; }
+        .flip-card-back { background: var(--apple-blue); color: white; transform: rotateY(180deg); flex-direction: column; text-align: left; align-items: flex-start; justify-content: center; gap: 4px; }
+        .fiche-step { font-size: 14px; font-weight: 600; line-height: 1.35; }
 
         /* --- MÉTRONOME RCP --- */
         #metro-circle { width: 180px; height: 180px; border-radius: 50%; background: var(--apple-orange); margin: 50px auto; opacity: 0.1; box-shadow: 0 0 0 rgba(255, 149, 0, 0); transition: opacity 0.3s; }
@@ -54,8 +54,8 @@
         .btn-ncr:active { transform: scale(0.96); }
         .btn-ncr:disabled { opacity: 0.5; cursor: not-allowed; }
         .input-ncr { background: var(--card-dark); border: 1px solid var(--glass); color: white; padding: 18px; border-radius: 16px; font-size: 18px; width: 100%; margin-bottom: 20px; outline: none; transition: border 0.3s; }
-        .input[type="date"].input-ncr {max-width: 100%;min-width: 0;box-sizing: border-box;-webkit-appearance: none;appearance: none;  }
-        .input[type="date"].input-ncr::-webkit-date-and-time-value { text-align: left; }
+        input[type="date"].input-ncr { max-width: 100%; min-width: 0; box-sizing: border-box; -webkit-appearance: none; appearance: none; }
+        input[type="date"].input-ncr::-webkit-date-and-time-value { text-align: left; }
         .input-ncr:focus { border-color: var(--apple-blue); }
         
        .answers-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; margin-bottom: 20px; }
@@ -565,7 +565,7 @@
             <div id="my-rank-block"></div>
         </div>
 
-        <button class="btn-ncr" style="background: var(--card-dark); color: white; border: 1px solid var(--glass); margin-top: 25px;" onclick="window.returnToMenu()">Retour au menu des modules</button>
+        <button class="btn-ncr" style="background: var(--card-dark); color: white; border: 1px solid var(--glass); margin-top: 25px;" onclick="location.reload()">Retour à l'accueil</button>
     </div>
 
 
@@ -2004,21 +2004,6 @@
             if (btn) {
                 btn.innerText = "Lancer le Métronome";
                 btn.style.background = "var(--apple-green)";
-            }
-        };
-
-        // --- NOUVELLE FONCTION DE REDIRECTION ---
-        window.returnToMenu = function() {
-            // Referme l'écran des résultats
-            document.getElementById('result-screen').classList.remove('active');
-            
-            // Si l'élève est en mode Solo, on le ramène à la sélection des modules
-            if (mode === 'solo_student') {
-                document.getElementById('module-selection-screen').classList.add('active');
-                window.updateStudentProgressUI(); // Rafraîchit immédiatement le pourcentage et les couleurs
-            } else {
-                // Pour le mode Live ou Formateur, on recharge la page pour déconnecter proprement
-                location.reload();
             }
         };
     </script>
