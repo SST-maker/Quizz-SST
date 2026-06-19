@@ -2,7 +2,7 @@
   "name": "NCR Solutions - Quiz SST",
   "short_name": "NCR SST",
   "description": "Révision SST, fiches réflexes, métronome RCP et quiz live NCR Solutions",
-  "start_url": "./quizz.html",
+  "start_url": "https://sst-maker.github.io/Quizz-SST/",
   "scope": "./",
   "display": "standalone",
   "background_color": "#000000",
