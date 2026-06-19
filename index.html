@@ -1371,6 +1371,53 @@
             }
         }
 
+        window.updateMacValidity = function() {
+            const dateInput = document.getElementById('sst-date');
+            const statusEl = document.getElementById('mac-status');
+            const barEl = document.getElementById('mac-progress-bar');
+            if (!dateInput || !dateInput.value) {
+                if(statusEl) { statusEl.innerText = "Renseignez votre date"; statusEl.style.color = "var(--apple-blue)"; }
+                if(barEl) { barEl.style.width = "0%"; barEl.style.background = "var(--apple-blue)"; }
+                return;
+            }
+
+            // Sauvegarde dans la progression locale + Firebase
+            let progress = JSON.parse(localStorage.getItem('ncr_sst_progress') || '{}');
+            progress.sstDate = dateInput.value;
+            localStorage.setItem('ncr_sst_progress', JSON.stringify(progress));
+            if (window.currentSoloUserId) {
+                update(ref(db, 'users_progress/' + window.currentSoloUserId), { sstDate: dateInput.value });
+            }
+
+            const startDate = new Date(dateInput.value);
+            const validityMonths = 24; // durée de validité du certificat SST
+            const expiryDate = new Date(startDate);
+            expiryDate.setMonth(expiryDate.getMonth() + validityMonths);
+
+            const now = new Date();
+            const totalDuration = expiryDate - startDate;
+            const elapsed = now - startDate;
+            let percentElapsed = Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)));
+
+            const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+
+            barEl.style.width = percentElapsed + '%';
+
+            if (daysLeft < 0) {
+                statusEl.innerText = "⛔ Certificat expiré, recyclage MAC obligatoire";
+                statusEl.style.color = "var(--apple-red)";
+                barEl.style.background = "var(--apple-red)";
+            } else if (daysLeft <= 60) {
+                statusEl.innerText = `⚠️ Expire dans ${daysLeft} jours — pensez au MAC`;
+                statusEl.style.color = "var(--apple-orange)";
+                barEl.style.background = "var(--apple-orange)";
+            } else {
+                statusEl.innerText = `✅ Valide jusqu'au ${expiryDate.toLocaleDateString('fr-FR')}`;
+                statusEl.style.color = "var(--apple-green)";
+                barEl.style.background = "var(--apple-green)";
+            }
+        };
+
         window.updateStudentProgressUI = function() {
             let progress = JSON.parse(localStorage.getItem('ncr_sst_progress') || '{}');
             let totalPercent = 0;
