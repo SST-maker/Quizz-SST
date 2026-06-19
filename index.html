@@ -565,7 +565,7 @@
             <div id="my-rank-block"></div>
         </div>
 
-        <button class="btn-ncr" style="background: var(--card-dark); color: white; border: 1px solid var(--glass); margin-top: 25px;" onclick="location.reload()">Retour à l'accueil</button>
+        <button class="btn-ncr" style="background: var(--card-dark); color: white; border: 1px solid var(--glass); margin-top: 25px;" onclick="window.returnToMenu()">Retour au menu des modules</button>
     </div>
 
 
@@ -2004,6 +2004,21 @@
             if (btn) {
                 btn.innerText = "Lancer le Métronome";
                 btn.style.background = "var(--apple-green)";
+            }
+        };
+
+        // --- NOUVELLE FONCTION DE REDIRECTION ---
+        window.returnToMenu = function() {
+            // Referme l'écran des résultats
+            document.getElementById('result-screen').classList.remove('active');
+            
+            // Si l'élève est en mode Solo, on le ramène à la sélection des modules
+            if (mode === 'solo_student') {
+                document.getElementById('module-selection-screen').classList.add('active');
+                window.updateStudentProgressUI(); // Rafraîchit immédiatement le pourcentage et les couleurs
+            } else {
+                // Pour le mode Live ou Formateur, on recharge la page pour déconnecter proprement
+                location.reload();
             }
         };
     </script>
