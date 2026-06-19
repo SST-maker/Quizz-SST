@@ -322,7 +322,7 @@
     </div>
     <!-- ============================================================ -->
 
-    <div id="fiches-screen" class="screen" style="justify-content: flex-start; padding-top: 20px;">
+    <div id="fiches-screen" class="screen" style="justify-content: flex-start; padding-top: 20px; overflow-y: auto;">
         <h2 style="margin-bottom: 10px;">Fiches Urgence</h2>
         <p style="color:var(--text-sec); text-align:center;">Cliquez sur une carte pour voir les gestes.</p>
         
@@ -360,6 +360,54 @@
                     </div>
                 </div>
             </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">🔥 Brûlures</div>
+                    <div class="flip-card-back">
+                        <div class="fiche-step">• 1. Refroidir à l'eau tempérée (15-25°C) pendant 10 min.</div>
+                        <div class="fiche-step">• 2. Retirer bagues/vêtements non adhérents avant gonflement.</div>
+                        <div class="fiche-step">• 3. Ne jamais percer une cloque, ni appliquer beurre/glace.</div>
+                        <div class="fiche-step">• 4. Couvrir d'un pansement stérile non adhésif.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">🧠 AVC / Malaise cardiaque</div>
+                    <div class="flip-card-back">
+                        <div class="fiche-step">• 1. AVC : visage asymétrique, bras qui ne se lève pas, parole confuse.</div>
+                        <div class="fiche-step">• 2. Cardiaque : douleur thoracique → bras gauche, sueurs, pâleur.</div>
+                        <div class="fiche-step">• 3. Installer au repos strict (position semi-assise si besoin).</div>
+                        <div class="fiche-step">• 4. Alerter le 15, noter l'heure d'apparition des signes.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">🦴 Traumatisme</div>
+                    <div class="flip-card-back">
+                        <div class="fiche-step">• 1. Ne jamais déplacer la victime sauf danger immédiat.</div>
+                        <div class="fiche-step">• 2. Maintenir tête et axe tête-cou-tronc si doute sur le dos.</div>
+                        <div class="fiche-step">• 3. Ne jamais remettre un membre déformé en place.</div>
+                        <div class="fiche-step">• 4. Immobiliser, surveiller, alerter le 15.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">⚡ Électrisation</div>
+                    <div class="flip-card-back">
+                        <div class="fiche-step">• 1. Couper le courant avant toute approche.</div>
+                        <div class="fiche-step">• 2. Ne jamais toucher la victime avant la coupure.</div>
+                        <div class="fiche-step">• 3. Examiner comme toute victime (lésions internes possibles).</div>
+                        <div class="fiche-step">• 4. Refroidir les brûlures visibles, alerter le 15.</div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass); margin-top: 30px; width: 100%;" onclick="document.getElementById('fiches-screen').classList.remove('active'); document.getElementById('module-selection-screen').classList.add('active');">Retour au menu</button>
@@ -368,15 +416,24 @@
     <div id="metronome-screen" class="screen" style="justify-content: center; background: #000;">
         <h2 style="color: white; margin-bottom: 5px;">Rythme RCP</h2>
         <p style="color: var(--apple-orange); font-weight: 700; font-size: 18px;">110 BPM</p>
-        
-        <div id="metro-circle"></div>
-        
-        <p style="color: white; font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 40px;">
+
+        <div id="metro-reminder-banner" style="display:none; background: rgba(255,69,58,0.15); border: 1px solid rgba(255,69,58,0.5); color: var(--apple-red); border-radius: 14px; padding: 10px 14px; text-align:center; font-weight:700; font-size:14px; margin: 12px 0;">
+            🔄 2 minutes écoulées — pensez à changer de sauveteur !
+        </div>
+
+        <div style="position: relative; width: 180px; height: 180px; margin: 30px auto;">
+            <div id="metro-circle" style="margin:0;"></div>
+            <div id="metro-beat-text" style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:50px; font-weight:800; color:white;">–</div>
+        </div>
+
+        <p id="metro-phase-label" style="color: white; font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 5px;">
             30 Compressions<br><span style="color: var(--text-sec); font-size: 16px;">suivies de 2 insufflations</span>
         </p>
-        
+
+        <p id="metro-cycle-counter" style="color: var(--apple-blue); font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 30px;">Cycles terminés : 0</p>
+
         <button id="btn-metro-toggle" class="btn-ncr" style="background: var(--apple-green); width: 100%; font-size: 20px;" onclick="window.toggleMetronome()">Lancer le Métronome</button>
-        
+
         <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass); margin-top: 15px; width: 100%;" onclick="window.stopMetronome(); document.getElementById('metronome-screen').classList.remove('active'); document.getElementById('module-selection-screen').classList.add('active');">Quitter</button>
     </div>
 
@@ -1537,56 +1594,132 @@
 
         // --- MOTEUR MÉTRONOME RCP ---
         window.audioCtx = null;
-        window.metroInterval = null;
+        window.metroTimeoutId = null;
+        window.metroReminderInterval = null;
         window.isMetroRunning = false;
+        window.metroBeat = 0;       // 1 à 30 pendant les compressions
+        window.metroPhase = 'compression'; // 'compression' | 'insufflation'
+        window.metroInsuffStep = 0; // 1 ou 2
+        window.metroCycles = 0;
 
-        window.playBeep = function() {
+        window.vibrateDevice = function(pattern) {
+            if (navigator.vibrate) { navigator.vibrate(pattern); }
+        };
+
+        window.playBeep = function(freq) {
             if (!window.audioCtx) {
                 window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
             if (window.audioCtx.state === 'suspended') window.audioCtx.resume();
-            
+
             let osc = window.audioCtx.createOscillator();
             let gain = window.audioCtx.createGain();
-            
+
             osc.connect(gain);
             gain.connect(window.audioCtx.destination);
-            
-            osc.frequency.value = 800; // Fréquence du bip
+
+            osc.frequency.value = freq || 800;
             osc.type = 'sine';
-            
+
             gain.gain.setValueAtTime(0.1, window.audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.00001, window.audioCtx.currentTime + 0.1);
-            
+            gain.gain.exponentialRampToValueAtTime(0.00001, window.audioCtx.currentTime + 0.15);
+
             osc.start();
-            osc.stop(window.audioCtx.currentTime + 0.1);
+            osc.stop(window.audioCtx.currentTime + 0.15);
         };
 
-        window.toggleMetronome = function() {
+        function updateMetroDisplay() {
+            const beatText = document.getElementById('metro-beat-text');
+            const phaseLabel = document.getElementById('metro-phase-label');
+            const cycleCounter = document.getElementById('metro-cycle-counter');
+            if (!beatText) return;
+            if (window.metroPhase === 'compression') {
+                beatText.innerText = window.metroBeat;
+                phaseLabel.innerHTML = `Compression ${window.metroBeat} / 30<br><span style="color: var(--text-sec); font-size: 16px;">suivies de 2 insufflations</span>`;
+            } else {
+                beatText.innerText = '🫁';
+                phaseLabel.innerHTML = `Insufflation ${window.metroInsuffStep} / 2<br><span style="color: var(--text-sec); font-size: 16px;">reprise des compressions ensuite</span>`;
+            }
+            cycleCounter.innerText = 'Cycles terminés : ' + window.metroCycles;
+        }
+
+        function metroStep() {
+            if (!window.isMetroRunning) return;
             const circle = document.getElementById('metro-circle');
+
+            if (window.metroPhase === 'compression') {
+                window.metroBeat++;
+                window.playBeep(800);
+                window.vibrateDevice(40);
+                if (circle) { circle.classList.remove('pulsing'); void circle.offsetWidth; circle.classList.add('pulsing'); }
+                updateMetroDisplay();
+
+                if (window.metroBeat >= 30) {
+                    window.metroPhase = 'insufflation';
+                    window.metroInsuffStep = 0;
+                    window.metroTimeoutId = setTimeout(metroStep, 400);
+                } else {
+                    window.metroTimeoutId = setTimeout(metroStep, 545);
+                }
+            } else {
+                window.metroInsuffStep++;
+                window.playBeep(400);
+                window.vibrateDevice([100, 50, 100]);
+                updateMetroDisplay();
+
+                if (window.metroInsuffStep < 2) {
+                    window.metroTimeoutId = setTimeout(metroStep, 1500);
+                } else {
+                    window.metroCycles++;
+                    window.metroPhase = 'compression';
+                    window.metroBeat = 0;
+                    updateMetroDisplay();
+                    window.metroTimeoutId = setTimeout(metroStep, 1500);
+                }
+            }
+        }
+
+        window.toggleMetronome = function() {
             const btn = document.getElementById('btn-metro-toggle');
-            
+
             if (window.isMetroRunning) {
                 window.stopMetronome();
             } else {
                 window.isMetroRunning = true;
-                circle.classList.add('pulsing');
+                window.metroBeat = 0;
+                window.metroPhase = 'compression';
+                window.metroInsuffStep = 0;
+                window.metroCycles = 0;
                 btn.innerText = "🛑 Stop";
                 btn.style.background = "#ff3b30";
-                
-                window.playBeep(); // Premier battement immédiat
-                window.metroInterval = setInterval(() => {
-                    window.playBeep();
-                }, 545); // 545ms = exactement 110 battements par minute
+
+                const banner = document.getElementById('metro-reminder-banner');
+                if (banner) banner.style.display = 'none';
+
+                metroStep();
+
+                window.metroReminderInterval = setInterval(() => {
+                    if (banner) {
+                        banner.style.display = 'block';
+                        window.vibrateDevice([200, 100, 200, 100, 200]);
+                        setTimeout(() => { if (banner) banner.style.display = 'none'; }, 6000);
+                    }
+                }, 120000); // toutes les 2 minutes
             }
         };
 
         window.stopMetronome = function() {
-            clearInterval(window.metroInterval);
+            clearTimeout(window.metroTimeoutId);
+            clearInterval(window.metroReminderInterval);
             window.isMetroRunning = false;
-            document.getElementById('metro-circle').classList.remove('pulsing');
+            const circle = document.getElementById('metro-circle');
+            if (circle) circle.classList.remove('pulsing');
+            const beatText = document.getElementById('metro-beat-text');
+            if (beatText) beatText.innerText = '–';
+            const banner = document.getElementById('metro-reminder-banner');
+            if (banner) banner.style.display = 'none';
             const btn = document.getElementById('btn-metro-toggle');
-            if(btn) {
+            if (btn) {
                 btn.innerText = "Lancer le Métronome";
                 btn.style.background = "var(--apple-green)";
             }
