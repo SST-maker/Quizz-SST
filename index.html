@@ -12,6 +12,24 @@
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
+        /* --- FICHES RÉFLEXES (Style Apple Wallet) --- */
+        .fiches-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; width: 100%; }
+        .flip-card { background-color: transparent; width: 100%; height: 130px; perspective: 1000px; cursor: pointer; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 20px; padding: 20px; box-sizing: border-box; border: 1px solid var(--glass); display: flex; align-items: center; }
+        .flip-card-front { background: linear-gradient(135deg, var(--card-dark), #1c1c1e); color: white; font-size: 24px; font-weight: 800; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .flip-card-back { background: var(--apple-blue); color: white; transform: rotateY(180deg); flex-direction: column; text-align: left; align-items: flex-start; justify-content: center; }
+        .fiche-step { font-size: 15px; font-weight: 600; margin-bottom: 5px; line-height: 1.3; }
+
+        /* --- MÉTRONOME RCP --- */
+        #metro-circle { width: 180px; height: 180px; border-radius: 50%; background: var(--apple-orange); margin: 50px auto; opacity: 0.1; box-shadow: 0 0 0 rgba(255, 149, 0, 0); transition: opacity 0.3s; }
+        @keyframes pulse-beat {
+            0% { transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.7); }
+            70% { transform: scale(1.15); opacity: 0.2; box-shadow: 0 0 0 40px rgba(255, 149, 0, 0); }
+            100% { transform: scale(0.95); opacity: 0.1; box-shadow: 0 0 0 0 rgba(255, 149, 0, 0); }
+        }
+        .pulsing { animation: pulse-beat 0.545s infinite; } /* 0.545s = 110 BPM */
         /* --- Design Apple Dark & NCR Solutions --- */
         :root {
             --bg-black: #000000; --card-dark: #1C1C1E; --apple-blue: #0A84FF;
@@ -299,6 +317,65 @@
         <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass); margin-top: 24px; flex-shrink:0;" onclick="document.getElementById('simulator-screen').classList.remove('active'); document.getElementById('module-selection-screen').classList.add('active');">← Retour au menu</button>
     </div>
     <!-- ============================================================ -->
+
+    <div id="fiches-screen" class="screen" style="justify-content: flex-start; padding-top: 20px;">
+        <h2 style="margin-bottom: 10px;">Fiches Urgence</h2>
+        <p style="color:var(--text-sec); text-align:center;">Cliquez sur une carte pour voir les gestes.</p>
+        
+        <div class="fiches-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">🛌 PLS</div>
+                    <div class="flip-card-back">
+                        <div class="fiche-step">• 1. Aligner la jambe, bras à angle droit.</div>
+                        <div class="fiche-step">• 2. Main opposée contre la joue.</div>
+                        <div class="fiche-step">• 3. Saisir genou opposé et basculer.</div>
+                        <div class="fiche-step">• 4. Ouvrir la bouche, vérifier respiration.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">🤐 Étouffement</div>
+                    <div class="flip-card-back">
+                        <div class="fiche-step">• 1. Constater l'obstruction totale.</div>
+                        <div class="fiche-step">• 2. Donner 1 à 5 claques dans le dos.</div>
+                        <div class="fiche-step">• 3. Si échec : 1 à 5 compressions abdominales (Heimlich).</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">🩸 Hémorragie</div>
+                    <div class="flip-card-back">
+                        <div class="fiche-step">• 1. Comprimer directement la plaie.</div>
+                        <div class="fiche-step">• 2. Allonger la victime.</div>
+                        <div class="fiche-step">• 3. Si relais impossible : poser un garrot et noter l'heure.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass); margin-top: 30px; width: 100%;" onclick="document.getElementById('fiches-screen').classList.remove('active'); document.getElementById('module-selection-screen').classList.add('active');">Retour au menu</button>
+    </div>
+
+    <div id="metronome-screen" class="screen" style="justify-content: center; background: #000;">
+        <h2 style="color: white; margin-bottom: 5px;">Rythme RCP</h2>
+        <p style="color: var(--apple-orange); font-weight: 700; font-size: 18px;">110 BPM</p>
+        
+        <div id="metro-circle"></div>
+        
+        <p style="color: white; font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 40px;">
+            30 Compressions<br><span style="color: var(--text-sec); font-size: 16px;">suivies de 2 insufflations</span>
+        </p>
+        
+        <button id="btn-metro-toggle" class="btn-ncr" style="background: var(--apple-green); width: 100%; font-size: 20px;" onclick="window.toggleMetronome()">Lancer le Métronome</button>
+        
+        <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass); margin-top: 15px; width: 100%;" onclick="window.stopMetronome(); document.getElementById('metronome-screen').classList.remove('active'); document.getElementById('module-selection-screen').classList.add('active');">Quitter</button>
+    </div>
+
 
     <div id="host-result-screen" class="screen" style="justify-content: center; text-align: center; overflow-y:auto;">
         <div id="confetti-container-host"></div>
@@ -1451,6 +1528,61 @@
             if(progress.sstDate) {
                 const dateInput = document.getElementById('sst-date');
                 if(dateInput) { dateInput.value = progress.sstDate; window.updateMacValidity(); }
+            }
+            // --- MOTEUR MÉTRONOME RCP ---
+        window.audioCtx = null;
+        window.metroInterval = null;
+        window.isMetroRunning = false;
+
+        window.playBeep = function() {
+            if (!window.audioCtx) {
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (window.audioCtx.state === 'suspended') window.audioCtx.resume();
+            
+            let osc = window.audioCtx.createOscillator();
+            let gain = window.audioCtx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(window.audioCtx.destination);
+            
+            osc.frequency.value = 800; // Fréquence du bip
+            osc.type = 'sine';
+            
+            gain.gain.setValueAtTime(0.1, window.audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, window.audioCtx.currentTime + 0.1);
+            
+            osc.start();
+            osc.stop(window.audioCtx.currentTime + 0.1);
+        };
+
+        window.toggleMetronome = function() {
+            const circle = document.getElementById('metro-circle');
+            const btn = document.getElementById('btn-metro-toggle');
+            
+            if (window.isMetroRunning) {
+                window.stopMetronome();
+            } else {
+                window.isMetroRunning = true;
+                circle.classList.add('pulsing');
+                btn.innerText = "🛑 Stop";
+                btn.style.background = "#ff3b30";
+                
+                window.playBeep(); // Premier battement immédiat
+                window.metroInterval = setInterval(() => {
+                    window.playBeep();
+                }, 545); // 545ms = exactement 110 battements par minute
+            }
+        };
+
+        window.stopMetronome = function() {
+            clearInterval(window.metroInterval);
+            window.isMetroRunning = false;
+            document.getElementById('metro-circle').classList.remove('pulsing');
+            const btn = document.getElementById('btn-metro-toggle');
+            if(btn) {
+                btn.innerText = "Lancer le Métronome";
+                btn.style.background = "var(--apple-green)";
             }
         };
     </script>
