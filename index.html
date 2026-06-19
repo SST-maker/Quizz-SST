@@ -160,8 +160,10 @@
 
     <div id="role-screen" class="screen active" style="justify-content: center;">
         <div style="width:200px; height:200px; margin:0 auto 25px auto; background:var(--card-dark); border:1px solid var(--glass); border-radius:24px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.4), 0 0 30px rgba(10,132,255,0.15); padding:15px;"><img src="logo.png" alt="Logo NCR Solutions" style="max-width:100%; max-height:100%; object-fit:contain;"></div>
-        <h1 style="text-align: center; margin-bottom: 40px; letter-spacing: -0.5px;">NCR <span>Solutions</span><br><span style="color:var(--apple-blue); font-size:20px;">Formation & Révision</span></h1>
-        
+        <h1 style="text-align: center; margin-bottom: 20px; letter-spacing: -0.5px;">NCR <span>Solutions</span><br><span style="color:var(--apple-blue); font-size:20px;">Formation & Révision</span></h1>
+
+        <button id="btn-install-pwa" style="display:none; background: rgba(10,132,255,0.12); color: var(--apple-blue); border: 1px solid var(--apple-blue); border-radius: 16px; padding: 14px; font-weight: 700; font-size: 15px; margin-bottom: 25px; width: 100%; cursor:pointer;" onclick="window.installPWA()">⬇️ Installer l'application sur cet appareil</button>
+
         <p style="color:var(--text-sec); margin-bottom:10px; font-size:14px; text-align:center;">Mode Élève</p>
         <button class="btn-ncr" onclick="selectRole('live_student')">Rejoindre une session Live</button>
         <button class="btn-ncr" style="background:var(--card-dark); color:white; border:1px solid var(--glass);" onclick="selectRole('solo_student')">Révision Solo (Maison)</button>
@@ -169,6 +171,18 @@
         <p style="color:var(--text-sec); margin:30px 0 10px 0; font-size:14px; text-align:center;">Mode Examinateur</p>
         <button class="btn-ncr" style="background: transparent; color: var(--apple-blue); border: 1px solid var(--apple-blue);" onclick="selectRole('host')">Je suis le Formateur</button>
         <img src="qrcode.png" alt="QR Code" style="width:100px; height:100px; display:block; margin:30px auto 0 auto;">
+    </div>
+
+    <div id="ios-install-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9998; align-items:flex-end; justify-content:center;">
+        <div style="background:var(--card-dark); border-radius:24px 24px 0 0; padding:24px; width:100%; max-width:600px; border-top:1px solid var(--glass);">
+            <h3 style="margin-bottom:14px; text-align:center;">📲 Installer sur iPhone / iPad</h3>
+            <p style="font-size:15px; line-height:1.8; color:#e0e0e0;">
+                1. Appuyez sur l'icône <strong>Partager</strong> <span style="font-size:18px;">⬆️</span> en bas de Safari<br>
+                2. Faites défiler et choisissez <strong>« Sur l'écran d'accueil »</strong><br>
+                3. Appuyez sur <strong>« Ajouter »</strong> en haut à droite
+            </p>
+            <button class="btn-ncr" style="margin-top:16px;" onclick="document.getElementById('ios-install-modal').style.display='none';">Compris</button>
+        </div>
     </div>
 
     <div id="module-selection-screen" class="screen">
@@ -595,6 +609,45 @@
         window.addEventListener('online', updateOfflineBanner);
         window.addEventListener('offline', updateOfflineBanner);
         updateOfflineBanner();
+
+        // --- INSTALLATION DE L'APPLICATION (PWA) ---
+        let deferredInstallPrompt = null;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+
+        function showInstallButtonIfRelevant() {
+            const btn = document.getElementById('btn-install-pwa');
+            if (!btn || isStandalone) return; // déjà installée : on ne montre rien
+            if (deferredInstallPrompt || isIOS) {
+                btn.style.display = 'block';
+            }
+        }
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            showInstallButtonIfRelevant();
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            const btn = document.getElementById('btn-install-pwa');
+            if (btn) btn.style.display = 'none';
+        });
+
+        window.installPWA = function() {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                deferredInstallPrompt.userChoice.finally(() => { deferredInstallPrompt = null; });
+            } else if (isIOS) {
+                document.getElementById('ios-install-modal').style.display = 'flex';
+            } else {
+                alert("Votre navigateur ne propose pas l'installation directe. Utilisez le menu du navigateur (⋮ ou Partager) puis « Ajouter à l'écran d'accueil ».");
+            }
+        };
+
+        // Sur iOS, l'événement beforeinstallprompt n'existe pas : on affiche quand même le bouton
+        showInstallButtonIfRelevant();
 
         const MODULE_NAMES = [
             "Module 1 : Rôle du SST","Module 2 : Protéger","Module 3 : Examiner",
