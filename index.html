@@ -8,6 +8,13 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="favicon.png">
     <link rel="shortcut icon" href="favicon.png">
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NCR SST">
     
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700;800&display=swap" rel="stylesheet">
     
@@ -140,6 +147,13 @@
         .sim-result-box { border-radius: 16px; padding: 18px; margin-top: 14px; text-align: center; font-size: 15px; font-weight: 600; line-height: 1.5; }
         .sim-result-ok  { background: rgba(50,215,75,0.12); border: 1px solid rgba(50,215,75,0.4); color: var(--apple-green); }
         .sim-result-ko  { background: rgba(255,69,58,0.12); border: 1px solid rgba(255,69,58,0.4); color: var(--apple-red); }
+
+        /* --- IMPRESSION CERTIFICAT --- */
+        @media print {
+            body * { visibility: hidden; }
+            #certificate-card, #certificate-card * { visibility: visible; }
+            #certificate-card { position: absolute; top: 0; left: 0; width: 100%; box-shadow: none; }
+        }
     </style>
 </head>
 <body>
@@ -158,8 +172,10 @@
     </div>
 
     <div id="module-selection-screen" class="screen">
-        <h2 style="margin-bottom: 24px; text-align: center; font-size: 26px; letter-spacing: -0.5px;" id="module-title-dynamic">Choisissez un Module</h2>
-        
+        <h2 style="margin-bottom: 10px; text-align: center; font-size: 26px; letter-spacing: -0.5px;" id="module-title-dynamic">Choisissez un Module</h2>
+
+        <button id="btn-open-host-dashboard" style="display:none; background:transparent; color:var(--apple-blue); border:1px solid var(--apple-blue); border-radius:12px; padding:10px; font-weight:700; font-size:14px; margin-bottom:18px; cursor:pointer;" onclick="window.openHostDashboard()">📊 Tableau de Bord Élèves</button>
+
         <div style="flex-grow:1; overflow-y:auto; padding-bottom:20px; padding-top: 5px;">
             <div id="student-dashboard" style="display: none; background: var(--card-dark); border: 1px solid var(--glass); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
@@ -187,6 +203,7 @@
                     <button class="btn-ncr" style="margin:0; flex:1; background:var(--card-dark); border:1px solid var(--glass);" onclick="document.getElementById('module-selection-screen').classList.remove('active'); document.getElementById('fiches-screen').classList.add('active');">🩹 Fiches Urgence</button>
                     <button class="btn-ncr" style="margin:0; flex:1; background:var(--card-dark); border:1px solid var(--glass);" onclick="document.getElementById('module-selection-screen').classList.remove('active'); document.getElementById('metronome-screen').classList.add('active');">🫀 Métronome RCP</button>
                 </div>
+                <button id="btn-open-certificate" style="display:none; margin-top:10px; width:100%; background: linear-gradient(135deg, #FFD60A, #B8860B); color:#1c1c1e; border:none; border-radius:16px; padding:14px; font-weight:800; font-size:15px; cursor:pointer;" onclick="window.openCertificate()">🎓 Voir mon Certificat NCR Academy</button>
             </div>
             <button class="btn-module-hero" onclick="startModule('all')">
                 <div>
@@ -266,6 +283,41 @@
         <div id="live-leaderboard" style="flex-grow: 1; overflow-y: auto;">
             <p style="color:var(--text-sec); text-align:center;">En attente des connexions...</p>
         </div>
+    </div>
+
+    <div id="host-dashboard-screen" class="screen" style="overflow-y:auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2>📊 Tableau de Bord Élèves</h2>
+            <button class="btn-ncr" style="width:auto; margin:0; padding:10px 16px; background:var(--card-dark); border:1px solid var(--glass);" onclick="window.exportHostDashboardCSV()">⬇️ Export CSV</button>
+        </div>
+        <p style="color:var(--text-sec); font-size:13px; margin-bottom:16px;">Progression de tous les élèves en Révision Solo (synchronisée depuis Firebase).</p>
+
+        <div id="host-dashboard-summary" style="display:flex; gap:10px; margin-bottom:16px;"></div>
+
+        <div id="host-dashboard-list" style="flex-grow:1;">
+            <p style="color:var(--text-sec); text-align:center;">Chargement...</p>
+        </div>
+
+        <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass); margin-top:20px;" onclick="document.getElementById('host-dashboard-screen').classList.remove('active'); document.getElementById('module-selection-screen').classList.add('active');">← Retour</button>
+    </div>
+
+    <div id="certificate-screen" class="screen" style="justify-content: center; overflow-y:auto;">
+        <div id="certificate-card" style="background: linear-gradient(160deg, #1c1c1e 0%, #0a0a0c 100%); border: 2px solid #FFD60A; border-radius: 24px; padding: 36px 28px; text-align:center; box-shadow: 0 0 40px rgba(255,214,10,0.15);">
+            <div style="font-size:42px; margin-bottom:6px;">🏆</div>
+            <div style="color:#FFD60A; font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase; margin-bottom:18px;">NCR Academy — Certificat de Réussite</div>
+            <div style="color:var(--text-sec); font-size:13px; margin-bottom:4px;">Ce certificat atteste que</div>
+            <div id="cert-student-name" style="font-size:26px; font-weight:800; color:white; margin-bottom:14px; letter-spacing:-0.5px;">—</div>
+            <div style="color:var(--text-sec); font-size:14px; line-height:1.6; margin-bottom:18px;">a complété le parcours de révision Sauveteur Secouriste du Travail (SST)<br>avec le niveau</div>
+            <div id="cert-level" style="font-size:22px; font-weight:800; color:var(--apple-blue); margin-bottom:6px;">—</div>
+            <div id="cert-score" style="font-size:14px; color:var(--text-sec); margin-bottom:22px;">Score global : —</div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-sec); border-top:1px solid var(--glass); padding-top:14px;">
+                <span id="cert-date">—</span>
+                <span id="cert-code">Code : —</span>
+            </div>
+        </div>
+
+        <button class="btn-ncr" style="margin-top:24px;" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+        <button class="btn-ncr" style="background:transparent; border:1px solid var(--glass);" onclick="document.getElementById('certificate-screen').classList.remove('active'); document.getElementById('module-selection-screen').classList.add('active');">← Retour</button>
     </div>
 
     <!-- ============================================================ -->
@@ -518,6 +570,31 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // --- ENREGISTREMENT DU SERVICE WORKER (mode hors-ligne) ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(() => console.log('[PWA] Service worker enregistré, mode hors-ligne actif.'))
+                    .catch((err) => console.warn('[PWA] Échec enregistrement service worker :', err));
+            });
+        }
+
+        // Bandeau d'état réseau (informe l'utilisateur quand il passe hors-ligne)
+        function updateOfflineBanner() {
+            let banner = document.getElementById('offline-banner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'offline-banner';
+                banner.style.cssText = 'position:fixed; top:0; left:0; width:100%; background:var(--apple-orange); color:#1c1c1e; font-weight:800; font-size:13px; text-align:center; padding:6px 0; z-index:9999; display:none;';
+                banner.innerText = '📡 Mode hors-ligne — révision solo, fiches et métronome disponibles';
+                document.body.appendChild(banner);
+            }
+            banner.style.display = navigator.onLine ? 'none' : 'block';
+        }
+        window.addEventListener('online', updateOfflineBanner);
+        window.addEventListener('offline', updateOfflineBanner);
+        updateOfflineBanner();
 
         const MODULE_NAMES = [
             "Module 1 : Rôle du SST","Module 2 : Protéger","Module 3 : Examiner",
@@ -1159,6 +1236,7 @@
                 mode = 'host';
                 document.getElementById('role-screen').classList.remove('active');
                 document.getElementById('module-title-dynamic').innerText = "Session Live : Choisir Module";
+                document.getElementById('btn-open-host-dashboard').style.display = 'block';
                 document.getElementById('module-selection-screen').classList.add('active');
             } else if (role === 'solo_student') {
                 mode = 'solo_student';
@@ -1240,6 +1318,131 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('module-title-dynamic').innerText = "Session Live : Choisir Module";
             document.getElementById('module-selection-screen').classList.add('active');
+        };
+
+        // ============================================================
+        //   TABLEAU DE BORD FORMATEUR
+        // ============================================================
+        let hostDashboardData = []; // [{ id, globalAvg, level, modules:[8], sstDate, macStatus }]
+
+        function computeMacStatus(sstDate) {
+            if (!sstDate) return { label: "Non renseignée", color: "var(--text-sec)" };
+            const start = new Date(sstDate);
+            const expiry = new Date(start);
+            expiry.setMonth(expiry.getMonth() + 24);
+            const daysLeft = Math.ceil((expiry - new Date()) / (1000 * 60 * 60 * 24));
+            if (daysLeft < 0) return { label: "Expirée", color: "var(--apple-red)" };
+            if (daysLeft <= 60) return { label: `Expire dans ${daysLeft}j`, color: "var(--apple-orange)" };
+            return { label: `Valide (${expiry.toLocaleDateString('fr-FR')})`, color: "var(--apple-green)" };
+        }
+
+        function levelFromAverage(avg) {
+            if (avg >= 95) return "Maître SST 🏆";
+            if (avg >= 75) return "Expert SST";
+            if (avg >= 50) return "Confirmé";
+            if (avg >= 25) return "Apprenti SST";
+            return "Débutant";
+        }
+
+        window.openHostDashboard = function() {
+            document.getElementById('module-selection-screen').classList.remove('active');
+            document.getElementById('host-dashboard-screen').classList.add('active');
+            document.getElementById('host-dashboard-list').innerHTML = '<p style="color:var(--text-sec); text-align:center;">Chargement...</p>';
+
+            onValue(ref(db, 'users_progress'), (snapshot) => {
+                const raw = snapshot.val() || {};
+                hostDashboardData = Object.keys(raw).map((id) => {
+                    const progress = raw[id];
+                    const modules = [];
+                    let total = 0;
+                    for (let i = 0; i < 8; i++) {
+                        const p = progress[i] || 0;
+                        modules.push(p);
+                        total += p;
+                    }
+                    const globalAvg = Math.round(total / 8);
+                    return {
+                        id,
+                        globalAvg,
+                        level: levelFromAverage(globalAvg),
+                        modules,
+                        sstDate: progress.sstDate || null
+                    };
+                }).sort((a, b) => b.globalAvg - a.globalAvg);
+
+                renderHostDashboard();
+            }, { onlyOnce: true });
+        };
+
+        function renderHostDashboard() {
+            const summaryEl = document.getElementById('host-dashboard-summary');
+            const listEl = document.getElementById('host-dashboard-list');
+
+            if (hostDashboardData.length === 0) {
+                summaryEl.innerHTML = '';
+                listEl.innerHTML = '<p style="color:var(--text-sec); text-align:center;">Aucun élève en Révision Solo pour le moment.</p>';
+                return;
+            }
+
+            const nbStudents = hostDashboardData.length;
+            const avgGlobal = Math.round(hostDashboardData.reduce((s, d) => s + d.globalAvg, 0) / nbStudents);
+            const nbMacExpired = hostDashboardData.filter(d => computeMacStatus(d.sstDate).label === 'Expirée').length;
+
+            summaryEl.innerHTML = `
+                <div style="flex:1; background:var(--card-dark); border:1px solid var(--glass); border-radius:14px; padding:14px; text-align:center;">
+                    <div style="font-size:24px; font-weight:800; color:var(--apple-blue);">${nbStudents}</div>
+                    <div style="font-size:12px; color:var(--text-sec);">Élèves</div>
+                </div>
+                <div style="flex:1; background:var(--card-dark); border:1px solid var(--glass); border-radius:14px; padding:14px; text-align:center;">
+                    <div style="font-size:24px; font-weight:800; color:var(--apple-green);">${avgGlobal}%</div>
+                    <div style="font-size:12px; color:var(--text-sec);">Moyenne globale</div>
+                </div>
+                <div style="flex:1; background:var(--card-dark); border:1px solid var(--glass); border-radius:14px; padding:14px; text-align:center;">
+                    <div style="font-size:24px; font-weight:800; color:${nbMacExpired > 0 ? 'var(--apple-red)' : 'var(--apple-green)'};">${nbMacExpired}</div>
+                    <div style="font-size:12px; color:var(--text-sec);">MAC expirées</div>
+                </div>
+            `;
+
+            listEl.innerHTML = '';
+            hostDashboardData.forEach((student) => {
+                const mac = computeMacStatus(student.sstDate);
+                const rowId = 'detail-' + student.id;
+                const moduleBadges = student.modules.map((p, i) =>
+                    `<span style="background:rgba(255,255,255,0.08); border-radius:8px; padding:4px 8px; font-size:11px; font-weight:700; color:${p >= 75 ? 'var(--apple-green)' : (p >= 40 ? 'var(--apple-orange)' : 'var(--text-sec)')};">M${i+1}: ${p}%</span>`
+                ).join(' ');
+
+                listEl.innerHTML += `
+                    <div style="background:var(--card-dark); border:1px solid var(--glass); border-radius:14px; padding:14px; margin-bottom:10px; cursor:pointer;" onclick="document.getElementById('${rowId}').style.display = document.getElementById('${rowId}').style.display === 'none' ? 'block' : 'none';">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <div style="font-weight:700; font-size:15px;">${student.id}</div>
+                                <div style="font-size:12px; color:var(--apple-blue);">${student.level}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:800; font-size:20px;">${student.globalAvg}%</div>
+                                <div style="font-size:11px; color:${mac.color};">MAC : ${mac.label}</div>
+                            </div>
+                        </div>
+                        <div id="${rowId}" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--glass); flex-wrap:wrap; gap:6px;">
+                            ${moduleBadges}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.exportHostDashboardCSV = function() {
+            if (hostDashboardData.length === 0) { alert("Aucune donnée à exporter."); return; }
+            let csv = "Identifiant;Niveau;Moyenne globale (%);" + MODULE_NAMES.map((_, i) => "Module " + (i + 1) + " (%)").join(";") + ";Statut MAC\n";
+            hostDashboardData.forEach((student) => {
+                const mac = computeMacStatus(student.sstDate);
+                csv += `${student.id};${student.level};${student.globalAvg};${student.modules.join(';')};${mac.label}\n`;
+            });
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'ncr-sst-export-' + new Date().toISOString().slice(0, 10) + '.csv';
+            link.click();
         };
 
         window.nextQuestionHost = function() {
@@ -1586,10 +1789,36 @@
             if(globalAverage >= 75) level = "Expert SST";
             if(globalAverage >= 95) level = "Maître SST 🏆";
             if(document.getElementById('global-level')) { document.getElementById('global-level').innerText = level; }
+            window.studentGlobalAverage = globalAverage;
+            window.studentGlobalLevel = level;
+            const certBtn = document.getElementById('btn-open-certificate');
+            if (certBtn) { certBtn.style.display = globalAverage >= 75 ? 'block' : 'none'; }
             if(progress.sstDate) {
                 const dateInput = document.getElementById('sst-date');
                 if(dateInput) { dateInput.value = progress.sstDate; window.updateMacValidity(); }
             }
+        };
+
+        window.openCertificate = function() {
+            const displayName = (window.currentSoloUserId || 'Élève')
+                .replace(/_/g, ' ')
+                .split(' ')
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ');
+            document.getElementById('cert-student-name').innerText = displayName;
+            document.getElementById('cert-level').innerText = window.studentGlobalLevel || '—';
+            document.getElementById('cert-score').innerText = 'Score global : ' + (window.studentGlobalAverage || 0) + '%';
+            document.getElementById('cert-date').innerText = 'Délivré le ' + new Date().toLocaleDateString('fr-FR');
+
+            // Code de vérification simple, dérivé de l'identifiant et de la date du jour
+            const raw = (window.currentSoloUserId || '') + new Date().toISOString().slice(0, 10);
+            let hash = 0;
+            for (let i = 0; i < raw.length; i++) { hash = (hash * 31 + raw.charCodeAt(i)) >>> 0; }
+            const code = 'NCR-' + hash.toString(36).toUpperCase().slice(0, 6);
+            document.getElementById('cert-code').innerText = 'Code : ' + code;
+
+            document.getElementById('module-selection-screen').classList.remove('active');
+            document.getElementById('certificate-screen').classList.add('active');
         };
 
         // --- MOTEUR MÉTRONOME RCP ---
