@@ -183,6 +183,10 @@
                 </div>
                 
                 <button class="btn-ncr" style="margin-top: 15px; width: 100%; background: linear-gradient(135deg, #FF9500, #FF5E3A);" onclick="window.startSimulator()">🚨 Lancer le Simulateur d'Alerte</button>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="btn-ncr" style="margin:0; flex:1; background:var(--card-dark); border:1px solid var(--glass);" onclick="document.getElementById('module-selection-screen').classList.remove('active'); document.getElementById('fiches-screen').classList.add('active');">🩹 Fiches Urgence</button>
+                    <button class="btn-ncr" style="margin:0; flex:1; background:var(--card-dark); border:1px solid var(--glass);" onclick="document.getElementById('module-selection-screen').classList.remove('active'); document.getElementById('metronome-screen').classList.add('active');">🫀 Métronome RCP</button>
+                </div>
             </div>
             <button class="btn-module-hero" onclick="startModule('all')">
                 <div>
