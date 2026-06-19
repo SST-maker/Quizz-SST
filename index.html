@@ -1529,7 +1529,9 @@
                 const dateInput = document.getElementById('sst-date');
                 if(dateInput) { dateInput.value = progress.sstDate; window.updateMacValidity(); }
             }
-            // --- MOTEUR MÉTRONOME RCP ---
+        };
+
+        // --- MOTEUR MÉTRONOME RCP ---
         window.audioCtx = null;
         window.metroInterval = null;
         window.isMetroRunning = false;
