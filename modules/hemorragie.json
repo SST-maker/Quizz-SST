@@ -1,0 +1,74 @@
+{
+  "id": "hemorragie",
+  "title": "L'hémorragie",
+  "subtitle": "Reconnaissance, compression, garrot et surveillance",
+  "icon": "🩸",
+  "questions": [
+    {
+      "id": "hemorragie-001",
+      "difficulty": "facile",
+      "category": "Reconnaissance",
+      "q": "Quel signe évoque une hémorragie externe grave ?",
+      "a": ["Un saignement abondant qui ne s'arrête pas spontanément", "Une rougeur sans écoulement", "Une douleur musculaire ancienne", "Une petite goutte de sang séchée"],
+      "c": 0,
+      "e": "Une hémorragie grave peut entraîner rapidement une détresse circulatoire.",
+      "commonError": "Minimiser un saignement abondant parce que la victime parle.",
+      "advice": "Tout saignement abondant visible se traite immédiatement."
+    },
+    {
+      "id": "hemorragie-002",
+      "difficulty": "facile",
+      "category": "Conduite à tenir",
+      "q": "Quel geste réaliser en priorité face à une hémorragie externe ?",
+      "a": ["Comprimer directement la plaie", "Rincer longuement", "Donner à boire", "Chercher un pansement avant d'agir"],
+      "c": 0,
+      "e": "La compression directe est le geste immédiat pour arrêter le saignement.",
+      "commonError": "Retarder la compression pour chercher du matériel.",
+      "advice": "Comprimer tout de suite, si possible avec protection, puis allonger et alerter."
+    },
+    {
+      "id": "hemorragie-003",
+      "difficulty": "intermediaire",
+      "category": "Garrot",
+      "q": "Quand envisager un garrot ?",
+      "a": ["Quand la compression est impossible ou inefficace", "Sur toute petite coupure", "Pour remplacer un pansement simple", "Uniquement pour faire moins mal"],
+      "c": 0,
+      "e": "Le garrot est indiqué si la compression directe ne peut pas être maintenue ou ne suffit pas.",
+      "commonError": "Poser un garrot trop tôt ou sans indication.",
+      "advice": "Garrot : dernier recours utile, noter l'heure, ne pas le desserrer."
+    },
+    {
+      "id": "hemorragie-004",
+      "difficulty": "intermediaire",
+      "category": "Position",
+      "q": "Après compression d'une hémorragie grave, quelle position est généralement adaptée ?",
+      "a": ["Allonger la victime", "La faire marcher", "La laisser debout", "La mettre assise jambes pendantes systématiquement"],
+      "c": 0,
+      "e": "Allonger limite les conséquences d'un malaise lié à la perte de sang.",
+      "commonError": "Laisser la victime debout après une perte de sang.",
+      "advice": "Compression maintenue, victime allongée, alerte, surveillance."
+    },
+    {
+      "id": "hemorragie-005",
+      "difficulty": "difficile",
+      "category": "Cas pratique",
+      "q": "Une machine sectionne partiellement deux doigts. Que faire avec les fragments ?",
+      "a": ["Les placer dans un sac propre, posé sur du froid sans contact direct avec la glace", "Les mettre directement dans la glace", "Les jeter", "Les rincer à l'alcool"],
+      "c": 0,
+      "e": "Les fragments doivent être protégés, refroidis indirectement et transmis aux secours.",
+      "commonError": "Mettre le fragment en contact direct avec la glace.",
+      "advice": "Fragment : sac propre, puis sac sur froid, jamais directement dans la glace."
+    },
+    {
+      "id": "hemorragie-006",
+      "difficulty": "difficile",
+      "category": "Surveillance",
+      "q": "Quel signe peut traduire une aggravation après hémorragie ?",
+      "a": ["Pâleur, sueurs, agitation ou somnolence", "Une amélioration immédiate de l'appétit", "Une envie de courir", "Une disparition de tous les signes"],
+      "c": 0,
+      "e": "Ces signes peuvent annoncer une détresse circulatoire.",
+      "commonError": "Ne plus surveiller une fois le saignement ralenti.",
+      "advice": "Surveiller conscience, respiration, couleur, sueurs et efficacité de la compression."
+    }
+  ]
+}

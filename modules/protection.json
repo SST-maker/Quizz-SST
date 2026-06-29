@@ -1,0 +1,74 @@
+{
+  "id": "protection",
+  "title": "La protection",
+  "subtitle": "Analyse des dangers, suppression, balisage et dégagement d'urgence",
+  "icon": "🛡️",
+  "questions": [
+    {
+      "id": "protection-001",
+      "difficulty": "facile",
+      "category": "Priorité",
+      "q": "Quelle est la première priorité du SST avant d'intervenir ?",
+      "a": ["Se protéger et éviter toute nouvelle victime", "Courir vers la victime sans regarder", "Commencer un massage cardiaque systématique", "Filmer la scène"],
+      "c": 0,
+      "e": "Le SST ne doit pas devenir une victime supplémentaire.",
+      "commonError": "Se précipiter sans analyser la zone.",
+      "advice": "Observer, identifier les dangers, supprimer ou isoler avant d'approcher."
+    },
+    {
+      "id": "protection-002",
+      "difficulty": "facile",
+      "category": "Suppression du danger",
+      "q": "Face à une machine dangereuse en fonctionnement, quelle action est prioritaire si accessible sans danger ?",
+      "a": ["Actionner l'arrêt d'urgence", "Tirer la victime de force", "Verser de l'eau", "Attendre la fin du cycle"],
+      "c": 0,
+      "e": "Supprimer l'énergie dangereuse est la meilleure protection.",
+      "commonError": "Toucher la victime avant d'arrêter la source du danger.",
+      "advice": "Danger mécanique : arrêt d'urgence, consignation si possible, alerte."
+    },
+    {
+      "id": "protection-003",
+      "difficulty": "intermediaire",
+      "category": "Balisage",
+      "q": "À quoi sert le balisage ?",
+      "a": ["Empêcher un sur-accident et guider les secours", "Décorer la zone", "Remplacer les gestes de secours", "Cacher l'accident"],
+      "c": 0,
+      "e": "Le balisage évite que d'autres personnes entrent dans la zone dangereuse.",
+      "commonError": "Oublier les autres personnes exposées.",
+      "advice": "Balisage visible, distance suffisante, témoins utilisés pour sécuriser."
+    },
+    {
+      "id": "protection-004",
+      "difficulty": "intermediaire",
+      "category": "Dégagement d'urgence",
+      "q": "Quand réaliser un dégagement d'urgence ?",
+      "a": ["Si la victime est exposée à un danger vital immédiat qui ne peut pas être supprimé", "À chaque intervention", "Pour gagner du temps", "Pour tester la douleur"],
+      "c": 0,
+      "e": "Le dégagement d'urgence est exceptionnel et justifié par un danger vital immédiat.",
+      "commonError": "Déplacer une victime sans nécessité.",
+      "advice": "Déplacer seulement si rester sur place est plus dangereux que le déplacement."
+    },
+    {
+      "id": "protection-005",
+      "difficulty": "difficile",
+      "category": "Atmosphère dangereuse",
+      "q": "Que faire face à un local enfumé ou toxique sans équipement adapté ?",
+      "a": ["Ne pas entrer et faire alerter les secours spécialisés", "Entrer en retenant sa respiration", "Envoyer un collègue", "Ouvrir avec une flamme"],
+      "c": 0,
+      "e": "Les fumées et gaz peuvent tuer très rapidement. Le SST ne doit pas s'exposer.",
+      "commonError": "Croire qu'une courte apnée suffit.",
+      "advice": "Zone toxique : rester dehors, alerter, empêcher l'accès, guider les secours."
+    },
+    {
+      "id": "protection-006",
+      "difficulty": "difficile",
+      "category": "Électricité",
+      "q": "Un câble électrique est au sol près d'une victime. Quelle conduite est adaptée ?",
+      "a": ["Rester à distance, isoler la zone et faire couper le courant", "Écarter le câble avec la main", "Tirer la victime immédiatement", "Verser de l'eau"],
+      "c": 0,
+      "e": "L'électricité peut se propager au sol. Il faut rester à distance et faire couper l'énergie.",
+      "commonError": "Approcher une zone électrique avant coupure.",
+      "advice": "Électricité : distance, coupure, interdiction d'accès, secours."
+    }
+  ]
+}

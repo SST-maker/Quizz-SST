@@ -1,0 +1,74 @@
+{
+  "id": "arret_cardiaque",
+  "title": "L'arrêt cardiaque",
+  "subtitle": "Reconnaissance, RCP, DAE, rythme et coordination",
+  "icon": "🫀",
+  "questions": [
+    {
+      "id": "ac-001",
+      "difficulty": "facile",
+      "category": "Reconnaissance",
+      "q": "Quel constat indique un arrêt cardiaque chez une victime inconsciente ?",
+      "a": ["Absence de respiration normale", "Douleur au doigt", "Victime qui parle", "Respiration calme et régulière"],
+      "c": 0,
+      "e": "Une victime inconsciente qui ne respire pas normalement est en arrêt cardiaque jusqu'à preuve du contraire.",
+      "commonError": "Interpréter un gasp comme une respiration normale.",
+      "advice": "Gasp, respiration absente ou anormale : alerte et RCP immédiates."
+    },
+    {
+      "id": "ac-002",
+      "difficulty": "facile",
+      "category": "RCP",
+      "q": "Quel cycle est recommandé chez l'adulte lorsque les insufflations sont possibles ?",
+      "a": ["30 compressions / 2 insufflations", "5 compressions / 5 insufflations", "1 compression / 1 insufflation", "10 compressions seulement puis arrêt"],
+      "c": 0,
+      "e": "Le cycle adulte standard est 30 compressions puis 2 insufflations.",
+      "commonError": "Confondre les cycles ou s'arrêter trop longtemps.",
+      "advice": "Priorité : compressions continues et efficaces, interruptions minimales."
+    },
+    {
+      "id": "ac-003",
+      "difficulty": "intermediaire",
+      "category": "DAE",
+      "q": "Quand utiliser un DAE ?",
+      "a": ["Dès qu'il est disponible", "Après 10 minutes de massage", "Uniquement si un médecin est présent", "Jamais en entreprise"],
+      "c": 0,
+      "e": "La défibrillation précoce augmente fortement les chances de survie.",
+      "commonError": "Attendre avant de poser le DAE.",
+      "advice": "Faire apporter le DAE pendant que la RCP commence."
+    },
+    {
+      "id": "ac-004",
+      "difficulty": "intermediaire",
+      "category": "Sécurité DAE",
+      "q": "Que faire pendant l'analyse du DAE ?",
+      "a": ["Ne pas toucher la victime", "Continuer à masser", "Bouger les électrodes", "Faire asseoir la victime"],
+      "c": 0,
+      "e": "Tout contact peut perturber l'analyse du rythme.",
+      "commonError": "Continuer les compressions pendant l'analyse.",
+      "advice": "Annonce claire : personne ne touche la victime pendant analyse et choc."
+    },
+    {
+      "id": "ac-005",
+      "difficulty": "difficile",
+      "category": "Qualité RCP",
+      "q": "Quelle profondeur de compression vise-t-on chez l'adulte ?",
+      "a": ["5 à 6 cm", "1 cm", "10 à 12 cm", "Aucune profondeur précise"],
+      "c": 0,
+      "e": "Les compressions doivent être suffisamment profondes pour générer une circulation.",
+      "commonError": "Faire des compressions trop superficielles.",
+      "advice": "Centre du thorax, bras tendus, rythme 100 à 120/min, profondeur 5 à 6 cm."
+    },
+    {
+      "id": "ac-006",
+      "difficulty": "difficile",
+      "category": "Organisation",
+      "q": "Si plusieurs témoins sont présents, quelle organisation est pertinente ?",
+      "a": ["Un masse, un alerte, un apporte le DAE, relais réguliers", "Tout le monde regarde", "Une seule personne fait tout", "On attend les secours"],
+      "c": 0,
+      "e": "La coordination limite les pertes de temps et la fatigue du sauveteur.",
+      "commonError": "Ne pas déléguer les tâches disponibles.",
+      "advice": "Donner des consignes courtes et nominatives aux témoins."
+    }
+  ]
+}
