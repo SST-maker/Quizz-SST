@@ -1,0 +1,74 @@
+{
+  "id": "traumatismes",
+  "title": "Les traumatismes",
+  "subtitle": "Chutes, fractures, rachis, immobilisation et surveillance",
+  "icon": "🦴",
+  "questions": [
+    {
+      "id": "traumatismes-001",
+      "difficulty": "facile",
+      "category": "Reconnaissance",
+      "q": "Quel signe doit faire suspecter un traumatisme grave du dos ou du cou ?",
+      "a": ["Une simple fatigue", "Douleur au dos après chute, impossibilité de bouger ou fourmillements", "Un éternuement isolé", "Une petite rougeur sur le bras"],
+      "c": 1,
+      "e": "Douleur rachidienne, déficit moteur ou sensitif après un choc imposent une immobilité stricte.",
+      "commonError": "Faire asseoir ou marcher une victime tombée de hauteur.",
+      "advice": "Traumatisme rachis suspect : ne pas bouger, maintenir la tête si nécessaire, alerter."
+    },
+    {
+      "id": "traumatismes-002",
+      "difficulty": "facile",
+      "category": "Conduite à tenir",
+      "q": "Que faire devant une déformation évidente d'un membre ?",
+      "a": ["Remettre le membre en place", "Immobiliser comme trouvé et alerter selon gravité", "Masser vigoureusement", "Faire marcher la victime"],
+      "c": 1,
+      "e": "On ne remet jamais un membre déformé en place : cela peut aggraver les lésions.",
+      "commonError": "Tenter de réaligner un membre.",
+      "advice": "Immobiliser dans la position trouvée, surveiller douleur, circulation, sensibilité."
+    },
+    {
+      "id": "traumatismes-003",
+      "difficulty": "intermediaire",
+      "category": "Dégagement",
+      "q": "Quand déplacer une victime traumatisée ?",
+      "a": ["Toujours pour l'installer confortablement", "Uniquement en cas de danger immédiat impossible à supprimer", "Pour mieux voir les blessures", "Dès qu'elle demande à bouger"],
+      "c": 1,
+      "e": "Le déplacement peut aggraver une lésion, surtout rachidienne. Il n'est justifié qu'en danger vital immédiat.",
+      "commonError": "Bouger la victime pour gagner du temps.",
+      "advice": "Protéger d'abord l'environnement. Déplacer seulement si rester expose à un danger vital."
+    },
+    {
+      "id": "traumatismes-004",
+      "difficulty": "intermediaire",
+      "category": "Surveillance",
+      "q": "Que surveiller chez une victime après un choc violent à la tête ?",
+      "a": ["Conscience, vomissements, maux de tête, comportement et respiration", "Uniquement la couleur des chaussures", "Seulement la température de la pièce", "Rien si elle parle"],
+      "c": 0,
+      "e": "Un traumatisme crânien peut s'aggraver secondairement.",
+      "commonError": "Se rassurer trop vite parce que la victime répond.",
+      "advice": "Surveiller toute évolution : somnolence, confusion, vomissements, douleur, troubles neurologiques."
+    },
+    {
+      "id": "traumatismes-005",
+      "difficulty": "difficile",
+      "category": "Cas pratique",
+      "q": "Un salarié chute de 3 mètres, est conscient et se plaint de douleurs au dos. Que faire ?",
+      "a": ["Le mettre debout pour tester", "Le laisser immobile, faire alerter, maintenir l'axe tête-cou-tronc si nécessaire", "Le porter jusqu'à l'infirmerie", "Le faire boire"],
+      "c": 1,
+      "e": "Une chute de hauteur avec douleur dorsale impose de limiter tout mouvement et d'alerter.",
+      "commonError": "Tester la mobilité des jambes en faisant marcher.",
+      "advice": "Chute de hauteur : immobilité, alerte, surveillance, protection thermique."
+    },
+    {
+      "id": "traumatismes-006",
+      "difficulty": "difficile",
+      "category": "Priorités",
+      "q": "Une victime traumatisée saigne abondamment. Quelle priorité ?",
+      "a": ["Traiter l'hémorragie immédiatement", "Terminer l'interrogatoire", "Immobiliser d'abord tous les membres", "Attendre les secours sans toucher"],
+      "c": 0,
+      "e": "Une hémorragie massive menace la vie à court terme et doit être stoppée sans délai.",
+      "commonError": "Oublier une détresse vitale parce que le traumatisme impressionne.",
+      "advice": "Toujours rechercher et traiter les détresses vitales en priorité."
+    }
+  ]
+}

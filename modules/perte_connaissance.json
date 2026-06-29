@@ -1,0 +1,74 @@
+{
+  "id": "perte_connaissance",
+  "title": "La perte de connaissance",
+  "subtitle": "Inconscience, respiration, PLS et surveillance",
+  "icon": "🛌",
+  "questions": [
+    {
+      "id": "perte-001",
+      "difficulty": "facile",
+      "category": "Reconnaissance",
+      "q": "Comment vérifier si une victime répond ?",
+      "a": ["Lui parler fortement et lui demander d'ouvrir les yeux ou de serrer la main", "La secouer violemment", "Lui donner à boire", "La gifler"],
+      "c": 0,
+      "e": "La recherche de réponse doit être simple, rapide et non traumatisante.",
+      "commonError": "Stimuler brutalement une victime au sol.",
+      "advice": "Parler, toucher prudemment les épaules, demander un geste simple."
+    },
+    {
+      "id": "perte-002",
+      "difficulty": "facile",
+      "category": "Respiration",
+      "q": "Combien de temps maximum observer la respiration d'une victime inconsciente ?",
+      "a": ["10 secondes", "1 minute", "5 minutes", "Aucun temps limite"],
+      "c": 0,
+      "e": "On regarde, écoute et sent pendant 10 secondes maximum.",
+      "commonError": "Chercher trop longtemps un signe de respiration.",
+      "advice": "10 secondes maximum : si respiration absente ou anormale, traiter comme arrêt cardiaque."
+    },
+    {
+      "id": "perte-003",
+      "difficulty": "intermediaire",
+      "category": "PLS",
+      "q": "Une victime inconsciente respire normalement. Quelle conduite est indiquée ?",
+      "a": ["La mettre en PLS, alerter et surveiller", "La laisser sur le dos sans surveillance", "La faire asseoir", "Commencer immédiatement le massage cardiaque"],
+      "c": 0,
+      "e": "La PLS aide à maintenir les voies aériennes libres et à limiter le risque d'inhalation.",
+      "commonError": "Confondre inconsciente qui respire et arrêt cardiaque.",
+      "advice": "Inconsciente + respiration normale : PLS, alerte, surveillance continue."
+    },
+    {
+      "id": "perte-004",
+      "difficulty": "intermediaire",
+      "category": "Voies aériennes",
+      "q": "Pourquoi basculer prudemment la tête en arrière avant d'observer la respiration ?",
+      "a": ["Pour libérer les voies aériennes", "Pour réveiller la victime", "Pour tester le cou", "Pour accélérer le coeur"],
+      "c": 0,
+      "e": "Chez une personne inconsciente, la langue peut obstruer le passage de l'air.",
+      "commonError": "Observer la respiration sans libérer les voies aériennes.",
+      "advice": "Libérer les voies aériennes, puis regarder, écouter, sentir."
+    },
+    {
+      "id": "perte-005",
+      "difficulty": "difficile",
+      "category": "Cas particulier",
+      "q": "Une victime inconsciente respire mais présente un traumatisme suspect du dos. Que faire ?",
+      "a": ["Adapter la mise en PLS avec prudence si nécessaire pour protéger les voies aériennes", "La mettre debout", "Ne jamais surveiller la respiration", "La faire marcher"],
+      "c": 0,
+      "e": "La priorité reste la respiration. Les gestes doivent limiter les mouvements autant que possible.",
+      "commonError": "Bloquer toute action par peur du traumatisme.",
+      "advice": "Priorité vitale : voies aériennes et respiration, en limitant les mobilisations."
+    },
+    {
+      "id": "perte-006",
+      "difficulty": "difficile",
+      "category": "Surveillance",
+      "q": "Que surveiller après la mise en PLS ?",
+      "a": ["La respiration jusqu'à l'arrivée des secours", "La météo", "Le téléphone uniquement", "Rien, la position suffit"],
+      "c": 0,
+      "e": "Une victime inconsciente peut cesser de respirer : la surveillance est permanente.",
+      "commonError": "Mettre en PLS puis s'éloigner.",
+      "advice": "Rester auprès de la victime, surveiller respiration, couvrir, transmettre aux secours."
+    }
+  ]
+}

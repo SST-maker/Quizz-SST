@@ -1,0 +1,74 @@
+{
+  "id": "prevention",
+  "title": "Prévention SST",
+  "subtitle": "Danger, risque, signalement, DUER et culture sécurité",
+  "icon": "🚧",
+  "questions": [
+    {
+      "id": "prevention-001",
+      "difficulty": "facile",
+      "category": "Notions",
+      "q": "Comment définir un risque professionnel ?",
+      "a": ["La combinaison d'un danger et de l'exposition d'une personne", "Un accident déjà arrivé uniquement", "Une règle administrative sans lien terrain", "Une maladie toujours contagieuse"],
+      "c": 0,
+      "e": "Le risque naît de l'exposition à un danger.",
+      "commonError": "Confondre danger et risque.",
+      "advice": "Danger = source de dommage ; risque = probabilité liée à l'exposition."
+    },
+    {
+      "id": "prevention-002",
+      "difficulty": "facile",
+      "category": "Rôle SST",
+      "q": "Quel rôle le SST joue-t-il en prévention ?",
+      "a": ["Repérer les situations dangereuses et les signaler", "Remplacer l'employeur", "Sanctionner les collègues", "Ignorer les risques"],
+      "c": 0,
+      "e": "Le SST est un relais terrain de la prévention.",
+      "commonError": "Limiter le rôle SST aux gestes de secours.",
+      "advice": "Le SST est secouriste et acteur de prévention."
+    },
+    {
+      "id": "prevention-003",
+      "difficulty": "intermediaire",
+      "category": "Signalement",
+      "q": "Pourquoi signaler une situation dangereuse ?",
+      "a": ["Pour permettre une correction avant l'accident", "Pour remplir du papier inutile", "Pour éviter toute discussion", "Pour remplacer la formation"],
+      "c": 0,
+      "e": "Le signalement permet d'agir en amont.",
+      "commonError": "Attendre qu'un accident se produise.",
+      "advice": "Décrire les faits, le danger, les personnes exposées et proposer une piste d'amélioration."
+    },
+    {
+      "id": "prevention-004",
+      "difficulty": "intermediaire",
+      "category": "DUER",
+      "q": "Que recense le Document Unique d'Évaluation des Risques ?",
+      "a": ["Les risques identifiés et les mesures de prévention", "Les horaires de pause uniquement", "Les recettes de cuisine", "Les numéros personnels des salariés"],
+      "c": 0,
+      "e": "Le DUER formalise l'évaluation des risques de l'entreprise.",
+      "commonError": "Penser que le DUER est sans utilité terrain.",
+      "advice": "Le DUER doit vivre avec les situations réelles de travail."
+    },
+    {
+      "id": "prevention-005",
+      "difficulty": "difficile",
+      "category": "Hiérarchie prévention",
+      "q": "Quelle mesure de prévention est généralement la plus efficace ?",
+      "a": ["Supprimer le danger à la source", "Mettre seulement une affiche", "Donner un EPI sans formation", "Attendre le prochain accident"],
+      "c": 0,
+      "e": "Supprimer le danger est plus durable que protéger seulement l'individu exposé.",
+      "commonError": "Commencer par les EPI sans chercher une mesure collective.",
+      "advice": "Priorité : supprimer, réduire, protéger collectivement, organiser, former, EPI."
+    },
+    {
+      "id": "prevention-006",
+      "difficulty": "difficile",
+      "category": "Analyse",
+      "q": "Pourquoi analyser un incident sans blessure ?",
+      "a": ["Parce qu'il révèle souvent un risque à corriger avant un accident", "Parce qu'il ne sert à rien", "Pour désigner automatiquement un coupable", "Pour éviter toute action"],
+      "c": 0,
+      "e": "Un presque accident est une opportunité de prévention.",
+      "commonError": "N'agir que lorsqu'il y a un dommage.",
+      "advice": "Utiliser les retours d'expérience pour améliorer les pratiques."
+    }
+  ]
+}

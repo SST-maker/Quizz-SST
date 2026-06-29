@@ -1,0 +1,74 @@
+{
+  "id": "electrisation",
+  "title": "Électrisation",
+  "subtitle": "Protection électrique, examen, brûlures et troubles invisibles",
+  "icon": "⚡",
+  "questions": [
+    {
+      "id": "electrisation-001",
+      "difficulty": "facile",
+      "category": "Protection",
+      "q": "Quelle priorité face à une victime au contact d'une source électrique ?",
+      "a": ["Faire couper le courant avant tout contact", "La tirer immédiatement", "Verser de l'eau", "La secouer"],
+      "c": 0,
+      "e": "Toucher la victime avant coupure peut électriser le sauveteur.",
+      "commonError": "Se précipiter au contact de la victime.",
+      "advice": "Électricité : protéger, couper, vérifier l'absence de danger, puis examiner."
+    },
+    {
+      "id": "electrisation-002",
+      "difficulty": "facile",
+      "category": "Examen",
+      "q": "Après une électrisation, pourquoi examiner même si la victime semble aller bien ?",
+      "a": ["Des troubles cardiaques ou brûlures internes peuvent être invisibles", "Parce que toute victime doit courir", "Parce qu'il faut toujours donner à boire", "Parce qu'il n'y a jamais de risque"],
+      "c": 0,
+      "e": "L'électricité peut provoquer des lésions internes ou des troubles du rythme.",
+      "commonError": "Rassurer trop vite après un contact électrique.",
+      "advice": "Surveiller, alerter selon gravité, transmettre le mécanisme électrique."
+    },
+    {
+      "id": "electrisation-003",
+      "difficulty": "intermediaire",
+      "category": "Brûlures",
+      "q": "Que faire devant une brûlure visible après électrisation, une fois la zone sécurisée ?",
+      "a": ["Refroidir la brûlure selon les consignes et demander avis médical", "Appliquer du beurre", "Percer les cloques", "Ignorer la brûlure"],
+      "c": 0,
+      "e": "Les brûlures électriques peuvent être profondes et nécessitent une vigilance particulière.",
+      "commonError": "Traiter comme une petite brûlure banale.",
+      "advice": "Refroidir les lésions visibles, surveiller, alerter en cas de gravité."
+    },
+    {
+      "id": "electrisation-004",
+      "difficulty": "intermediaire",
+      "category": "Arrêt cardiaque",
+      "q": "Une victime électrisée est inconsciente et ne respire pas normalement. Que faire ?",
+      "a": ["Alerter, faire apporter un DAE et débuter la RCP", "Attendre qu'elle récupère", "La mettre assise", "Lui donner de l'eau"],
+      "c": 0,
+      "e": "L'électrisation peut provoquer un arrêt cardiaque.",
+      "commonError": "Retarder la RCP après coupure du courant.",
+      "advice": "Une fois sécurisé : évaluer respiration, alerte, RCP, DAE."
+    },
+    {
+      "id": "electrisation-005",
+      "difficulty": "difficile",
+      "category": "Haute tension",
+      "q": "Pourquoi rester très à distance d'un câble haute tension au sol ?",
+      "a": ["Le courant peut se propager dans le sol", "Le câble est forcément froid", "Il suffit de marcher vite", "Le danger disparaît si on ferme les yeux"],
+      "c": 0,
+      "e": "La tension de pas peut électriser une personne proche du câble.",
+      "commonError": "Approcher sans connaître la zone de danger.",
+      "advice": "Balisage large, personne n'approche, appel aux services compétents."
+    },
+    {
+      "id": "electrisation-006",
+      "difficulty": "difficile",
+      "category": "Transmission",
+      "q": "Quelle information est importante à transmettre aux secours après électrisation ?",
+      "a": ["Type de courant, durée supposée, état de la victime, brûlures et gestes réalisés", "La couleur des murs seulement", "Le prénom du témoin uniquement", "Aucune information particulière"],
+      "c": 0,
+      "e": "Ces éléments aident à évaluer la gravité potentielle.",
+      "commonError": "Oublier le mécanisme électrique.",
+      "advice": "Décrire la source, la tension si connue, le temps de contact, les signes et les gestes."
+    }
+  ]
+}
